@@ -14,16 +14,182 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      analytics_events: {
+        Row: {
+          block_id: string | null
+          created_at: string
+          event_type: string
+          id: number
+          profile_id: string
+          referrer: string | null
+        }
+        Insert: {
+          block_id?: string | null
+          created_at?: string
+          event_type: string
+          id?: number
+          profile_id: string
+          referrer?: string | null
+        }
+        Update: {
+          block_id?: string | null
+          created_at?: string
+          event_type?: string
+          id?: number
+          profile_id?: string
+          referrer?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "analytics_events_block_id_fkey"
+            columns: ["block_id"]
+            isOneToOne: false
+            referencedRelation: "blocks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "analytics_events_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      blocks: {
+        Row: {
+          config: Json
+          created_at: string
+          id: string
+          is_visible: boolean
+          position: number
+          profile_id: string
+          type: Database["public"]["Enums"]["block_type"]
+          updated_at: string
+        }
+        Insert: {
+          config?: Json
+          created_at?: string
+          id?: string
+          is_visible?: boolean
+          position?: number
+          profile_id: string
+          type: Database["public"]["Enums"]["block_type"]
+          updated_at?: string
+        }
+        Update: {
+          config?: Json
+          created_at?: string
+          id?: string
+          is_visible?: boolean
+          position?: number
+          profile_id?: string
+          type?: Database["public"]["Enums"]["block_type"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blocks_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          is_published: boolean
+          settings: Json
+          theme: Json
+          updated_at: string
+          user_id: string
+          username: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          is_published?: boolean
+          settings?: Json
+          theme?: Json
+          updated_at?: string
+          user_id: string
+          username?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          is_published?: boolean
+          settings?: Json
+          theme?: Json
+          updated_at?: string
+          user_id?: string
+          username?: string | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
+      block_type:
+        | "link"
+        | "heading"
+        | "text"
+        | "avatar"
+        | "social"
+        | "wallet"
+        | "nft"
+        | "token_balance"
+        | "image"
+        | "video_embed"
+        | "music_embed"
+        | "tip_jar"
+        | "contact_form"
+        | "calendar"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +316,24 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+      block_type: [
+        "link",
+        "heading",
+        "text",
+        "avatar",
+        "social",
+        "wallet",
+        "nft",
+        "token_balance",
+        "image",
+        "video_embed",
+        "music_embed",
+        "tip_jar",
+        "contact_form",
+        "calendar",
+      ],
+    },
   },
 } as const
