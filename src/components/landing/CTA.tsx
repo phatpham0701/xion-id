@@ -1,7 +1,18 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const CTA = () => {
+  const navigate = useNavigate();
+  const [handle, setHandle] = useState("");
+
+  const onSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmed = handle.trim();
+    navigate(`/auth${trimmed ? `?handle=${encodeURIComponent(trimmed)}` : ""}`);
+  };
+
   return (
     <section className="py-24 md:py-32 relative">
       <div className="container">
@@ -17,13 +28,16 @@ const CTA = () => {
               Free for life. Gasless on XION. Live in under a minute.
             </p>
 
-            <form className="mt-9 flex flex-col sm:flex-row gap-2 max-w-md mx-auto" onSubmit={(e) => e.preventDefault()}>
+            <form className="mt-9 flex flex-col sm:flex-row gap-2 max-w-md mx-auto" onSubmit={onSubmit}>
               <div className="flex-1 glass rounded-full flex items-center pl-5 pr-1 h-12">
                 <span className="text-muted-foreground text-sm">xionprofile.com/</span>
                 <input
                   type="text"
+                  value={handle}
+                  onChange={(e) => setHandle(e.target.value)}
                   placeholder="yourname"
                   className="flex-1 bg-transparent outline-none text-sm placeholder:text-muted-foreground/60 px-1"
+                  maxLength={24}
                 />
               </div>
               <Button size="lg" type="submit" className="bg-gradient-primary text-primary-foreground hover:opacity-90 font-medium h-12 px-6 rounded-full shadow-glow-primary glow-primary group">

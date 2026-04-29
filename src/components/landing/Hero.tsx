@@ -1,4 +1,5 @@
 import { ArrowRight, Zap } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import heroMockup from "@/assets/hero-mockup.png";
 
@@ -28,12 +29,14 @@ const Hero = () => {
           </p>
 
           <div className="mt-9 flex flex-col sm:flex-row gap-3">
-            <Button size="lg" className="bg-gradient-primary text-primary-foreground hover:opacity-90 transition-opacity font-medium shadow-glow-primary glow-primary group h-12 px-7">
-              Claim your profile
-              <ArrowRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            <Button asChild size="lg" className="bg-gradient-primary text-primary-foreground hover:opacity-90 transition-opacity font-medium shadow-glow-primary glow-primary group h-12 px-7">
+              <Link to="/auth">
+                Claim your profile
+                <ArrowRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+              </Link>
             </Button>
-            <Button size="lg" variant="outline" className="glass border-glass-border hover:bg-white/5 h-12 px-7">
-              See live demo
+            <Button asChild size="lg" variant="outline" className="glass border-glass-border hover:bg-white/5 h-12 px-7">
+              <a href="#showcase">See live demo</a>
             </Button>
           </div>
 
