@@ -25,11 +25,11 @@ const Navbar = () => {
         </nav>
 
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" className="hidden sm:inline-flex">
-            Sign in
+          <Button variant="ghost" size="sm" className="hidden sm:inline-flex" asChild>
+            <Link to="/auth">Sign in</Link>
           </Button>
-          <Button size="sm" className="bg-gradient-primary text-primary-foreground hover:opacity-90 transition-opacity font-medium">
-            Claim your profile
+          <Button size="sm" className="bg-gradient-primary text-primary-foreground hover:opacity-90 transition-opacity font-medium" asChild>
+            <Link to="/auth">Claim your profile</Link>
           </Button>
         </div>
       </div>
