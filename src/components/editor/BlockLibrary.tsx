@@ -1,15 +1,26 @@
-import { Plus, Sparkles } from "lucide-react";
+import { Plus, Sparkles, ArrowUpDown } from "lucide-react";
 import {
   BLOCK_LIBRARY, CATEGORY_LABELS, CATEGORY_DESCRIPTIONS, type BlockMeta,
 } from "@/lib/blocks";
 import {
   HoverCard, HoverCardContent, HoverCardTrigger,
 } from "@/components/ui/hover-card";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
 import { BlockRenderer } from "./BlockRenderer";
 import { DEFAULT_THEME, themeStyleVars, BACKGROUNDS, FONTS } from "@/lib/theme";
 import { cn } from "@/lib/utils";
+import {
+  PERSONAS, SORT_LABELS, sortLibrary, scoreBlock,
+  type BlockPrefs, type Persona, type SortMode,
+} from "@/lib/blockRanking";
 
-type Props = { onAdd: (meta: BlockMeta) => void };
+type Props = {
+  onAdd: (meta: BlockMeta) => void;
+  prefs: BlockPrefs;
+  onPrefsChange: (patch: Partial<BlockPrefs>) => void;
+};
 
 const PREVIEW_THEME = DEFAULT_THEME;
 
@@ -49,7 +60,6 @@ const BlockPreview = ({ meta }: { meta: BlockMeta }) => {
         </div>
       </div>
 
-      {/* Live preview rendered with real BlockRenderer */}
       <div
         className="rounded-2xl p-4 overflow-hidden border border-border/40"
         style={{
@@ -79,75 +89,155 @@ const BlockPreview = ({ meta }: { meta: BlockMeta }) => {
   );
 };
 
-export const BlockLibrary = ({ onAdd }: Props) => {
-  const grouped = (Object.keys(CATEGORY_LABELS) as BlockMeta["category"][]).map((cat) => ({
-    cat,
-    items: BLOCK_LIBRARY.filter((b) => b.category === cat),
-  }));
-
+const BlockRow = ({
+  meta, onAdd, showFitScore, prefs,
+}: { meta: BlockMeta; onAdd: (m: BlockMeta) => void; showFitScore: boolean; prefs: BlockPrefs }) => {
+  // Normalize score → 0-100 for display.
+  const fit = showFitScore ? Math.min(100, Math.round(scoreBlock(meta, prefs) / 2)) : null;
   return (
-    <div className="space-y-6">
-      {grouped.map(({ cat, items }) => (
-        <div key={cat}>
-          <div className="px-1 mb-2.5">
-            <div className="text-xs uppercase tracking-wider text-muted-foreground font-medium">
-              {CATEGORY_LABELS[cat]}
+    <HoverCard openDelay={120} closeDelay={80}>
+      <HoverCardTrigger asChild>
+        <button
+          onClick={() => onAdd(meta)}
+          className="w-full glass rounded-xl p-3 text-left group hover:border-primary/50 hover:bg-card/80 transition-all flex items-start gap-3"
+        >
+          <div className="h-8 w-8 rounded-lg bg-primary/10 grid place-items-center shrink-0 group-hover:bg-primary/20 transition-colors">
+            <meta.icon className="h-3.5 w-3.5 text-primary" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-1.5">
+              <div className="text-sm font-medium leading-tight truncate">{meta.label}</div>
+              {meta.badge && (
+                <span className={cn(
+                  "text-[8px] px-1 py-0.5 rounded-full border font-medium uppercase tracking-wider shrink-0",
+                  BADGE_STYLES[meta.badge],
+                )}>
+                  {meta.badge}
+                </span>
+              )}
+              {fit !== null && fit >= 70 && (
+                <span className="text-[8px] px-1 py-0.5 rounded-full bg-primary/10 text-primary font-medium shrink-0">
+                  {fit}% fit
+                </span>
+              )}
             </div>
-            <div className="text-[10px] text-muted-foreground/70 mt-0.5">
-              {CATEGORY_DESCRIPTIONS[cat]}
+            <div className="text-[10px] text-muted-foreground mt-0.5 leading-tight line-clamp-2">
+              {meta.description}
             </div>
           </div>
+          <Plus className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-primary shrink-0 mt-1" />
+        </button>
+      </HoverCardTrigger>
+      <HoverCardContent side="right" align="start" sideOffset={12} className="w-80 p-4 glass-strong border-glass-border">
+        <BlockPreview meta={meta} />
+        <button
+          onClick={() => onAdd(meta)}
+          className="mt-3 w-full h-9 rounded-lg bg-gradient-primary text-primary-foreground text-xs font-medium hover:opacity-90 transition-opacity flex items-center justify-center gap-1.5"
+        >
+          <Plus className="h-3.5 w-3.5" />
+          Add to profile
+        </button>
+      </HoverCardContent>
+    </HoverCard>
+  );
+};
 
+export const BlockLibrary = ({ onAdd, prefs, onPrefsChange }: Props) => {
+  const showFit = prefs.sortMode === "recommended";
+
+  return (
+    <div className="space-y-5">
+      {/* Controls */}
+      <div className="space-y-2.5">
+        <div>
+          <label className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-1.5">
+            Profile type
+          </label>
+          <Select
+            value={prefs.persona}
+            onValueChange={(v) => onPrefsChange({ persona: v as Persona })}
+          >
+            <SelectTrigger className="h-9 text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {PERSONAS.map((p) => (
+                <SelectItem key={p.id} value={p.id} className="text-xs">
+                  <span className="mr-1.5">{p.emoji}</span>
+                  {p.label}
+                  <span className="ml-2 text-muted-foreground">· {p.hint}</span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div>
+          <label className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-1.5 flex items-center gap-1">
+            <ArrowUpDown className="h-3 w-3" />
+            Sort by
+          </label>
+          <Select
+            value={prefs.sortMode}
+            onValueChange={(v) => onPrefsChange({ sortMode: v as SortMode })}
+          >
+            <SelectTrigger className="h-9 text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {(Object.keys(SORT_LABELS) as SortMode[]).map((m) => (
+                <SelectItem key={m} value={m} className="text-xs">
+                  {SORT_LABELS[m]}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {/* List */}
+      {prefs.sortMode === "category" ? (
+        <div className="space-y-5">
+          {(Object.keys(CATEGORY_LABELS) as BlockMeta["category"][]).map((cat) => {
+            const items = BLOCK_LIBRARY.filter((b) => b.category === cat);
+            return (
+              <div key={cat}>
+                <div className="px-1 mb-2">
+                  <div className="text-xs uppercase tracking-wider text-muted-foreground font-medium">
+                    {CATEGORY_LABELS[cat]}
+                  </div>
+                  <div className="text-[10px] text-muted-foreground/70 mt-0.5">
+                    {CATEGORY_DESCRIPTIONS[cat]}
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  {items.map((b) => (
+                    <BlockRow key={b.type} meta={b} onAdd={onAdd} showFitScore={false} prefs={prefs} />
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div>
+          <div className="px-1 mb-2 flex items-center justify-between">
+            <div className="text-xs uppercase tracking-wider text-muted-foreground font-medium">
+              {SORT_LABELS[prefs.sortMode]}
+            </div>
+            {showFit && (
+              <div className="text-[9px] text-muted-foreground/70">
+                Tuned for {PERSONAS.find((p) => p.id === prefs.persona)?.label}
+              </div>
+            )}
+          </div>
           <div className="space-y-1.5">
-            {items.map((b) => (
-              <HoverCard key={b.type} openDelay={120} closeDelay={80}>
-                <HoverCardTrigger asChild>
-                  <button
-                    onClick={() => onAdd(b)}
-                    className="w-full glass rounded-xl p-3 text-left group hover:border-primary/50 hover:bg-card/80 transition-all flex items-start gap-3"
-                  >
-                    <div className="h-8 w-8 rounded-lg bg-primary/10 grid place-items-center shrink-0 group-hover:bg-primary/20 transition-colors">
-                      <b.icon className="h-3.5 w-3.5 text-primary" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-1.5">
-                        <div className="text-sm font-medium leading-tight truncate">{b.label}</div>
-                        {b.badge && (
-                          <span className={cn(
-                            "text-[8px] px-1 py-0.5 rounded-full border font-medium uppercase tracking-wider shrink-0",
-                            BADGE_STYLES[b.badge],
-                          )}>
-                            {b.badge}
-                          </span>
-                        )}
-                      </div>
-                      <div className="text-[10px] text-muted-foreground mt-0.5 leading-tight line-clamp-2">
-                        {b.description}
-                      </div>
-                    </div>
-                    <Plus className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-primary shrink-0 mt-1" />
-                  </button>
-                </HoverCardTrigger>
-                <HoverCardContent
-                  side="right"
-                  align="start"
-                  sideOffset={12}
-                  className="w-80 p-4 glass-strong border-glass-border"
-                >
-                  <BlockPreview meta={b} />
-                  <button
-                    onClick={() => onAdd(b)}
-                    className="mt-3 w-full h-9 rounded-lg bg-gradient-primary text-primary-foreground text-xs font-medium hover:opacity-90 transition-opacity flex items-center justify-center gap-1.5"
-                  >
-                    <Plus className="h-3.5 w-3.5" />
-                    Add to profile
-                  </button>
-                </HoverCardContent>
-              </HoverCard>
+            {sortLibrary(BLOCK_LIBRARY, prefs).map((b) => (
+              <BlockRow key={b.type} meta={b} onAdd={onAdd} showFitScore={showFit} prefs={prefs} />
             ))}
           </div>
         </div>
-      ))}
+      )}
     </div>
   );
 };
