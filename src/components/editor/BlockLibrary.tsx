@@ -221,15 +221,31 @@ const BlockRow = ({
         </button>
       </HoverCardTrigger>
       <HoverCardContent side="right" align="start" sideOffset={12} className="w-80 p-4 glass-strong border-glass-border">
-        <BlockPreview meta={meta} />
-        <button
-          onClick={handleAdd}
-          className="mt-3 w-full h-9 rounded-lg bg-gradient-primary text-primary-foreground text-xs font-medium hover:opacity-90 transition-opacity flex items-center justify-center gap-1.5"
-        >
-          <Plus className="h-3.5 w-3.5" />
-          {errors > 0 ? "Add — then complete required fields" : "Add to profile"}
-        </button>
+        <BlockPreview meta={meta} onExpand={() => setFullOpen(true)} />
+        <div className="mt-3 grid grid-cols-[1fr_auto] gap-2">
+          <button
+            onClick={handleAdd}
+            className="h-9 rounded-lg bg-gradient-primary text-primary-foreground text-xs font-medium hover:opacity-90 transition-opacity flex items-center justify-center gap-1.5"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            {errors > 0 ? "Add — needs setup" : "Add to profile"}
+          </button>
+          <button
+            onClick={() => setFullOpen(true)}
+            className="h-9 px-3 rounded-lg border border-border text-xs font-medium hover:bg-muted transition-colors flex items-center justify-center gap-1.5"
+            aria-label="Open full preview"
+          >
+            <Maximize2 className="h-3.5 w-3.5" />
+            Full
+          </button>
+        </div>
       </HoverCardContent>
+      <FullPreviewDialog
+        meta={meta}
+        open={fullOpen}
+        onOpenChange={setFullOpen}
+        onAdd={onAdd}
+      />
     </HoverCard>
   );
 };
