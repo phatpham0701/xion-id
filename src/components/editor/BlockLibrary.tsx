@@ -1,4 +1,5 @@
-import { Plus, Sparkles, ArrowUpDown } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Plus, Sparkles, ArrowUpDown, Search, X } from "lucide-react";
 import {
   BLOCK_LIBRARY, CATEGORY_LABELS, CATEGORY_DESCRIPTIONS, type BlockMeta,
 } from "@/lib/blocks";
@@ -8,6 +9,7 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 import { BlockRenderer } from "./BlockRenderer";
 import { DEFAULT_THEME, themeStyleVars, BACKGROUNDS, FONTS } from "@/lib/theme";
 import { cn } from "@/lib/utils";
