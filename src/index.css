@@ -165,3 +165,15 @@
     box-shadow: var(--shadow-elevated);
   }
 }
+
+/* ── Newly-added block flash highlight (Editor) ─────────────────── */
+@keyframes ring-flash-kf {
+  0%   { box-shadow: 0 0 0 0 hsl(var(--primary) / 0.0), 0 0 0 0 hsl(var(--primary) / 0); }
+  20%  { box-shadow: 0 0 0 4px hsl(var(--primary) / 0.55), 0 0 32px hsl(var(--primary) / 0.45); }
+  100% { box-shadow: 0 0 0 0 hsl(var(--primary) / 0.0), 0 0 0 0 hsl(var(--primary) / 0); }
+}
+
+.ring-flash {
+  animation: ring-flash-kf 1.4s ease-out;
+  border-radius: 1rem;
+}

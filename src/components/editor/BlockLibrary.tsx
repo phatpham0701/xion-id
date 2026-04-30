@@ -165,11 +165,6 @@ const BlockRow = ({
 
   const handleAdd = () => {
     onAdd(meta);
-    if (errors > 0) {
-      toast.warning(`${meta.label} added — needs setup`, {
-        description: defaultIssues.find((i) => i.severity === "error")?.message,
-      });
-    }
   };
 
   return (

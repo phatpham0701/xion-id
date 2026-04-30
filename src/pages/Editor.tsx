@@ -25,6 +25,7 @@ import {
   DEFAULT_PREFS, prefsFromJson, loadLocalPrefs, persistPrefs, recordBlockAdd,
   type BlockPrefs,
 } from "@/lib/blockRanking";
+import { validateBlockConfig, summarizeIssues } from "@/lib/blockValidation";
 
 type Profile = {
   id: string;
@@ -118,6 +119,29 @@ const Editor = () => {
     setBlocks((prev) => [...prev, newBlock]);
     setSelectedId(newBlock.id);
     updatePrefs(recordBlockAdd(prefs, meta.type));
+
+    // Scroll the new block into view + flash highlight after the DOM updates.
+    requestAnimationFrame(() => {
+      const el = document.querySelector<HTMLElement>(`[data-block-id="${newBlock.id}"]`);
+      if (!el) return;
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      el.classList.add("ring-flash");
+      window.setTimeout(() => el.classList.remove("ring-flash"), 1600);
+    });
+
+    // Lightweight confirmation with one-tap undo.
+    const issues = validateBlockConfig(meta.type, meta.defaultConfig);
+    const { errors } = summarizeIssues(issues);
+    const description = errors > 0
+      ? `Needs setup: ${issues.find((i) => i.severity === "error")?.message}`
+      : "Tap the block to edit, or undo to remove.";
+    toast.success(`${meta.label} added`, {
+      description,
+      action: {
+        label: "Undo",
+        onClick: () => { void deleteBlock(newBlock.id); },
+      },
+    });
   };
 
   const updateBlock = (id: string, patch: Partial<Block>) => {

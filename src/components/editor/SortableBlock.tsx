@@ -27,6 +27,7 @@ export const SortableBlock = ({ block, theme, selected, onSelect }: Props) => {
     <div
       ref={setNodeRef}
       style={style}
+      data-block-id={block.id}
       onClick={onSelect}
       className={cn(
         "relative group rounded-2xl transition-all cursor-pointer",
