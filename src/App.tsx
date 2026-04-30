@@ -10,6 +10,7 @@ import Auth from "./pages/Auth.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
 import Editor from "./pages/Editor.tsx";
 import Templates from "./pages/Templates.tsx";
+import TemplatePreview from "./pages/TemplatePreview.tsx";
 import PublicProfile from "./pages/PublicProfile.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
@@ -56,6 +57,8 @@ const App = () => (
                 </RequireAuth>
               }
             />
+            {/* Public template preview — open route, no auth required */}
+            <Route path="/preview/template/:id" element={<TemplatePreview />} />
             {/* Public profile — must be last named route before catch-all */}
             <Route path="/:username" element={<PublicProfile />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
