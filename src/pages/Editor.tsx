@@ -274,7 +274,7 @@ const Editor = () => {
           <div className="lg:hidden mt-6 max-w-[380px] mx-auto">
             <details className="glass rounded-2xl p-4">
               <summary className="cursor-pointer text-sm font-medium">+ Add blocks</summary>
-              <div className="mt-4"><BlockLibrary onAdd={addBlock} /></div>
+              <div className="mt-4"><BlockLibrary onAdd={addBlock} prefs={prefs} onPrefsChange={updatePrefs} /></div>
             </details>
           </div>
         </main>
