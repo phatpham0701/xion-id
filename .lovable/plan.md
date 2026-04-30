@@ -1,128 +1,139 @@
-# Audit & Upgrade: Templates + Dashboard
 
-## Findings — Templates (current state)
+# Phase 2 – Step 1: Abstraxion Wallet Foundation
 
-Reading `src/lib/templates.ts`, all 12 templates exist but suffer from real problems:
+Bước đầu tiên của Xion integration: cho phép user đăng nhập ví XION qua Abstraxion (Meta Account / social login), lưu địa chỉ `xion1...` vào profile, và chuẩn bị schema cho các step sau (tip jar, on-chain badges, NFT scanner).
 
-**Problem 1 — Identical filler content.** Almost every template uses the same generic placeholders:
-- `name: "Your Name"`, `subtitle: "@yourhandle"` repeated in 8+ templates
-- Bio text is vague ("A little about me…", "One short line about you.")
-- Links are mostly empty: `url: "https://"`, `url: "https://cal.com/"`, `contract: ""`, `tokenId: ""`
-- Result: when a user picks "Musician" vs "Developer", the rendered preview looks structurally similar — same avatar, same empty buttons
+## Phạm vi step này
 
-**Problem 2 — Weak differentiation.** Templates only differ in:
-- Theme (background/font/accent) — this works
-- Block ordering — minor
-- A handful of link titles
-But the *content depth* is the same shallow ~6 blocks. A creator template should feel like a creator profile out of the box.
+1. Cài Abstraxion SDK + cấu hình XION testnet-2 với treasury của bạn.
+2. Bọc app bằng `AbstraxionProvider` (có config gasless qua treasury).
+3. Tạo hook `useXionWallet()` thống nhất (connect / disconnect / address / status).
+4. Mở rộng `profiles` table với `xion_address` + `wallet_connected_at`.
+5. UI mới trong **Dashboard** & **Editor**: nút "Connect XION Wallet" với badge trạng thái.
+6. Hiển thị địa chỉ XION (truncated `xion1m6...8h`) trên public profile khi đã connect.
+7. Tạo bảng `wallet_badges` (chưa cấp badge — chỉ schema + RLS, để Step 3 fill data on-chain).
 
-**Problem 3 — Empty Web3 blocks are useless.** `wallet { address: "xion1..." }`, `nft { contract: "", tokenId: "" }`, `token_balance { token: "XION" }` (renders "— XION") all show placeholder dashes. User has to wire everything before it looks like anything.
+Các step **chưa làm** trong lần này (sẽ làm tiếp sau khi Step 1 chạy ổn):
+- Step 2: Tip Jar gửi XION on-chain qua treasury.
+- Step 3: Edge function scanner quét tx history → cấp badges (OG 2024, NFT Holder, Tipper, dApp user…).
+- Step 4: Tip history + analytics.
 
-**Problem 4 — Missing template variety.** No templates for: photographer, fitness coach, restaurant/local business, event, link-in-bio for IG/TikTok influencer, gamer/streamer, DAO/community, student.
+## Technical details
 
-**Problem 5 — No preview-first UX.** The gallery cards show only stacked grey rectangles — the user can't tell what makes "Designer" different from "Writer".
+### Packages
+- `@burnt-labs/abstraxion` — Meta Account / social login wallet
+- `@burnt-labs/abstraxion-core`
+- `@burnt-labs/ui` — base styles cho modal Abstraxion (chỉ import CSS)
+- `@cosmjs/stargate` — sẵn sàng cho Step 2 query/broadcast
 
-## Findings — Dashboard (current state)
+### Cấu hình XION (file mới `src/lib/xion.ts`)
+```ts
+export const XION_CONFIG = {
+  treasury: "xion1m69vedc7x4p0rx3gkgwyrk87qnqda62evvwut7923evqztnx97gq3cst8h",
+  rpcUrl: "https://rpc.xion-testnet-2.burnt.com:443",
+  restUrl: "https://api.xion-testnet-2.burnt.com:443",
+  chainId: "xion-testnet-2",
+  denom: "uxion",
+  explorerTx: (h: string) => `https://explorer.burnt.com/xion-testnet-2/tx/${h}`,
+  explorerAddr: (a: string) => `https://explorer.burnt.com/xion-testnet-2/account/${a}`,
+};
+```
+Không cần secret — đây là endpoints public testnet. Step sau nếu chuyển mainnet, swap qua `import.meta.env`.
 
-Reading `src/pages/Dashboard.tsx`, the dashboard has only:
-- Profile card with handle + URL + 3 buttons (Edit / Templates / Preview)
-- 2 stat cards (views, clicks — last 7 days)
-- A "Coming soon: XION wallet" placeholder
+### Provider tree (`src/App.tsx`)
+Bọc thêm `AbstraxionProvider` ngay trong `BrowserRouter`, truyền `treasury`, `rpcUrl`, `restUrl`. Import `@burnt-labs/abstraxion/dist/index.css` ở `main.tsx`.
 
-**Problems:**
-1. **No way to edit display name, bio, or avatar from the dashboard.** Only `username` is set during onboarding; `display_name`, `bio`, `avatar_url` columns exist but have no UI.
-2. **No publish/unpublish toggle.** `is_published` is enforced on the public route but there's no UI to flip it. Users can't take their profile offline.
-3. **No QR code or share affordance** — critical for a link-in-bio product (people put it on phone screens, business cards, IG bios).
-4. **Stats are anemic.** Just two numbers. No trend, no "top blocks", no "where clicks went", no time-series.
-5. **No recent activity** — last visitors / last clicked block.
-6. **Dead "Coming soon" card** wastes prime real estate.
-7. **Onboarding doesn't suggest templates** — a fresh user lands on an empty editor instead of being nudged to start from a template.
+### Hook `src/hooks/useXionWallet.ts`
+Wrap `useAbstraxionAccount` + `useModal` của Abstraxion để expose API tối giản cho UI:
+```ts
+{ address, isConnected, isConnecting, connect(), disconnect(), openModal() }
+```
+Khi `address` xuất hiện và user đã đăng nhập Supabase → gọi `syncWalletToProfile(address)` (upsert `xion_address` + `wallet_connected_at` vào profile của user).
 
-## Plan
+### Database changes (migration)
+```sql
+-- profiles: thêm 2 cột
+ALTER TABLE public.profiles
+  ADD COLUMN xion_address text,
+  ADD COLUMN wallet_connected_at timestamptz;
 
-### Part 1 — Rewrite all templates with real, differentiated content
+CREATE UNIQUE INDEX profiles_xion_address_unique
+  ON public.profiles(xion_address) WHERE xion_address IS NOT NULL;
 
-Replace placeholder text with concrete, persona-specific copy and realistic example URLs (still editable, but immediately recognizable). Each template gets:
-- A **distinct persona name** (e.g. "Maya Chen" for Designer, "DJ Solace" for Musician) so previews feel alive
-- A **specific bio** (1–2 sentences) that signals the persona
-- **Real example URLs** pointing to category-appropriate destinations (e.g. real Spotify artist URL pattern, real GitHub URL pattern) — user replaces with their own
-- **Visible Web3 content**: use a sample XION address + named NFT collection so the block renders meaningfully on first paste
+-- wallet_badges: chuẩn bị cho Step 3
+CREATE TYPE public.badge_kind AS ENUM (
+  'og_2024','og_2025','nft_collector','nft_minter','tipper',
+  'dapp_explorer','campaign_participant','contest_winner','whale','early_adopter'
+);
 
-Expand from 12 → **15 templates**, adding:
-- **Photographer** (image-heavy, gallery-style)
-- **Streamer / Gamer** (Twitch + Discord + game schedule)
-- **Local Business** (hours, location, menu link, booking)
+CREATE TABLE public.wallet_badges (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  profile_id uuid NOT NULL,
+  xion_address text NOT NULL,
+  kind public.badge_kind NOT NULL,
+  tier int NOT NULL DEFAULT 1,
+  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
+  verified_at timestamptz NOT NULL DEFAULT now(),
+  UNIQUE(profile_id, kind)
+);
 
-Each template will have ~7–10 blocks (currently 4–7), giving genuine starting content.
+ALTER TABLE public.wallet_badges ENABLE ROW LEVEL SECURITY;
 
-### Part 2 — Improve template gallery preview
+-- ai cũng xem được (public profile hiển thị badge)
+CREATE POLICY "Badges viewable by everyone"
+  ON public.wallet_badges FOR SELECT USING (true);
 
-Update `TemplateCard` in `TemplateGallery.tsx`:
-- Render an actual mini preview using `BlockRenderer` (scaled down) instead of grey rectangles — so Designer shows an image block, Musician shows a music embed shape, Web3 shows a wallet card
-- Show block count + block-type chips ("3 links · 1 NFT · tip jar")
-- Add a "Live demo" link that opens the template as a real public profile preview at `/preview/template/:id`
+-- chỉ owner xoá; insert/update do service role làm (qua scanner edge fn ở Step 3)
+CREATE POLICY "Owners can delete their badges"
+  ON public.wallet_badges FOR DELETE TO authenticated
+  USING (EXISTS (SELECT 1 FROM profiles p WHERE p.id = profile_id AND p.user_id = auth.uid()));
+```
+RLS giữ nguyên pattern hiện có. `xion_address` không bị giới hạn unique cứng giữa user (cùng ví không thể link 2 profile, nhờ partial unique index).
 
-### Part 3 — Make the dashboard genuinely useful
+### UI changes
 
-Replace current dashboard layout with:
+**`src/components/dashboard/WalletCard.tsx` (mới)**
+Card glass hiển thị:
+- Chưa connect → button "Connect XION Wallet" (gradient primary, icon ⚡).
+- Đã connect → avatar gradient + địa chỉ truncated + "Copy" + "View on explorer" + "Disconnect".
+- Placeholder section "Badges (verified on-chain)" với skeleton + chú thích "Step 3 sẽ tự động quét và cấp huy hiệu".
 
-**Header card (left, large):**
-- Editable inline: avatar (upload to Supabase Storage), display name, bio
-- Username (read-only with "request change" disabled — handles are permanent)
-- Publish toggle switch (writes `is_published`) — clearly shows "Public" / "Hidden"
-- Copy link, Open in new tab, **Download QR code** (use `qrcode` library, generate PNG)
+Nhúng card này vào **Dashboard** (cột phải, trên `AnalyticsPanel`) và một version compact trong header **Editor**.
 
-**Quick actions row:**
-- Edit blocks → /editor
-- Browse templates → /templates
-- Share → opens dialog with QR + social share buttons (Twitter, copy embed code)
+**`src/pages/PublicProfile.tsx`**
+Khi `profile.xion_address` có giá trị → render badge nhỏ dưới display name:
+```
+⚡ xion1m6...st8h   ✓ Verified wallet
+```
+Click mở explorer ở tab mới. Chỉ hiển thị nếu owner đã connect.
 
-**Analytics panel (right column):**
-- Views (7d) with sparkline (group by day)
-- Clicks (7d) with sparkline
-- **Top 5 blocks by clicks** (last 30 days) — joined with block titles
-- Click-through rate
+**`src/components/editor/BlockRenderer.tsx`** — block `wallet`
+Nếu `c.address` rỗng nhưng owner đã connect ví → auto fallback dùng `profile.xion_address` thay vì để trống. Việc này khiến block "wallet" trở nên zero-config.
 
-**Recent activity list (below):**
-- Last 10 events (view or click) with timestamp + block title (for clicks)
-- Empty state with CTA: "Share your link to start collecting visits"
+### Validation & UX
+- Toast: "Wallet connected ⚡" / "Disconnected".
+- Đang connecting hiển thị Loader2 spinner trong button.
+- Nếu Abstraxion modal bị đóng giữa chừng → silent (không toast lỗi).
+- Lỗi thực sự (treasury sai, RPC down) → `toast.error` kèm description ngắn.
 
-**Onboarding nudge:**
-- After claiming handle, redirect to `/templates` (not editor) with a banner "Pick a starting point — you can customize everything"
-- If user has 0 blocks, dashboard shows a prominent "Start from a template" hero card instead of analytics
+### Files sẽ tạo / sửa
+- create `src/lib/xion.ts`
+- create `src/hooks/useXionWallet.ts`
+- create `src/components/dashboard/WalletCard.tsx`
+- edit `src/App.tsx` (bọc `AbstraxionProvider`)
+- edit `src/main.tsx` (import CSS Abstraxion)
+- edit `src/pages/Dashboard.tsx` (mount `WalletCard`)
+- edit `src/pages/Editor.tsx` (compact wallet status ở header)
+- edit `src/pages/PublicProfile.tsx` (verified wallet badge)
+- edit `src/components/editor/BlockRenderer.tsx` (fallback address cho block `wallet`)
+- migration: cột `xion_address` + bảng `wallet_badges`
 
-### Technical details
+## Acceptance criteria
+1. Bấm "Connect XION Wallet" → modal Abstraxion mở → đăng nhập email/social → modal đóng → địa chỉ `xion1...` xuất hiện trong card.
+2. Reload trang → wallet vẫn connected (Abstraxion tự persist), `xion_address` đã ghi vào DB.
+3. Bấm "Disconnect" → ví ngắt, địa chỉ biến mất khỏi UI (DB giữ nguyên để badges Step 3 không mất — chỉ clear khi user xoá hẳn profile).
+4. Public profile của user hiển thị verified wallet badge với địa chỉ truncated.
+5. Block `wallet` trong editor tự lấy địa chỉ XION nếu owner để trống config.
+6. Không có console error; bundle build sạch.
 
-**Files to edit:**
-- `src/lib/templates.ts` — rewrite all entries, add 3 new ones
-- `src/components/templates/TemplateGallery.tsx` — real previews via `BlockRenderer`, block-type chips
-- `src/pages/Templates.tsx` — banner copy for onboarded users
-- `src/pages/Dashboard.tsx` — full rewrite into sectioned layout
-- `src/pages/Editor.tsx` — minor: redirect new users to templates
-
-**Files to create:**
-- `src/components/dashboard/ProfileEditorCard.tsx` — inline edit display_name, bio, avatar, publish toggle
-- `src/components/dashboard/ShareDialog.tsx` — QR code + social share
-- `src/components/dashboard/AnalyticsPanel.tsx` — sparklines, top blocks
-- `src/components/dashboard/RecentActivity.tsx` — event feed
-- `src/components/templates/TemplatePreview.tsx` — scaled mini-render of template using real `BlockRenderer`
-- `src/pages/TemplatePreview.tsx` — full-page live preview at `/preview/template/:id`
-
-**Dependencies to add:**
-- `qrcode` (tiny, ~20KB) — for QR PNG generation. No external service needed.
-
-**Database:**
-- No schema changes required. All needed columns (`display_name`, `bio`, `avatar_url`, `is_published`) and the `analytics_events` table already exist.
-- Need a Supabase Storage bucket `avatars` (public read, authenticated write to own folder) — will create via migration if it doesn't exist.
-
-**Analytics queries:**
-- Daily sparkline: `select date_trunc('day', created_at)::date as day, count(*) from analytics_events where profile_id = ? and event_type = ? and created_at > now() - interval '7 days' group by 1`
-- Top blocks: join `analytics_events.block_id` with `blocks` table on click events, group by block_id, order by count desc limit 5
-
-### Out of scope (Phase 2)
-- XION wallet integration (Abstraxion social login + on-chain tip jar)
-- Custom domain support
-- Team/multi-profile accounts
-
-### Approval checkpoint
-After approval I will: rewrite templates → upgrade gallery previews → rebuild dashboard → wire QR + share dialog → add analytics panels.
+Nếu OK mình bắt đầu thực thi ngay. Sau khi Step 1 chạy mượt, mình tiếp tục Step 2 (Tip Jar on-chain).

@@ -54,9 +54,9 @@ const buttonStyleProps = (style: ProfileTheme["buttonStyle"]): React.CSSProperti
   }
 };
 
-type Props = { block: Block; theme: ProfileTheme; onClick?: () => void };
+type Props = { block: Block; theme: ProfileTheme; onClick?: () => void; ownerXionAddress?: string | null };
 
-export const BlockRenderer = ({ block, theme, onClick }: Props) => {
+export const BlockRenderer = ({ block, theme, onClick, ownerXionAddress }: Props) => {
   const c = block.config as Record<string, string>;
   const radius = `var(--theme-radius)`;
   const btnCls = cn(
@@ -141,13 +141,20 @@ export const BlockRenderer = ({ block, theme, onClick }: Props) => {
         ? <iframe src={embed} className="w-full h-20 glass" style={{ borderRadius: radius }} allow="encrypted-media" />
         : <Placeholder label="Paste a Spotify or SoundCloud URL" radius={radius} />;
     }
-    case "wallet":
+    case "wallet": {
+      const addr = c.address || ownerXionAddress || "";
       return (
         <div className="glass p-4" style={{ borderRadius: radius }}>
-          <div className="text-xs text-muted-foreground mb-1">{c.label || "Wallet"}</div>
-          <div className="font-mono text-sm truncate">{c.address}</div>
+          <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1.5">
+            <span>{c.label || "Wallet"}</span>
+            {!c.address && ownerXionAddress && (
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/15 text-primary">verified</span>
+            )}
+          </div>
+          <div className="font-mono text-sm truncate">{addr || "Not connected"}</div>
         </div>
       );
+    }
     case "nft":
       return (
         <div className="glass p-4 text-center" style={{ borderRadius: radius }}>
