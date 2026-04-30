@@ -44,7 +44,16 @@ type Props = {
 };
 
 type Badge = NonNullable<BlockMeta["badge"]>;
+type BlockType = BlockMeta["type"];
 type CategoryFilter = BlockMeta["category"] | "all";
+
+type KitDefinition = {
+  title: string;
+  description: string;
+  icon: typeof Heart;
+  accent: string;
+  blockTypes: readonly BlockType[];
+};
 
 const PREVIEW_THEME = DEFAULT_THEME;
 
@@ -57,38 +66,60 @@ const BADGE_STYLES: Partial<Record<Badge, string>> = {
 
 const ALL_BADGES: Badge[] = ["Essential", "Popular", "Web3", "Pro"];
 
-const CREATOR_RECOMMENDED_TYPES = ["avatar", "social", "link", "video_embed", "tip_jar", "wallet"];
+const CREATOR_RECOMMENDED_TYPES = [
+  "avatar",
+  "social",
+  "link",
+  "video_embed",
+  "tip_jar",
+  "wallet",
+] as const satisfies readonly BlockType[];
 
-const KIT_DEFINITIONS = [
+const KIT_DEFINITIONS: KitDefinition[] = [
   {
     title: "Creator Starter Kit",
     description: "Hero, socials, links, and a XION tip card for creators.",
     icon: Heart,
     accent: "from-primary/20 to-secondary/20",
-    blockTypes: ["avatar", "social", "link", "tip_jar"],
+    blockTypes: ["avatar", "social", "link", "tip_jar"] as const satisfies readonly BlockType[],
   },
   {
     title: "YouTube Creator Kit",
     description: "Video, social links, and creator support blocks.",
     icon: Youtube,
     accent: "from-red-500/15 to-primary/20",
-    blockTypes: ["avatar", "video_embed", "social", "tip_jar"],
+    blockTypes: ["avatar", "video_embed", "social", "tip_jar"] as const satisfies readonly BlockType[],
   },
   {
     title: "XION Passport Kit",
-    description: "Wallet, badges, token, and on-chain identity blocks.",
+    description: "Wallet, token, NFT, and on-chain identity blocks.",
     icon: BadgeCheck,
     accent: "from-primary/20 to-cyan-500/15",
-    blockTypes: ["avatar", "wallet", "token_balance", "nft"],
+    blockTypes: ["avatar", "wallet", "token_balance", "nft"] as const satisfies readonly BlockType[],
   },
   {
     title: "Link Hub Kit",
     description: "A clean link-in-bio setup for fast publishing.",
     icon: Link2,
     accent: "from-secondary/15 to-primary/15",
-    blockTypes: ["avatar", "heading", "text", "link", "social"],
+    blockTypes: ["avatar", "heading", "text", "link", "social"] as const satisfies readonly BlockType[],
   },
 ];
+
+const getBadgeClass = (badge?: BlockMeta["badge"]) => {
+  if (!badge) return "";
+  return BADGE_STYLES[badge] || "bg-muted text-foreground border-border";
+};
+
+const makePreviewBlock = (meta: BlockMeta): Block =>
+  ({
+    id: `preview-${meta.type}`,
+    profile_id: "preview",
+    type: meta.type,
+    position: 0,
+    config: meta.previewConfig,
+    is_visible: true,
+  }) as Block;
 
 const IssueList = ({ issues, title }: { issues: ValidationIssue[]; title: string }) => {
   if (issues.length === 0) {
@@ -130,21 +161,6 @@ const IssueList = ({ issues, title }: { issues: ValidationIssue[]; title: string
   );
 };
 
-const getBadgeClass = (badge?: BlockMeta["badge"]) => {
-  if (!badge) return "";
-  return BADGE_STYLES[badge] || "bg-muted text-foreground border-border";
-};
-
-const makePreviewBlock = (meta: BlockMeta): Block =>
-  ({
-    id: `preview-${meta.type}`,
-    profile_id: "preview",
-    type: meta.type,
-    position: 0,
-    config: meta.previewConfig,
-    is_visible: true,
-  }) as Block;
-
 const BlockPreview = ({ meta, onExpand }: { meta: BlockMeta; onExpand: () => void }) => {
   const style = themeStyleVars(PREVIEW_THEME);
   const previewBlock = makePreviewBlock(meta);
@@ -161,6 +177,7 @@ const BlockPreview = ({ meta, onExpand }: { meta: BlockMeta; onExpand: () => voi
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
             <div className="text-sm font-semibold">{meta.label}</div>
+
             {meta.badge ? (
               <span
                 className={cn(
@@ -253,6 +270,7 @@ const BlockRow = ({
     <HoverCard openDelay={120} closeDelay={80}>
       <HoverCardTrigger asChild>
         <button
+          type="button"
           onClick={handleAdd}
           className={cn(
             "w-full rounded-xl text-left group transition-all flex items-start gap-3",
@@ -322,6 +340,7 @@ const BlockRow = ({
 
         <div className="mt-3 grid grid-cols-[1fr_auto] gap-2">
           <button
+            type="button"
             onClick={handleAdd}
             className="h-9 rounded-lg bg-gradient-primary text-primary-foreground text-xs font-medium hover:opacity-90 transition-opacity flex items-center justify-center gap-1.5"
           >
@@ -330,6 +349,7 @@ const BlockRow = ({
           </button>
 
           <button
+            type="button"
             onClick={() => setFullOpen(true)}
             className="h-9 px-3 rounded-lg border border-border text-xs font-medium hover:bg-muted transition-colors flex items-center justify-center gap-1.5"
             aria-label="Open full preview"
@@ -350,12 +370,12 @@ const KitCard = ({
   blockMap,
   onAdd,
 }: {
-  kit: (typeof KIT_DEFINITIONS)[number];
-  blockMap: Map<string, BlockMeta>;
+  kit: KitDefinition;
+  blockMap: Map<BlockType, BlockMeta>;
   onAdd: (meta: BlockMeta) => void;
 }) => {
   const Icon = kit.icon;
-  const items = kit.blockTypes.map((type) => blockMap.get(type)).filter(Boolean) as BlockMeta[];
+  const items = kit.blockTypes.map((type) => blockMap.get(type)).filter((item): item is BlockMeta => Boolean(item));
 
   return (
     <div className="overflow-hidden rounded-2xl border border-border/50 bg-background/40">
@@ -397,17 +417,22 @@ export const BlockLibrary = ({ onAdd, prefs, onPrefsChange }: Props) => {
 
   const showFit = prefs.sortMode === "recommended";
 
-  const blockMap = useMemo(() => new Map(BLOCK_LIBRARY.map((block) => [block.type, block])), []);
+  const blockMap = useMemo(() => new Map<BlockType, BlockMeta>(BLOCK_LIBRARY.map((block) => [block.type, block])), []);
 
   const recommendedBlocks = useMemo(
-    () => CREATOR_RECOMMENDED_TYPES.map((type) => blockMap.get(type)).filter(Boolean) as BlockMeta[],
+    () =>
+      CREATOR_RECOMMENDED_TYPES.map((type) => blockMap.get(type)).filter((item): item is BlockMeta => Boolean(item)),
     [blockMap],
   );
 
   const toggleBadge = (badge: Badge) => {
     setBadgeFilter((current) => {
       const next = new Set(current);
-      next.has(badge) ? next.delete(badge) : next.add(badge);
+      if (next.has(badge)) {
+        next.delete(badge);
+      } else {
+        next.add(badge);
+      }
       return next;
     });
   };
@@ -421,16 +446,16 @@ export const BlockLibrary = ({ onAdd, prefs, onPrefsChange }: Props) => {
   const hasFilters = query.trim() !== "" || categoryFilter !== "all" || badgeFilter.size > 0;
 
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
+    const normalizedQuery = query.trim().toLowerCase();
 
     return BLOCK_LIBRARY.filter((block) => {
       if (categoryFilter !== "all" && block.category !== categoryFilter) return false;
       if (badgeFilter.size > 0 && (!block.badge || !badgeFilter.has(block.badge))) return false;
 
-      if (!q) return true;
+      if (!normalizedQuery) return true;
 
       const haystack = `${block.label} ${block.description} ${block.useCase} ${block.type}`.toLowerCase();
-      return haystack.includes(q);
+      return haystack.includes(normalizedQuery);
     });
   }, [query, categoryFilter, badgeFilter]);
 
@@ -447,7 +472,6 @@ export const BlockLibrary = ({ onAdd, prefs, onPrefsChange }: Props) => {
         </TabsList>
 
         <TabsContent value="blocks" className="space-y-4">
-          {/* Search */}
           <div className="relative">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
 
@@ -460,6 +484,7 @@ export const BlockLibrary = ({ onAdd, prefs, onPrefsChange }: Props) => {
 
             {query ? (
               <button
+                type="button"
                 onClick={() => setQuery("")}
                 className="absolute right-2 top-1/2 -translate-y-1/2 h-5 w-5 rounded grid place-items-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                 aria-label="Clear search"
@@ -469,7 +494,6 @@ export const BlockLibrary = ({ onAdd, prefs, onPrefsChange }: Props) => {
             ) : null}
           </div>
 
-          {/* Recommended */}
           {!hasFilters ? (
             <div className="rounded-2xl border border-primary/20 bg-primary/5 p-3">
               <div className="mb-3 flex items-center gap-2">
@@ -497,7 +521,6 @@ export const BlockLibrary = ({ onAdd, prefs, onPrefsChange }: Props) => {
             </div>
           ) : null}
 
-          {/* Category chips */}
           <div className="space-y-2">
             <div className="flex flex-wrap gap-1.5">
               {(["all", ...Object.keys(CATEGORY_LABELS)] as CategoryFilter[]).map((category) => {
@@ -506,6 +529,7 @@ export const BlockLibrary = ({ onAdd, prefs, onPrefsChange }: Props) => {
                 return (
                   <button
                     key={category}
+                    type="button"
                     onClick={() => setCategoryFilter(category)}
                     className={cn(
                       "text-[10px] px-2 py-1 rounded-full border transition-colors font-medium",
@@ -527,6 +551,7 @@ export const BlockLibrary = ({ onAdd, prefs, onPrefsChange }: Props) => {
                 return (
                   <button
                     key={badge}
+                    type="button"
                     onClick={() => toggleBadge(badge)}
                     className={cn(
                       "text-[10px] px-2 py-1 rounded-full border transition-all font-medium",
@@ -542,6 +567,7 @@ export const BlockLibrary = ({ onAdd, prefs, onPrefsChange }: Props) => {
 
               {hasFilters ? (
                 <button
+                  type="button"
                   onClick={clearFilters}
                   className="text-[10px] px-2 py-1 rounded-full border border-border text-muted-foreground hover:text-foreground hover:border-primary/40"
                 >
@@ -551,7 +577,6 @@ export const BlockLibrary = ({ onAdd, prefs, onPrefsChange }: Props) => {
             </div>
           </div>
 
-          {/* Persona + sort controls */}
           {!query ? (
             <div className="rounded-2xl border border-border/50 bg-background/40 p-3 space-y-3">
               <div className="flex items-center gap-2">
@@ -589,14 +614,13 @@ export const BlockLibrary = ({ onAdd, prefs, onPrefsChange }: Props) => {
             </div>
           ) : null}
 
-          {/* Empty state */}
           {filtered.length === 0 ? (
             <div className="rounded-2xl border border-border/50 bg-background/40 p-6 text-center">
               <div className="mx-auto mb-3 grid h-10 w-10 place-items-center rounded-2xl bg-muted">
                 <Search className="h-4 w-4 text-muted-foreground" />
               </div>
               <div className="text-sm font-medium">No blocks match your filters.</div>
-              <button onClick={clearFilters} className="mt-3 text-xs text-primary hover:underline">
+              <button type="button" onClick={clearFilters} className="mt-3 text-xs text-primary hover:underline">
                 Clear filters
               </button>
             </div>
