@@ -1,8 +1,5 @@
 import { useEffect, useRef } from "react";
-import {
-  useAbstraxionAccount,
-  useModal,
-} from "@burnt-labs/abstraxion";
+import { useAbstraxionAccount } from "@burnt-labs/abstraxion";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -14,8 +11,7 @@ import { useAuth } from "@/contexts/AuthContext";
  */
 export const useXionWallet = () => {
   const { user } = useAuth();
-  const { data, isConnected, isConnecting, logout } = useAbstraxionAccount();
-  const [, setShowModal] = useModal();
+  const { data, isConnected, isConnecting, login, logout } = useAbstraxionAccount();
   const lastSyncedRef = useRef<string | null>(null);
 
   const address: string | undefined = data?.bech32Address;
@@ -52,11 +48,19 @@ export const useXionWallet = () => {
     })();
   }, [address, user]);
 
-  const connect = () => setShowModal(true);
+  const connect = async () => {
+    try {
+      await login();
+    } catch (err) {
+      toast.error("Connect failed", {
+        description: err instanceof Error ? err.message : "Try again",
+      });
+    }
+  };
 
   const disconnect = async () => {
     try {
-      await logout?.();
+      await logout();
       lastSyncedRef.current = null;
       toast.success("Wallet disconnected");
     } catch (err) {

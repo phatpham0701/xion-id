@@ -19,6 +19,7 @@ import NotFound from "./pages/NotFound.tsx";
 const queryClient = new QueryClient();
 
 const abstraxionConfig = {
+  chainId: XION_CONFIG.chainId,
   treasury: XION_CONFIG.treasury,
   rpcUrl: XION_CONFIG.rpcUrl,
   restUrl: XION_CONFIG.restUrl,
