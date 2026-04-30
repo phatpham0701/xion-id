@@ -9,6 +9,7 @@ import Index from "./pages/Index.tsx";
 import Auth from "./pages/Auth.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
 import Editor from "./pages/Editor.tsx";
+import Templates from "./pages/Templates.tsx";
 import PublicProfile from "./pages/PublicProfile.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
@@ -44,6 +45,14 @@ const App = () => (
               element={
                 <RequireAuth>
                   <Editor />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/templates"
+              element={
+                <RequireAuth>
+                  <Templates />
                 </RequireAuth>
               }
             />
