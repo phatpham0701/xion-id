@@ -195,12 +195,102 @@ const Editor = () => {
     setBlocks((prev) => prev.map((b) => (b.id === id ? { ...b, ...patch } : b)));
   };
 
+  const duplicateBlock = async (id: string) => {
+    if (!profile) return;
+
+    const source = blocks.find((b) => b.id === id);
+    if (!source) return;
+
+    const sourceIndex = blocks.findIndex((b) => b.id === id);
+    const insertPosition = sourceIndex + 1;
+
+    const normalizedBlocks = blocks.map((b, index) => ({
+      ...b,
+      position: index >= insertPosition ? index + 1 : index,
+    }));
+
+    const { data, error } = await supabase
+      .from("blocks")
+      .insert([
+        {
+          profile_id: profile.id,
+          type: source.type,
+          position: insertPosition,
+          config: source.config as never,
+          is_visible: source.is_visible,
+        },
+      ])
+      .select()
+      .single();
+
+    if (error) {
+      toast.error("Couldn't duplicate block", { description: error.message });
+      return;
+    }
+
+    const duplicate = data as Block;
+    const next = [
+      ...normalizedBlocks.slice(0, insertPosition),
+      duplicate,
+      ...normalizedBlocks.slice(insertPosition),
+    ].map((b, index) => ({ ...b, position: index }));
+
+    setBlocks(next);
+    setSelectedId(duplicate.id);
+
+    requestAnimationFrame(() => {
+      const el = document.querySelector<HTMLElement>(`[data-block-id="${duplicate.id}"]`);
+      if (!el) return;
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      el.classList.add("ring-flash");
+      window.setTimeout(() => el.classList.remove("ring-flash"), 1600);
+    });
+
+    toast.success("Block duplicated", {
+      description: "Remember to save your profile to keep the new order.",
+    });
+  };
+
+  const toggleBlockVisibility = (id: string) => {
+    setBlocks((prev) => prev.map((b) => (b.id === id ? { ...b, is_visible: !b.is_visible } : b)));
+  };
+
+  const moveBlock = (id: string, direction: "up" | "down") => {
+    const currentIndex = blocks.findIndex((b) => b.id === id);
+    if (currentIndex === -1) return;
+
+    const targetIndex = direction === "up" ? currentIndex - 1 : currentIndex + 1;
+    if (targetIndex < 0 || targetIndex >= blocks.length) return;
+
+    const next = arrayMove(blocks, currentIndex, targetIndex).map((b, index) => ({
+      ...b,
+      position: index,
+    }));
+
+    setBlocks(next);
+  };
+
   const deleteBlock = async (id: string) => {
     setBlocks((prev) => prev.filter((b) => b.id !== id));
-    setSelectedId(null);
+    setSelectedId((current) => (current === id ? null : current));
 
     const { error } = await supabase.from("blocks").delete().eq("id", id);
     if (error) toast.error("Couldn't delete", { description: error.message });
+  };
+
+  const deleteBlockWithConfirm = (id: string) => {
+    const block = blocks.find((b) => b.id === id);
+    if (!block) return;
+
+    toast("Delete this block?", {
+      description: "This will remove the block from your profile.",
+      action: {
+        label: "Delete",
+        onClick: () => {
+          void deleteBlock(id);
+        },
+      },
+    });
   };
 
   const save = async () => {
@@ -424,13 +514,20 @@ const Editor = () => {
                     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                       <SortableContext items={blocks.map((b) => b.id)} strategy={verticalListSortingStrategy}>
                         <div className="space-y-3 px-1 pb-8">
-                          {blocks.map((b) => (
+                          {blocks.map((b, index) => (
                             <SortableBlock
                               key={b.id}
                               block={b}
                               theme={theme}
                               selected={selectedId === b.id}
                               onSelect={() => setSelectedId(b.id)}
+                              onDuplicate={() => void duplicateBlock(b.id)}
+                              onDelete={() => deleteBlockWithConfirm(b.id)}
+                              onToggleVisibility={() => toggleBlockVisibility(b.id)}
+                              onMoveUp={() => moveBlock(b.id, "up")}
+                              onMoveDown={() => moveBlock(b.id, "down")}
+                              canMoveUp={index > 0}
+                              canMoveDown={index < blocks.length - 1}
                             />
                           ))}
                         </div>
