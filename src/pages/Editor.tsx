@@ -25,6 +25,7 @@ import {
   DEFAULT_PREFS, prefsFromJson, loadLocalPrefs, persistPrefs, recordBlockAdd,
   type BlockPrefs,
 } from "@/lib/blockRanking";
+import { validateBlockConfig, summarizeIssues } from "@/lib/blockValidation";
 
 type Profile = {
   id: string;
