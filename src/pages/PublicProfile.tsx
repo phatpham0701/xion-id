@@ -164,6 +164,7 @@ const PublicProfile = () => {
                 key={b.id}
                 block={b}
                 theme={theme}
+                ownerXionAddress={profile.xion_address}
                 onClick={() => trackEvent(profile.id, "block_click", b.id)}
               />
             ))
