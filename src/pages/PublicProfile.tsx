@@ -25,6 +25,7 @@ const PublicProfile = () => {
 
   useEffect(() => {
     if (!username) return;
+    let cancelled = false;
     (async () => {
       const { data: p } = await supabase
         .from("profiles")
@@ -32,7 +33,8 @@ const PublicProfile = () => {
         .eq("username", username)
         .maybeSingle();
 
-      if (!p || !p.username) { setStatus("not_found"); return; }
+      if (cancelled) return;
+      if (!p || !p.username || !p.is_published) { setStatus("not_found"); return; }
       setProfile(p as PublicProfile);
 
       const { data: b } = await supabase
@@ -41,10 +43,11 @@ const PublicProfile = () => {
         .eq("profile_id", p.id)
         .eq("is_visible", true)
         .order("position", { ascending: true });
+      if (cancelled) return;
       setBlocks((b || []) as Block[]);
       setStatus("ready");
 
-      // Fire-and-forget analytics view event
+      // Fire-and-forget analytics view event (only after mount settled)
       trackEvent(p.id, "profile_view");
 
       // SEO
@@ -58,6 +61,7 @@ const PublicProfile = () => {
       }
       m.setAttribute("content", desc.slice(0, 160));
     })();
+    return () => { cancelled = true; };
   }, [username]);
 
   const theme = useMemo(() => themeFromJson(profile?.theme), [profile]);
