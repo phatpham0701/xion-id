@@ -1,15 +1,33 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
-  DndContext, KeyboardSensor, PointerSensor, closestCenter,
-  useSensor, useSensors, type DragEndEvent,
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
 } from "@dnd-kit/core";
 import {
-  SortableContext, arrayMove, sortableKeyboardCoordinates, verticalListSortingStrategy,
+  SortableContext,
+  arrayMove,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { toast } from "sonner";
 import {
-  Sparkles, ArrowLeft, Eye, ExternalLink, Loader2, Save, Plus, LayoutTemplate,
+  Sparkles,
+  ArrowLeft,
+  Eye,
+  ExternalLink,
+  Loader2,
+  Save,
+  Plus,
+  LayoutTemplate,
+  Wand2,
+  Smartphone,
+  ShieldCheck,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -22,7 +40,11 @@ import { ThemeStudio } from "@/components/editor/ThemeStudio";
 import type { Block, BlockMeta } from "@/lib/blocks";
 import { DEFAULT_THEME, themeFromJson, themeStyleVars, type ProfileTheme } from "@/lib/theme";
 import {
-  DEFAULT_PREFS, prefsFromJson, loadLocalPrefs, persistPrefs, recordBlockAdd,
+  DEFAULT_PREFS,
+  prefsFromJson,
+  loadLocalPrefs,
+  persistPrefs,
+  recordBlockAdd,
   type BlockPrefs,
 } from "@/lib/blockRanking";
 import { validateBlockConfig, summarizeIssues } from "@/lib/blockValidation";
@@ -32,6 +54,8 @@ type Profile = {
   username: string | null;
   display_name: string | null;
 };
+
+const STARTER_SUGGESTIONS = ["Creator Hero", "Tip Jar", "XION Passport", "Link Hub"];
 
 const Editor = () => {
   const { user } = useAuth();
@@ -51,20 +75,30 @@ const Editor = () => {
 
   useEffect(() => {
     if (!user) return;
+
     (async () => {
       const { data: p } = await supabase
         .from("profiles")
         .select("id, username, display_name, theme, settings")
         .eq("user_id", user.id)
         .maybeSingle();
-      if (!p) { setLoading(false); return; }
-      if (!p.username) { navigate("/dashboard"); return; }
+
+      if (!p) {
+        setLoading(false);
+        return;
+      }
+
+      if (!p.username) {
+        navigate("/dashboard");
+        return;
+      }
+
       setProfile(p as Profile);
       setTheme(themeFromJson(p.theme));
 
-      // Prefer local cache (instant), then hydrate from DB.
       const local = loadLocalPrefs(p.id);
       if (local) setPrefs(local);
+
       const dbPrefs = prefsFromJson(p.settings);
       setPrefs(dbPrefs);
 
@@ -73,6 +107,7 @@ const Editor = () => {
         .select("*")
         .eq("profile_id", p.id)
         .order("position", { ascending: true });
+
       setBlocks((b || []) as Block[]);
       setLoading(false);
     })();
@@ -86,41 +121,50 @@ const Editor = () => {
     });
   };
 
-  const selected = useMemo(
-    () => blocks.find((b) => b.id === selectedId) || null,
-    [blocks, selectedId],
-  );
+  const selected = useMemo(() => blocks.find((b) => b.id === selectedId) || null, [blocks, selectedId]);
 
   const handleDragEnd = (e: DragEndEvent) => {
     const { active, over } = e;
     if (!over || active.id === over.id) return;
+
     const oldIdx = blocks.findIndex((b) => b.id === active.id);
     const newIdx = blocks.findIndex((b) => b.id === over.id);
-    const next = arrayMove(blocks, oldIdx, newIdx).map((b, i) => ({ ...b, position: i }));
+
+    const next = arrayMove(blocks, oldIdx, newIdx).map((b, i) => ({
+      ...b,
+      position: i,
+    }));
+
     setBlocks(next);
   };
 
   const addBlock = async (meta: BlockMeta) => {
     if (!profile) return;
+
     const position = blocks.length;
     const { data, error } = await supabase
       .from("blocks")
-      .insert([{
-        profile_id: profile.id,
-        type: meta.type,
-        position,
-        config: meta.defaultConfig as never,
-        is_visible: true,
-      }])
+      .insert([
+        {
+          profile_id: profile.id,
+          type: meta.type,
+          position,
+          config: meta.defaultConfig as never,
+          is_visible: true,
+        },
+      ])
       .select()
       .single();
-    if (error) return toast.error("Couldn't add block", { description: error.message });
+
+    if (error) {
+      return toast.error("Couldn't add block", { description: error.message });
+    }
+
     const newBlock = data as Block;
     setBlocks((prev) => [...prev, newBlock]);
     setSelectedId(newBlock.id);
     updatePrefs(recordBlockAdd(prefs, meta.type));
 
-    // Scroll the new block into view + flash highlight after the DOM updates.
     requestAnimationFrame(() => {
       const el = document.querySelector<HTMLElement>(`[data-block-id="${newBlock.id}"]`);
       if (!el) return;
@@ -129,17 +173,20 @@ const Editor = () => {
       window.setTimeout(() => el.classList.remove("ring-flash"), 1600);
     });
 
-    // Lightweight confirmation with one-tap undo.
     const issues = validateBlockConfig(meta.type, meta.defaultConfig);
     const { errors } = summarizeIssues(issues);
-    const description = errors > 0
-      ? `Needs setup: ${issues.find((i) => i.severity === "error")?.message}`
-      : "Tap the block to edit, or undo to remove.";
+    const description =
+      errors > 0
+        ? `Needs setup: ${issues.find((i) => i.severity === "error")?.message}`
+        : "Tap the block to edit, or undo to remove.";
+
     toast.success(`${meta.label} added`, {
       description,
       action: {
         label: "Undo",
-        onClick: () => { void deleteBlock(newBlock.id); },
+        onClick: () => {
+          void deleteBlock(newBlock.id);
+        },
       },
     });
   };
@@ -151,30 +198,43 @@ const Editor = () => {
   const deleteBlock = async (id: string) => {
     setBlocks((prev) => prev.filter((b) => b.id !== id));
     setSelectedId(null);
+
     const { error } = await supabase.from("blocks").delete().eq("id", id);
     if (error) toast.error("Couldn't delete", { description: error.message });
   };
 
   const save = async () => {
     if (!profile) return;
+
     setSaving(true);
+
     try {
       const blockUpdates = blocks.map((b) =>
         supabase
           .from("blocks")
-          .update({ position: b.position, config: b.config as never, is_visible: b.is_visible })
+          .update({
+            position: b.position,
+            config: b.config as never,
+            is_visible: b.is_visible,
+          })
           .eq("id", b.id),
       );
+
       const themeUpdate = supabase
         .from("profiles")
         .update({ theme: theme as never })
         .eq("id", profile.id);
+
       const results = await Promise.all([...blockUpdates, themeUpdate]);
       const firstErr = results.find((r) => r.error);
+
       if (firstErr?.error) throw firstErr.error;
-      toast.success("Saved");
+
+      toast.success("Profile saved");
     } catch (err) {
-      toast.error("Couldn't save", { description: err instanceof Error ? err.message : "Try again" });
+      toast.error("Couldn't save", {
+        description: err instanceof Error ? err.message : "Try again",
+      });
     } finally {
       setSaving(false);
     }
@@ -184,8 +244,11 @@ const Editor = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen grid place-items-center">
-        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+      <div className="min-h-screen grid place-items-center bg-background">
+        <div className="glass rounded-2xl px-5 py-4 flex items-center gap-3">
+          <Loader2 className="h-5 w-5 animate-spin text-primary" />
+          <span className="text-sm text-muted-foreground">Loading Profile Studio...</span>
+        </div>
       </div>
     );
   }
@@ -199,27 +262,45 @@ const Editor = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Header */}
-      <header className="border-b border-border/40 glass sticky top-0 z-40">
-        <div className="px-4 md:px-6 flex h-14 items-center justify-between">
+    <div className="min-h-screen flex flex-col bg-background">
+      {/* Studio Toolbar */}
+      <header className="border-b border-border/40 glass sticky top-0 z-40 backdrop-blur-xl">
+        <div className="px-4 md:px-6 flex h-16 items-center justify-between">
           <div className="flex items-center gap-3 min-w-0">
             <Button variant="ghost" size="sm" asChild>
-              <Link to="/dashboard"><ArrowLeft className="h-4 w-4 mr-1.5" />Dashboard</Link>
+              <Link to="/dashboard">
+                <ArrowLeft className="h-4 w-4 mr-1.5" />
+                Dashboard
+              </Link>
             </Button>
-            <div className="hidden md:flex items-center gap-2 min-w-0">
-              <div className="h-7 w-7 rounded-lg bg-gradient-primary grid place-items-center shrink-0">
-                <Sparkles className="h-3.5 w-3.5 text-primary-foreground" strokeWidth={2.5} />
+
+            <div className="hidden md:flex items-center gap-3 min-w-0 border-l border-border/50 pl-4">
+              <div className="h-9 w-9 rounded-xl bg-gradient-primary grid place-items-center shrink-0 shadow-glow">
+                <Sparkles className="h-4 w-4 text-primary-foreground" strokeWidth={2.5} />
               </div>
-              <span className="text-sm font-mono text-muted-foreground truncate">
-                xionid.app/{profile.username}
-              </span>
+
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold leading-none">XIONID Profile Studio</span>
+                  <span className="rounded-full border border-primary/20 bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
+                    Live editor
+                  </span>
+                </div>
+                <div className="mt-1 text-xs font-mono text-muted-foreground truncate">
+                  xionid.com/{profile.username}
+                </div>
+              </div>
             </div>
           </div>
+
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="sm" asChild className="hidden sm:inline-flex">
-              <Link to="/templates"><LayoutTemplate className="h-4 w-4 mr-1.5" />Templates</Link>
+              <Link to="/templates">
+                <LayoutTemplate className="h-4 w-4 mr-1.5" />
+                Templates
+              </Link>
             </Button>
+
             <Button variant="ghost" size="sm" asChild>
               <a href={`/${profile.username}`} target="_blank" rel="noreferrer">
                 <Eye className="h-4 w-4 mr-1.5" />
@@ -227,109 +308,195 @@ const Editor = () => {
                 <ExternalLink className="h-3 w-3 ml-1.5 opacity-60" />
               </a>
             </Button>
+
             <Button
               size="sm"
               onClick={save}
               disabled={saving}
-              className="bg-gradient-primary text-primary-foreground hover:opacity-90 font-medium"
+              className="bg-gradient-primary text-primary-foreground hover:opacity-90 font-medium shadow-glow"
             >
-              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Save className="h-4 w-4 mr-1.5" />Save</>}
+              {saving ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <>
+                  <Save className="h-4 w-4 mr-1.5" />
+                  Save
+                </>
+              )}
             </Button>
           </div>
         </div>
       </header>
 
-      {/* Studio: 3 columns */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-[280px_1fr_320px] gap-0 overflow-hidden">
+      {/* Studio Layout */}
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-[300px_1fr_340px] gap-0 overflow-hidden">
         {/* Left — Library */}
-        <aside className="border-r border-border/40 overflow-y-auto p-4 hidden lg:block">
-          <div className="text-xs uppercase tracking-wider text-muted-foreground mb-3">Add blocks</div>
-          <BlockLibrary onAdd={addBlock} prefs={prefs} onPrefsChange={updatePrefs} />
+        <aside className="border-r border-border/40 overflow-y-auto hidden lg:block bg-background/60">
+          <div className="sticky top-0 z-10 border-b border-border/40 bg-background/80 backdrop-blur-xl p-5">
+            <div className="flex items-center gap-2 mb-1">
+              <Wand2 className="h-4 w-4 text-primary" />
+              <div className="text-xs uppercase tracking-wider text-muted-foreground">Blocks & Sections</div>
+            </div>
+            <h2 className="font-display text-base font-semibold">Build your page</h2>
+            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+              Add links, creator support tools, media, and XION identity blocks.
+            </p>
+          </div>
+
+          <div className="p-4">
+            <BlockLibrary onAdd={addBlock} prefs={prefs} onPrefsChange={updatePrefs} />
+          </div>
         </aside>
 
         {/* Center — Canvas */}
         <main className="overflow-y-auto py-8 px-4 relative">
-          <div className="aurora-orb h-[400px] w-[400px] -top-20 left-1/4 bg-secondary opacity-20 animate-aurora-drift pointer-events-none" />
-          <div className="aurora-orb h-[400px] w-[400px] bottom-0 right-1/4 bg-primary opacity-20 animate-aurora-drift pointer-events-none" style={{ animationDelay: "-7s" }} />
+          <div className="aurora-orb h-[420px] w-[420px] -top-24 left-1/4 bg-secondary opacity-20 animate-aurora-drift pointer-events-none" />
+          <div
+            className="aurora-orb h-[420px] w-[420px] bottom-0 right-1/4 bg-primary opacity-20 animate-aurora-drift pointer-events-none"
+            style={{ animationDelay: "-7s" }}
+          />
 
-          {/* Mobile frame */}
-          <div className="mx-auto w-full max-w-[380px] relative">
-            <div
-              className="rounded-[2.5rem] p-4 min-h-[640px] shadow-elevated overflow-hidden"
-              style={{ ...styleVars, background: "var(--theme-bg)", fontFamily: "var(--theme-font)" }}
-            >
-              <div className="text-center mb-4">
-                <div className="text-xs text-muted-foreground">@{profile.username}</div>
+          <div className="mx-auto w-full max-w-[430px] relative">
+            <div className="mb-4 flex items-center justify-between px-2">
+              <div>
+                <div className="flex items-center gap-2 text-sm font-medium">
+                  <Smartphone className="h-4 w-4 text-primary" />
+                  Live mobile preview
+                </div>
+                <p className="text-xs text-muted-foreground">Drag blocks to reorder. Select a block to customize.</p>
               </div>
 
-              {blocks.length === 0 ? (
-                <div className="grid place-items-center h-[480px] text-center px-6">
-                  <div>
-                    <div className="mx-auto h-14 w-14 rounded-2xl glass grid place-items-center mb-4">
-                      <Plus className="h-5 w-5 text-primary" />
+              <div className="rounded-full border border-border/60 bg-background/60 px-3 py-1 text-xs text-muted-foreground">
+                {blocks.length} block{blocks.length === 1 ? "" : "s"}
+              </div>
+            </div>
+
+            {/* Premium phone frame */}
+            <div className="rounded-[3rem] border border-white/10 bg-zinc-950/80 p-2 shadow-2xl shadow-primary/10">
+              <div className="rounded-[2.65rem] border border-white/10 bg-black p-2">
+                <div
+                  className="relative min-h-[680px] overflow-hidden rounded-[2.25rem] p-4"
+                  style={{
+                    ...styleVars,
+                    background: "var(--theme-bg)",
+                    fontFamily: "var(--theme-font)",
+                  }}
+                >
+                  {/* Fake phone top area */}
+                  <div className="sticky top-0 z-10 -mx-4 -mt-4 mb-4 bg-background/10 px-4 pt-3 backdrop-blur-sm">
+                    <div className="mx-auto mb-3 h-1.5 w-20 rounded-full bg-white/20" />
+                    <div className="flex items-center justify-center gap-2 pb-3">
+                      <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+                      <div className="text-xs font-mono text-muted-foreground">@{profile.username}</div>
                     </div>
-                    <div className="font-display font-semibold mb-1">Start building</div>
-                    <p className="text-sm text-muted-foreground">
-                      Add blocks from the library to bring your profile to life.
-                    </p>
                   </div>
-                </div>
-              ) : (
-                <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                  <SortableContext items={blocks.map((b) => b.id)} strategy={verticalListSortingStrategy}>
-                    <div className="space-y-3 px-2">
-                      {blocks.map((b) => (
-                        <SortableBlock
-                          key={b.id}
-                          block={b}
-                          theme={theme}
-                          selected={selectedId === b.id}
-                          onSelect={() => setSelectedId(b.id)}
-                        />
-                      ))}
+
+                  {blocks.length === 0 ? (
+                    <div className="grid place-items-center h-[520px] text-center px-6">
+                      <div>
+                        <div className="mx-auto h-16 w-16 rounded-3xl glass grid place-items-center mb-5 shadow-glow">
+                          <Plus className="h-6 w-6 text-primary" />
+                        </div>
+
+                        <div className="font-display text-lg font-semibold mb-2">Start with your identity</div>
+
+                        <p className="text-sm text-muted-foreground leading-relaxed">
+                          Add a creator hero, links, tip jar, or XION badge blocks to build your public profile.
+                        </p>
+
+                        <div className="mt-5 flex flex-wrap justify-center gap-2">
+                          {STARTER_SUGGESTIONS.map((item) => (
+                            <span
+                              key={item}
+                              className="rounded-full border border-border/50 bg-background/40 px-3 py-1.5 text-xs text-muted-foreground"
+                            >
+                              {item}
+                            </span>
+                          ))}
+                        </div>
+
+                        <p className="mt-5 text-[11px] text-muted-foreground/80">
+                          Use the left panel to add your first block.
+                        </p>
+                      </div>
                     </div>
-                  </SortableContext>
-                </DndContext>
-              )}
+                  ) : (
+                    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                      <SortableContext items={blocks.map((b) => b.id)} strategy={verticalListSortingStrategy}>
+                        <div className="space-y-3 px-1 pb-8">
+                          {blocks.map((b) => (
+                            <SortableBlock
+                              key={b.id}
+                              block={b}
+                              theme={theme}
+                              selected={selectedId === b.id}
+                              onSelect={() => setSelectedId(b.id)}
+                            />
+                          ))}
+                        </div>
+                      </SortableContext>
+                    </DndContext>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
 
           {/* Mobile-only: blocks button */}
-          <div className="lg:hidden mt-6 max-w-[380px] mx-auto">
+          <div className="lg:hidden mt-6 max-w-[430px] mx-auto">
             <details className="glass rounded-2xl p-4">
               <summary className="cursor-pointer text-sm font-medium">+ Add blocks</summary>
-              <div className="mt-4"><BlockLibrary onAdd={addBlock} prefs={prefs} onPrefsChange={updatePrefs} /></div>
+              <div className="mt-4">
+                <BlockLibrary onAdd={addBlock} prefs={prefs} onPrefsChange={updatePrefs} />
+              </div>
             </details>
           </div>
         </main>
 
         {/* Right — Inspector */}
-        <aside className="border-l border-border/40 overflow-y-auto p-5 hidden lg:block">
-          <Tabs defaultValue="block">
-            <TabsList className="grid grid-cols-2 mb-4">
-              <TabsTrigger value="block">Block</TabsTrigger>
-              <TabsTrigger value="theme">Theme</TabsTrigger>
-            </TabsList>
-            <TabsContent value="block">
-              {selected ? (
-                <Inspector
-                  block={selected}
-                  onChange={(patch) => updateBlock(selected.id, patch)}
-                  onDelete={() => deleteBlock(selected.id)}
-                />
-              ) : (
-                <div className="text-center py-12 text-sm text-muted-foreground">
-                  Select a block to edit its content.
-                </div>
-              )}
-            </TabsContent>
-            <TabsContent value="theme">
-              <ThemeStudio
-                theme={theme}
-                onChange={(patch) => setTheme((t) => ({ ...t, ...patch }))}
-              />
-            </TabsContent>
-          </Tabs>
+        <aside className="border-l border-border/40 overflow-y-auto hidden lg:block bg-background/60">
+          <div className="sticky top-0 z-10 border-b border-border/40 bg-background/80 backdrop-blur-xl p-5">
+            <div className="flex items-center gap-2 mb-1">
+              <Sparkles className="h-4 w-4 text-primary" />
+              <div className="text-xs uppercase tracking-wider text-muted-foreground">Customize</div>
+            </div>
+            <h2 className="font-display text-base font-semibold">
+              {selected ? "Edit selected block" : "No block selected"}
+            </h2>
+            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+              Select a block to edit content, visibility, and design.
+            </p>
+          </div>
+
+          <div className="p-5">
+            <Tabs defaultValue="block">
+              <TabsList className="grid grid-cols-2 mb-4">
+                <TabsTrigger value="block">Block</TabsTrigger>
+                <TabsTrigger value="theme">Theme</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="block">
+                {selected ? (
+                  <Inspector
+                    block={selected}
+                    onChange={(patch) => updateBlock(selected.id, patch)}
+                    onDelete={() => deleteBlock(selected.id)}
+                  />
+                ) : (
+                  <div className="text-center py-12 text-sm text-muted-foreground">
+                    <div className="mx-auto mb-4 grid h-12 w-12 place-items-center rounded-2xl glass">
+                      <Sparkles className="h-5 w-5 text-primary" />
+                    </div>
+                    Select a block on the mobile preview to customize it.
+                  </div>
+                )}
+              </TabsContent>
+
+              <TabsContent value="theme">
+                <ThemeStudio theme={theme} onChange={(patch) => setTheme((t) => ({ ...t, ...patch }))} />
+              </TabsContent>
+            </Tabs>
+          </div>
         </aside>
       </div>
     </div>
