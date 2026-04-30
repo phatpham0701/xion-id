@@ -277,9 +277,10 @@ const Editor = () => {
               )}
             </TabsContent>
             <TabsContent value="theme">
-              <div className="text-center py-12 text-sm text-muted-foreground">
-                Theme studio ships in Phase 1D ✨
-              </div>
+              <ThemeStudio
+                theme={theme}
+                onChange={(patch) => setTheme((t) => ({ ...t, ...patch }))}
+              />
             </TabsContent>
           </Tabs>
         </aside>
