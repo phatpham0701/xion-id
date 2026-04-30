@@ -1,5 +1,7 @@
 import { useMemo, useState } from "react";
-import { Plus, Sparkles, ArrowUpDown, Search, X } from "lucide-react";
+import { Plus, Sparkles, ArrowUpDown, Search, X, AlertTriangle, AlertCircle, CheckCircle2 } from "lucide-react";
+import { toast } from "sonner";
+import { validateBlockConfig, summarizeIssues, type ValidationIssue } from "@/lib/blockValidation";
 import {
   BLOCK_LIBRARY, CATEGORY_LABELS, CATEGORY_DESCRIPTIONS, type BlockMeta,
 } from "@/lib/blocks";
