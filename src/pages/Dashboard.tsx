@@ -120,6 +120,8 @@ const Dashboard = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const [stats, setStats] = useState<{ views: number; clicks: number }>({ views: 0, clicks: 0 });
+
   useEffect(() => {
     if (!user) return;
     (async () => {
@@ -133,6 +135,17 @@ const Dashboard = () => {
       }
       setProfile(data as Profile | null);
       setLoading(false);
+
+      if (data?.id) {
+        const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+        const [views, clicks] = await Promise.all([
+          supabase.from("analytics_events").select("id", { count: "exact", head: true })
+            .eq("profile_id", data.id).eq("event_type", "profile_view").gte("created_at", since),
+          supabase.from("analytics_events").select("id", { count: "exact", head: true })
+            .eq("profile_id", data.id).eq("event_type", "block_click").gte("created_at", since),
+        ]);
+        setStats({ views: views.count ?? 0, clicks: clicks.count ?? 0 });
+      }
     })();
   }, [user]);
 
@@ -256,8 +269,8 @@ const Dashboard = () => {
 
           {/* Stats */}
           <div className="space-y-4">
-            <StatCard icon={BarChart3} label="Profile views" value="0" hint="Last 7 days" />
-            <StatCard icon={Sparkles} label="Block clicks" value="0" hint="Last 7 days" />
+            <StatCard icon={BarChart3} label="Profile views" value={String(stats.views)} hint="Last 7 days" />
+            <StatCard icon={Sparkles} label="Block clicks" value={String(stats.clicks)} hint="Last 7 days" />
             <div className="glass rounded-3xl p-6">
               <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Coming soon</div>
               <div className="font-display text-base font-semibold mb-1">XION wallet</div>

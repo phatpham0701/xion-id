@@ -18,7 +18,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BlockLibrary } from "@/components/editor/BlockLibrary";
 import { SortableBlock } from "@/components/editor/SortableBlock";
 import { Inspector } from "@/components/editor/Inspector";
+import { ThemeStudio } from "@/components/editor/ThemeStudio";
 import type { Block, BlockMeta } from "@/lib/blocks";
+import { DEFAULT_THEME, themeFromJson, themeStyleVars, type ProfileTheme } from "@/lib/theme";
 
 type Profile = {
   id: string;
@@ -32,6 +34,7 @@ const Editor = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [blocks, setBlocks] = useState<Block[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [theme, setTheme] = useState<ProfileTheme>(DEFAULT_THEME);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -45,12 +48,13 @@ const Editor = () => {
     (async () => {
       const { data: p } = await supabase
         .from("profiles")
-        .select("id, username, display_name")
+        .select("id, username, display_name, theme")
         .eq("user_id", user.id)
         .maybeSingle();
       if (!p) { setLoading(false); return; }
       if (!p.username) { navigate("/dashboard"); return; }
       setProfile(p as Profile);
+      setTheme(themeFromJson(p.theme));
 
       const { data: b } = await supabase
         .from("blocks")
@@ -111,13 +115,17 @@ const Editor = () => {
     if (!profile) return;
     setSaving(true);
     try {
-      const updates = blocks.map((b) =>
+      const blockUpdates = blocks.map((b) =>
         supabase
           .from("blocks")
           .update({ position: b.position, config: b.config as never, is_visible: b.is_visible })
           .eq("id", b.id),
       );
-      const results = await Promise.all(updates);
+      const themeUpdate = supabase
+        .from("profiles")
+        .update({ theme: theme as never })
+        .eq("id", profile.id);
+      const results = await Promise.all([...blockUpdates, themeUpdate]);
       const firstErr = results.find((r) => r.error);
       if (firstErr?.error) throw firstErr.error;
       toast.success("Saved");
@@ -127,6 +135,8 @@ const Editor = () => {
       setSaving(false);
     }
   };
+
+  const styleVars = useMemo(() => themeStyleVars(theme), [theme]);
 
   if (loading) {
     return (
@@ -197,7 +207,10 @@ const Editor = () => {
 
           {/* Mobile frame */}
           <div className="mx-auto w-full max-w-[380px] relative">
-            <div className="glass-strong rounded-[2.5rem] p-4 min-h-[640px] shadow-elevated">
+            <div
+              className="rounded-[2.5rem] p-4 min-h-[640px] shadow-elevated overflow-hidden"
+              style={{ ...styleVars, background: "var(--theme-bg)", fontFamily: "var(--theme-font)" }}
+            >
               <div className="text-center mb-4">
                 <div className="text-xs text-muted-foreground">@{profile.username}</div>
               </div>
@@ -222,6 +235,7 @@ const Editor = () => {
                         <SortableBlock
                           key={b.id}
                           block={b}
+                          theme={theme}
                           selected={selectedId === b.id}
                           onSelect={() => setSelectedId(b.id)}
                         />
@@ -263,9 +277,10 @@ const Editor = () => {
               )}
             </TabsContent>
             <TabsContent value="theme">
-              <div className="text-center py-12 text-sm text-muted-foreground">
-                Theme studio ships in Phase 1D ✨
-              </div>
+              <ThemeStudio
+                theme={theme}
+                onChange={(patch) => setTheme((t) => ({ ...t, ...patch }))}
+              />
             </TabsContent>
           </Tabs>
         </aside>

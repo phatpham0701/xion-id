@@ -4,14 +4,16 @@ import { GripVertical, EyeOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { BlockRenderer } from "./BlockRenderer";
 import type { Block } from "@/lib/blocks";
+import type { ProfileTheme } from "@/lib/theme";
 
 type Props = {
   block: Block;
+  theme: ProfileTheme;
   selected: boolean;
   onSelect: () => void;
 };
 
-export const SortableBlock = ({ block, selected, onSelect }: Props) => {
+export const SortableBlock = ({ block, theme, selected, onSelect }: Props) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: block.id });
 
@@ -46,7 +48,7 @@ export const SortableBlock = ({ block, selected, onSelect }: Props) => {
           <EyeOff className="h-3.5 w-3.5" />
         </div>
       )}
-      <BlockRenderer block={block} />
+      <BlockRenderer block={block} theme={theme} />
     </div>
   );
 };
