@@ -1,5 +1,7 @@
 import { useMemo, useState } from "react";
-import { Plus, Sparkles, ArrowUpDown, Search, X } from "lucide-react";
+import { Plus, Sparkles, ArrowUpDown, Search, X, AlertTriangle, AlertCircle, CheckCircle2 } from "lucide-react";
+import { toast } from "sonner";
+import { validateBlockConfig, summarizeIssues, type ValidationIssue } from "@/lib/blockValidation";
 import {
   BLOCK_LIBRARY, CATEGORY_LABELS, CATEGORY_DESCRIPTIONS, type BlockMeta,
 } from "@/lib/blocks";
@@ -33,6 +35,45 @@ const BADGE_STYLES: Record<NonNullable<BlockMeta["badge"]>, string> = {
   Pro: "bg-muted text-foreground border-border",
 };
 
+const IssueList = ({ issues, title }: { issues: ValidationIssue[]; title: string }) => {
+  if (issues.length === 0) {
+    return (
+      <div className="flex items-start gap-1.5 text-[11px] text-emerald-600 dark:text-emerald-400 leading-snug">
+        <CheckCircle2 className="h-3 w-3 mt-0.5 shrink-0" />
+        <span>{title}</span>
+      </div>
+    );
+  }
+  return (
+    <div className="space-y-1">
+      <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
+        {title}
+      </div>
+      {issues.map((iss, i) => {
+        const isError = iss.severity === "error";
+        const Icon = isError ? AlertCircle : AlertTriangle;
+        return (
+          <div
+            key={i}
+            className={cn(
+              "flex items-start gap-1.5 text-[11px] leading-snug rounded-md px-2 py-1.5 border",
+              isError
+                ? "bg-destructive/10 border-destructive/30 text-destructive"
+                : "bg-amber-500/10 border-amber-500/30 text-amber-700 dark:text-amber-400",
+            )}
+          >
+            <Icon className="h-3 w-3 mt-0.5 shrink-0" />
+            <span>
+              <span className="font-medium">{iss.field}</span>
+              <span className="opacity-80"> · {iss.message}</span>
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
 const BlockPreview = ({ meta }: { meta: BlockMeta }) => {
   const style = themeStyleVars(PREVIEW_THEME);
   const previewBlock = {
@@ -43,6 +84,11 @@ const BlockPreview = ({ meta }: { meta: BlockMeta }) => {
     config: meta.previewConfig,
     is_visible: true,
   };
+  // Validate what the live preview is actually rendering.
+  const previewIssues = validateBlockConfig(meta.type, meta.previewConfig);
+  // Validate what gets inserted when user clicks "Add" — usually has empty fields.
+  const defaultIssues = validateBlockConfig(meta.type, meta.defaultConfig);
+
   return (
     <div className="space-y-3">
       <div className="flex items-start gap-3">
@@ -75,6 +121,17 @@ const BlockPreview = ({ meta }: { meta: BlockMeta }) => {
         </div>
       </div>
 
+      {/* Issues with the live preview content (rare — sample data should be valid). */}
+      {previewIssues.length > 0 && (
+        <IssueList issues={previewIssues} title="Sample preview issues" />
+      )}
+
+      {/* Issues with what will actually be inserted when adding the block. */}
+      <IssueList
+        issues={defaultIssues}
+        title={defaultIssues.length === 0 ? "Ready to add — no required fields missing" : "You'll need to fill in after adding"}
+      />
+
       <div className="space-y-1.5">
         <div className="flex items-start gap-1.5 text-[11px] text-muted-foreground leading-snug">
           <span className="text-primary mt-0.5">●</span>
@@ -94,20 +151,40 @@ const BlockPreview = ({ meta }: { meta: BlockMeta }) => {
 const BlockRow = ({
   meta, onAdd, showFitScore, prefs,
 }: { meta: BlockMeta; onAdd: (m: BlockMeta) => void; showFitScore: boolean; prefs: BlockPrefs }) => {
-  // Normalize score → 0-100 for display.
   const fit = showFitScore ? Math.min(100, Math.round(scoreBlock(meta, prefs) / 2)) : null;
+  // Heads-up about empty required fields before the user even clicks.
+  const defaultIssues = validateBlockConfig(meta.type, meta.defaultConfig);
+  const { errors, warnings } = summarizeIssues(defaultIssues);
+
+  const handleAdd = () => {
+    onAdd(meta);
+    if (errors > 0) {
+      toast.warning(`${meta.label} added — needs setup`, {
+        description: defaultIssues.find((i) => i.severity === "error")?.message,
+      });
+    }
+  };
+
   return (
     <HoverCard openDelay={120} closeDelay={80}>
       <HoverCardTrigger asChild>
         <button
-          onClick={() => onAdd(meta)}
+          onClick={handleAdd}
           className="w-full glass rounded-xl p-3 text-left group hover:border-primary/50 hover:bg-card/80 transition-all flex items-start gap-3"
         >
-          <div className="h-8 w-8 rounded-lg bg-primary/10 grid place-items-center shrink-0 group-hover:bg-primary/20 transition-colors">
+          <div className="h-8 w-8 rounded-lg bg-primary/10 grid place-items-center shrink-0 group-hover:bg-primary/20 transition-colors relative">
             <meta.icon className="h-3.5 w-3.5 text-primary" />
+            {errors > 0 && (
+              <span
+                className="absolute -top-1 -right-1 h-3.5 w-3.5 rounded-full bg-destructive text-destructive-foreground text-[8px] font-bold grid place-items-center"
+                aria-label={`${errors} required field${errors > 1 ? "s" : ""} missing`}
+              >
+                {errors}
+              </span>
+            )}
           </div>
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 flex-wrap">
               <div className="text-sm font-medium leading-tight truncate">{meta.label}</div>
               {meta.badge && (
                 <span className={cn(
@@ -122,6 +199,12 @@ const BlockRow = ({
                   {fit}% fit
                 </span>
               )}
+              {errors === 0 && warnings > 0 && (
+                <span className="text-[8px] px-1 py-0.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 font-medium shrink-0 inline-flex items-center gap-0.5">
+                  <AlertTriangle className="h-2.5 w-2.5" />
+                  {warnings}
+                </span>
+              )}
             </div>
             <div className="text-[10px] text-muted-foreground mt-0.5 leading-tight line-clamp-2">
               {meta.description}
@@ -133,11 +216,11 @@ const BlockRow = ({
       <HoverCardContent side="right" align="start" sideOffset={12} className="w-80 p-4 glass-strong border-glass-border">
         <BlockPreview meta={meta} />
         <button
-          onClick={() => onAdd(meta)}
+          onClick={handleAdd}
           className="mt-3 w-full h-9 rounded-lg bg-gradient-primary text-primary-foreground text-xs font-medium hover:opacity-90 transition-opacity flex items-center justify-center gap-1.5"
         >
           <Plus className="h-3.5 w-3.5" />
-          Add to profile
+          {errors > 0 ? "Add — then complete required fields" : "Add to profile"}
         </button>
       </HoverCardContent>
     </HoverCard>
