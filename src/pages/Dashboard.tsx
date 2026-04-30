@@ -4,7 +4,7 @@ import { z } from "zod";
 import { toast } from "sonner";
 import {
   Sparkles, LogOut, Eye, ExternalLink, Pencil, Check, Loader2,
-  Copy, BarChart3, Globe,
+  Copy, BarChart3, Globe, LayoutTemplate,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -261,6 +261,12 @@ const Dashboard = () => {
                 <Link to="/editor">
                   <Pencil className="h-4 w-4 mr-1.5" />
                   Edit profile
+                </Link>
+              </Button>
+              <Button variant="outline" className="glass border-glass-border" asChild>
+                <Link to="/templates">
+                  <LayoutTemplate className="h-4 w-4 mr-1.5" />
+                  Browse templates
                 </Link>
               </Button>
               <Button variant="outline" className="glass border-glass-border" asChild>
