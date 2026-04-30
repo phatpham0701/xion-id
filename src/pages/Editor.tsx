@@ -21,6 +21,10 @@ import { Inspector } from "@/components/editor/Inspector";
 import { ThemeStudio } from "@/components/editor/ThemeStudio";
 import type { Block, BlockMeta } from "@/lib/blocks";
 import { DEFAULT_THEME, themeFromJson, themeStyleVars, type ProfileTheme } from "@/lib/theme";
+import {
+  DEFAULT_PREFS, prefsFromJson, loadLocalPrefs, persistPrefs, recordBlockAdd,
+  type BlockPrefs,
+} from "@/lib/blockRanking";
 
 type Profile = {
   id: string;
@@ -37,6 +41,7 @@ const Editor = () => {
   const [theme, setTheme] = useState<ProfileTheme>(DEFAULT_THEME);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [prefs, setPrefs] = useState<BlockPrefs>(DEFAULT_PREFS);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -48,13 +53,19 @@ const Editor = () => {
     (async () => {
       const { data: p } = await supabase
         .from("profiles")
-        .select("id, username, display_name, theme")
+        .select("id, username, display_name, theme, settings")
         .eq("user_id", user.id)
         .maybeSingle();
       if (!p) { setLoading(false); return; }
       if (!p.username) { navigate("/dashboard"); return; }
       setProfile(p as Profile);
       setTheme(themeFromJson(p.theme));
+
+      // Prefer local cache (instant), then hydrate from DB.
+      const local = loadLocalPrefs(p.id);
+      if (local) setPrefs(local);
+      const dbPrefs = prefsFromJson(p.settings);
+      setPrefs(dbPrefs);
 
       const { data: b } = await supabase
         .from("blocks")
@@ -65,6 +76,14 @@ const Editor = () => {
       setLoading(false);
     })();
   }, [user, navigate]);
+
+  const updatePrefs = (patch: Partial<BlockPrefs>) => {
+    setPrefs((cur) => {
+      const next = { ...cur, ...patch };
+      if (profile) void persistPrefs(profile.id, next);
+      return next;
+    });
+  };
 
   const selected = useMemo(
     () => blocks.find((b) => b.id === selectedId) || null,
@@ -98,6 +117,7 @@ const Editor = () => {
     const newBlock = data as Block;
     setBlocks((prev) => [...prev, newBlock]);
     setSelectedId(newBlock.id);
+    updatePrefs(recordBlockAdd(prefs, meta.type));
   };
 
   const updateBlock = (id: string, patch: Partial<Block>) => {
@@ -200,7 +220,7 @@ const Editor = () => {
         {/* Left — Library */}
         <aside className="border-r border-border/40 overflow-y-auto p-4 hidden lg:block">
           <div className="text-xs uppercase tracking-wider text-muted-foreground mb-3">Add blocks</div>
-          <BlockLibrary onAdd={addBlock} />
+          <BlockLibrary onAdd={addBlock} prefs={prefs} onPrefsChange={updatePrefs} />
         </aside>
 
         {/* Center — Canvas */}
@@ -254,7 +274,7 @@ const Editor = () => {
           <div className="lg:hidden mt-6 max-w-[380px] mx-auto">
             <details className="glass rounded-2xl p-4">
               <summary className="cursor-pointer text-sm font-medium">+ Add blocks</summary>
-              <div className="mt-4"><BlockLibrary onAdd={addBlock} /></div>
+              <div className="mt-4"><BlockLibrary onAdd={addBlock} prefs={prefs} onPrefsChange={updatePrefs} /></div>
             </details>
           </div>
         </main>
