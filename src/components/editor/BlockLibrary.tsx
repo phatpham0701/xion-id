@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { Plus, Sparkles, ArrowUpDown, Search, X, AlertTriangle, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Plus, Sparkles, ArrowUpDown, Search, X, AlertTriangle, AlertCircle, CheckCircle2, Maximize2 } from "lucide-react";
+import { FullPreviewDialog } from "./FullPreviewDialog";
 import { toast } from "sonner";
 import { validateBlockConfig, summarizeIssues, type ValidationIssue } from "@/lib/blockValidation";
 import {
@@ -74,7 +75,7 @@ const IssueList = ({ issues, title }: { issues: ValidationIssue[]; title: string
   );
 };
 
-const BlockPreview = ({ meta }: { meta: BlockMeta }) => {
+const BlockPreview = ({ meta, onExpand }: { meta: BlockMeta; onExpand: () => void }) => {
   const style = themeStyleVars(PREVIEW_THEME);
   const previewBlock = {
     id: `preview-${meta.type}`,
@@ -84,9 +85,7 @@ const BlockPreview = ({ meta }: { meta: BlockMeta }) => {
     config: meta.previewConfig,
     is_visible: true,
   };
-  // Validate what the live preview is actually rendering.
   const previewIssues = validateBlockConfig(meta.type, meta.previewConfig);
-  // Validate what gets inserted when user clicks "Add" — usually has empty fields.
   const defaultIssues = validateBlockConfig(meta.type, meta.defaultConfig);
 
   return (
@@ -108,18 +107,26 @@ const BlockPreview = ({ meta }: { meta: BlockMeta }) => {
         </div>
       </div>
 
-      <div
-        className="rounded-2xl p-4 overflow-hidden border border-border/40"
+      {/* Click the inline preview to open full-screen view. */}
+      <button
+        type="button"
+        onClick={onExpand}
+        className="relative w-full rounded-2xl p-4 overflow-hidden border border-border/40 group hover:border-primary/40 transition-colors text-left"
         style={{
           ...style,
           background: BACKGROUNDS[PREVIEW_THEME.background].css,
           fontFamily: FONTS[PREVIEW_THEME.font].family,
         }}
+        aria-label="Open full-screen preview"
       >
-        <div className="text-foreground">
+        <div className="text-foreground pointer-events-none">
           <BlockRenderer block={previewBlock} theme={PREVIEW_THEME} />
         </div>
-      </div>
+        <div className="absolute top-2 right-2 h-6 px-1.5 rounded-md bg-background/80 backdrop-blur-sm border border-border opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 text-[10px] font-medium text-foreground">
+          <Maximize2 className="h-3 w-3" />
+          Full preview
+        </div>
+      </button>
 
       {/* Issues with the live preview content (rare — sample data should be valid). */}
       {previewIssues.length > 0 && (
@@ -152,9 +159,9 @@ const BlockRow = ({
   meta, onAdd, showFitScore, prefs,
 }: { meta: BlockMeta; onAdd: (m: BlockMeta) => void; showFitScore: boolean; prefs: BlockPrefs }) => {
   const fit = showFitScore ? Math.min(100, Math.round(scoreBlock(meta, prefs) / 2)) : null;
-  // Heads-up about empty required fields before the user even clicks.
   const defaultIssues = validateBlockConfig(meta.type, meta.defaultConfig);
   const { errors, warnings } = summarizeIssues(defaultIssues);
+  const [fullOpen, setFullOpen] = useState(false);
 
   const handleAdd = () => {
     onAdd(meta);
@@ -214,15 +221,31 @@ const BlockRow = ({
         </button>
       </HoverCardTrigger>
       <HoverCardContent side="right" align="start" sideOffset={12} className="w-80 p-4 glass-strong border-glass-border">
-        <BlockPreview meta={meta} />
-        <button
-          onClick={handleAdd}
-          className="mt-3 w-full h-9 rounded-lg bg-gradient-primary text-primary-foreground text-xs font-medium hover:opacity-90 transition-opacity flex items-center justify-center gap-1.5"
-        >
-          <Plus className="h-3.5 w-3.5" />
-          {errors > 0 ? "Add — then complete required fields" : "Add to profile"}
-        </button>
+        <BlockPreview meta={meta} onExpand={() => setFullOpen(true)} />
+        <div className="mt-3 grid grid-cols-[1fr_auto] gap-2">
+          <button
+            onClick={handleAdd}
+            className="h-9 rounded-lg bg-gradient-primary text-primary-foreground text-xs font-medium hover:opacity-90 transition-opacity flex items-center justify-center gap-1.5"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            {errors > 0 ? "Add — needs setup" : "Add to profile"}
+          </button>
+          <button
+            onClick={() => setFullOpen(true)}
+            className="h-9 px-3 rounded-lg border border-border text-xs font-medium hover:bg-muted transition-colors flex items-center justify-center gap-1.5"
+            aria-label="Open full preview"
+          >
+            <Maximize2 className="h-3.5 w-3.5" />
+            Full
+          </button>
+        </div>
       </HoverCardContent>
+      <FullPreviewDialog
+        meta={meta}
+        open={fullOpen}
+        onOpenChange={setFullOpen}
+        onAdd={onAdd}
+      />
     </HoverCard>
   );
 };
