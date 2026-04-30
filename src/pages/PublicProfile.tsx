@@ -48,8 +48,8 @@ const PublicProfile = () => {
       trackEvent(p.id, "profile_view");
 
       // SEO
-      document.title = `@${p.username} · XIONProfile`;
-      const desc = p.bio || `${p.display_name || p.username}'s profile on XIONProfile`;
+      document.title = `@${p.username} · XionID`;
+      const desc = p.bio || `${p.display_name || p.username}'s profile on XionID`;
       let m = document.querySelector('meta[name="description"]');
       if (!m) {
         m = document.createElement("meta");
@@ -78,7 +78,7 @@ const PublicProfile = () => {
           <div className="text-6xl mb-4">👻</div>
           <h1 className="font-display text-2xl font-bold mb-2">Profile not found</h1>
           <p className="text-muted-foreground mb-6">
-            <code className="font-mono">@{username}</code> doesn't exist on XIONProfile.
+            <code className="font-mono">@{username}</code> doesn't exist on XionID.
           </p>
           <Link
             to="/"
@@ -157,7 +157,7 @@ const PublicProfile = () => {
             className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
           >
             <Sparkles className="h-3 w-3" />
-            Made with <span className="font-semibold">XION<span className="text-gradient">Profile</span></span>
+            Made with <span className="font-semibold">Xion<span className="text-gradient">ID</span></span>
           </Link>
         </footer>
       </main>
