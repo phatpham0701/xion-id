@@ -159,9 +159,9 @@ const BlockRow = ({
   meta, onAdd, showFitScore, prefs,
 }: { meta: BlockMeta; onAdd: (m: BlockMeta) => void; showFitScore: boolean; prefs: BlockPrefs }) => {
   const fit = showFitScore ? Math.min(100, Math.round(scoreBlock(meta, prefs) / 2)) : null;
-  // Heads-up about empty required fields before the user even clicks.
   const defaultIssues = validateBlockConfig(meta.type, meta.defaultConfig);
   const { errors, warnings } = summarizeIssues(defaultIssues);
+  const [fullOpen, setFullOpen] = useState(false);
 
   const handleAdd = () => {
     onAdd(meta);
