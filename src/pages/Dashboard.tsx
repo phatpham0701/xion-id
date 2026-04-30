@@ -237,10 +237,12 @@ const Dashboard = () => {
             <div className="flex flex-wrap gap-2">
               <Button
                 className="bg-gradient-primary text-primary-foreground hover:opacity-90 font-medium"
-                onClick={() => toast.info("Editor coming next!", { description: "Drag-and-drop studio ships in Phase 1C." })}
+                asChild
               >
-                <Pencil className="h-4 w-4 mr-1.5" />
-                Edit profile
+                <Link to="/editor">
+                  <Pencil className="h-4 w-4 mr-1.5" />
+                  Edit profile
+                </Link>
               </Button>
               <Button variant="outline" className="glass border-glass-border" asChild>
                 <a href={`/${profile.username}`} target="_blank" rel="noreferrer">

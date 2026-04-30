@@ -8,6 +8,7 @@ import { RequireAuth, RedirectIfAuthed } from "@/components/auth/RouteGuards";
 import Index from "./pages/Index.tsx";
 import Auth from "./pages/Auth.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
+import Editor from "./pages/Editor.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -34,6 +35,14 @@ const App = () => (
               element={
                 <RequireAuth>
                   <Dashboard />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/editor"
+              element={
+                <RequireAuth>
+                  <Editor />
                 </RequireAuth>
               }
             />
