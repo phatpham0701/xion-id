@@ -81,13 +81,13 @@ const Editor = () => {
     const position = blocks.length;
     const { data, error } = await supabase
       .from("blocks")
-      .insert({
+      .insert([{
         profile_id: profile.id,
         type: meta.type,
         position,
-        config: meta.defaultConfig,
+        config: meta.defaultConfig as never,
         is_visible: true,
-      })
+      }])
       .select()
       .single();
     if (error) return toast.error("Couldn't add block", { description: error.message });
@@ -114,7 +114,7 @@ const Editor = () => {
       const updates = blocks.map((b) =>
         supabase
           .from("blocks")
-          .update({ position: b.position, config: b.config, is_visible: b.is_visible })
+          .update({ position: b.position, config: b.config as never, is_visible: b.is_visible })
           .eq("id", b.id),
       );
       const results = await Promise.all(updates);
