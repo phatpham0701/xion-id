@@ -1,81 +1,128 @@
-## XIONProfile — Linktree cho Web3 trên XION
+# Audit & Upgrade: Templates + Dashboard
 
-Web app cho phép user đăng nhập bằng social login, tạo profile/portfolio cá nhân bằng drag-and-drop, decorate thoải mái, share qua link `xionprofile.com/username`. Approach: **MVP UI trước, tích hợp XION Abstraxion sau** — giúp bạn vibe-code solo nhanh, có sản phẩm chạy được rồi mới gắn blockchain.
+## Findings — Templates (current state)
 
----
+Reading `src/lib/templates.ts`, all 12 templates exist but suffer from real problems:
 
-### Phase 1 — MVP (lần này build)
+**Problem 1 — Identical filler content.** Almost every template uses the same generic placeholders:
+- `name: "Your Name"`, `subtitle: "@yourhandle"` repeated in 8+ templates
+- Bio text is vague ("A little about me…", "One short line about you.")
+- Links are mostly empty: `url: "https://"`, `url: "https://cal.com/"`, `contract: ""`, `tokenId: ""`
+- Result: when a user picks "Musician" vs "Developer", the rendered preview looks structurally similar — same avatar, same empty buttons
 
-**1. Landing page**
-- Hero glassmorphism, gradient aurora (deep navy `#1a1a2e` → indigo `#16213e`, accent mint `#4ade80` & purple `#a78bfa`)
-- Tagline "Your Web3 identity, beautifully crafted — free forever on XION"
-- CTA "Claim your xionprofile" → mở modal chọn username + social login
-- Section: live demo profile preview, feature highlights, "How it works" 3 bước
-- Font: Space Grotesk (heading) + DM Sans (body)
+**Problem 2 — Weak differentiation.** Templates only differ in:
+- Theme (background/font/accent) — this works
+- Block ordering — minor
+- A handful of link titles
+But the *content depth* is the same shallow ~6 blocks. A creator template should feel like a creator profile out of the box.
 
-**2. Auth (mock cho MVP)**
-- Lovable Cloud auth: Email + Google sign-in (mô phỏng "social login → wallet" UX của XION Meta Account)
-- Sau signup: chọn username duy nhất → tạo profile trống
-- Profile của user lưu ở Cloud database (không lên chain — free 100%, load nhanh)
+**Problem 3 — Empty Web3 blocks are useless.** `wallet { address: "xion1..." }`, `nft { contract: "", tokenId: "" }`, `token_balance { token: "XION" }` (renders "— XION") all show placeholder dashes. User has to wire everything before it looks like anything.
 
-**3. Editor — Drag & Drop Studio**
-Layout 3 cột:
-- **Trái:** thư viện block (kéo vào canvas)
-- **Giữa:** mobile-frame canvas live preview, kéo-thả-sắp-xếp-lại block
-- **Phải:** inspector chỉnh sửa block đang chọn + tab "Theme"
+**Problem 4 — Missing template variety.** No templates for: photographer, fitness coach, restaurant/local business, event, link-in-bio for IG/TikTok influencer, gamer/streamer, DAO/community, student.
 
-**Block types:**
-- *Cơ bản:* Link button, Heading, Text, Avatar, Social icons (X, GitHub, Discord, Telegram, Farcaster, Lens)
-- *Web3:* Wallet address (copy + QR), NFT showcase (grid ảnh + link explorer), Token balance card
-- *Media:* Image, YouTube/Vimeo embed, Spotify embed
-- *Advanced:* Tip jar (XION — UI sẵn, hook on-chain ở Phase 2), Contact form (gửi vào Cloud), Calendar embed
+**Problem 5 — No preview-first UX.** The gallery cards show only stacked grey rectangles — the user can't tell what makes "Designer" different from "Writer".
 
-**4. Customization Studio (full)**
-- **Background:** solid color, gradient (2-3 stop, angle), upload ảnh, preset aurora gradients
-- **Fonts:** ~15 Google Fonts pairs cho heading + body
-- **Buttons:** shape (pill / rounded / square / outline / glass), shadow, hover effect
-- **Animations:** entrance (fade, slide, scale) cho block, hover micro-interactions
-- **Theme presets:** 8 sẵn (Glass Aurora, Neon Mint, Minimal Paper, Brutalist, Retro Synthwave, Sakura, Midnight, Sunset)
-- **Custom CSS** (advanced toggle, optional)
+## Findings — Dashboard (current state)
 
-**5. Public profile page** `/{username}`
-- Render full block list với theme đã chọn
-- SEO meta + OG image động
-- Nút "Built with XIONProfile" footer (có thể tắt)
-- Share button (copy link, QR code)
+Reading `src/pages/Dashboard.tsx`, the dashboard has only:
+- Profile card with handle + URL + 3 buttons (Edit / Templates / Preview)
+- 2 stat cards (views, clicks — last 7 days)
+- A "Coming soon: XION wallet" placeholder
 
-**6. Dashboard**
-- List profiles của user, analytics đơn giản (view count, click count per block)
-- Edit / Preview / Share / Delete
+**Problems:**
+1. **No way to edit display name, bio, or avatar from the dashboard.** Only `username` is set during onboarding; `display_name`, `bio`, `avatar_url` columns exist but have no UI.
+2. **No publish/unpublish toggle.** `is_published` is enforced on the public route but there's no UI to flip it. Users can't take their profile offline.
+3. **No QR code or share affordance** — critical for a link-in-bio product (people put it on phone screens, business cards, IG bios).
+4. **Stats are anemic.** Just two numbers. No trend, no "top blocks", no "where clicks went", no time-series.
+5. **No recent activity** — last visitors / last clicked block.
+6. **Dead "Coming soon" card** wastes prime real estate.
+7. **Onboarding doesn't suggest templates** — a fresh user lands on an empty editor instead of being nudged to start from a template.
 
----
+## Plan
 
-### Phase 2 — XION Integration (sau khi MVP duyệt)
-- Tích hợp `@burnt-labs/abstraxion` thay mock auth → social login thật → Meta Account trên XION testnet
-- Treasury contract config để gasless cho user (free 100%)
-- Wire Tip jar block với XION tx thật
-- Optional: pin profile metadata snapshot lên chain để verify ownership
+### Part 1 — Rewrite all templates with real, differentiated content
 
----
+Replace placeholder text with concrete, persona-specific copy and realistic example URLs (still editable, but immediately recognizable). Each template gets:
+- A **distinct persona name** (e.g. "Maya Chen" for Designer, "DJ Solace" for Musician) so previews feel alive
+- A **specific bio** (1–2 sentences) that signals the persona
+- **Real example URLs** pointing to category-appropriate destinations (e.g. real Spotify artist URL pattern, real GitHub URL pattern) — user replaces with their own
+- **Visible Web3 content**: use a sample XION address + named NFT collection so the block renders meaningfully on first paste
+
+Expand from 12 → **15 templates**, adding:
+- **Photographer** (image-heavy, gallery-style)
+- **Streamer / Gamer** (Twitch + Discord + game schedule)
+- **Local Business** (hours, location, menu link, booking)
+
+Each template will have ~7–10 blocks (currently 4–7), giving genuine starting content.
+
+### Part 2 — Improve template gallery preview
+
+Update `TemplateCard` in `TemplateGallery.tsx`:
+- Render an actual mini preview using `BlockRenderer` (scaled down) instead of grey rectangles — so Designer shows an image block, Musician shows a music embed shape, Web3 shows a wallet card
+- Show block count + block-type chips ("3 links · 1 NFT · tip jar")
+- Add a "Live demo" link that opens the template as a real public profile preview at `/preview/template/:id`
+
+### Part 3 — Make the dashboard genuinely useful
+
+Replace current dashboard layout with:
+
+**Header card (left, large):**
+- Editable inline: avatar (upload to Supabase Storage), display name, bio
+- Username (read-only with "request change" disabled — handles are permanent)
+- Publish toggle switch (writes `is_published`) — clearly shows "Public" / "Hidden"
+- Copy link, Open in new tab, **Download QR code** (use `qrcode` library, generate PNG)
+
+**Quick actions row:**
+- Edit blocks → /editor
+- Browse templates → /templates
+- Share → opens dialog with QR + social share buttons (Twitter, copy embed code)
+
+**Analytics panel (right column):**
+- Views (7d) with sparkline (group by day)
+- Clicks (7d) with sparkline
+- **Top 5 blocks by clicks** (last 30 days) — joined with block titles
+- Click-through rate
+
+**Recent activity list (below):**
+- Last 10 events (view or click) with timestamp + block title (for clicks)
+- Empty state with CTA: "Share your link to start collecting visits"
+
+**Onboarding nudge:**
+- After claiming handle, redirect to `/templates` (not editor) with a banner "Pick a starting point — you can customize everything"
+- If user has 0 blocks, dashboard shows a prominent "Start from a template" hero card instead of analytics
 
 ### Technical details
 
-- **Frontend:** React + Vite + TypeScript + Tailwind (đã có), shadcn/ui
-- **Drag & drop:** `@dnd-kit/core` + `@dnd-kit/sortable` (accessible, performant, modern)
-- **State:** Zustand cho editor state; React Query cho server data
-- **Backend:** Lovable Cloud
-  - Tables: `profiles` (user_id, username unique, theme jsonb, settings jsonb), `blocks` (profile_id, type, order, config jsonb), `analytics_events`
-  - Storage bucket: `avatars`, `profile-media` (public)
-  - RLS: user chỉ edit profile của mình; public read profiles + blocks theo username
-- **Routing:** thêm routes `/auth`, `/dashboard`, `/editor/:profileId`, `/:username`
-- **Design tokens:** mở rộng `index.css` với HSL semantic tokens cho glass aurora theme + utility cho glassmorphism (backdrop-blur, gradient borders)
+**Files to edit:**
+- `src/lib/templates.ts` — rewrite all entries, add 3 new ones
+- `src/components/templates/TemplateGallery.tsx` — real previews via `BlockRenderer`, block-type chips
+- `src/pages/Templates.tsx` — banner copy for onboarded users
+- `src/pages/Dashboard.tsx` — full rewrite into sectioned layout
+- `src/pages/Editor.tsx` — minor: redirect new users to templates
 
----
+**Files to create:**
+- `src/components/dashboard/ProfileEditorCard.tsx` — inline edit display_name, bio, avatar, publish toggle
+- `src/components/dashboard/ShareDialog.tsx` — QR code + social share
+- `src/components/dashboard/AnalyticsPanel.tsx` — sparklines, top blocks
+- `src/components/dashboard/RecentActivity.tsx` — event feed
+- `src/components/templates/TemplatePreview.tsx` — scaled mini-render of template using real `BlockRenderer`
+- `src/pages/TemplatePreview.tsx` — full-page live preview at `/preview/template/:id`
 
-### Out of scope (lần này)
-- XION on-chain integration (Phase 2)
-- Custom domain mapping `xionprofile.com/...` (cần domain thật + DNS — sẽ làm khi deploy)
-- Marketplace theme cộng đồng, premium features (project free 100%)
-- Multi-language
+**Dependencies to add:**
+- `qrcode` (tiny, ~20KB) — for QR PNG generation. No external service needed.
 
-Bấm **Implement plan** để mình bắt đầu build Phase 1.
+**Database:**
+- No schema changes required. All needed columns (`display_name`, `bio`, `avatar_url`, `is_published`) and the `analytics_events` table already exist.
+- Need a Supabase Storage bucket `avatars` (public read, authenticated write to own folder) — will create via migration if it doesn't exist.
+
+**Analytics queries:**
+- Daily sparkline: `select date_trunc('day', created_at)::date as day, count(*) from analytics_events where profile_id = ? and event_type = ? and created_at > now() - interval '7 days' group by 1`
+- Top blocks: join `analytics_events.block_id` with `blocks` table on click events, group by block_id, order by count desc limit 5
+
+### Out of scope (Phase 2)
+- XION wallet integration (Abstraxion social login + on-chain tip jar)
+- Custom domain support
+- Team/multi-profile accounts
+
+### Approval checkpoint
+After approval I will: rewrite templates → upgrade gallery previews → rebuild dashboard → wire QR + share dialog → add analytics panels.
