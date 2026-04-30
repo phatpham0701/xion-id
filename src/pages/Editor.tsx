@@ -53,13 +53,19 @@ const Editor = () => {
     (async () => {
       const { data: p } = await supabase
         .from("profiles")
-        .select("id, username, display_name, theme")
+        .select("id, username, display_name, theme, settings")
         .eq("user_id", user.id)
         .maybeSingle();
       if (!p) { setLoading(false); return; }
       if (!p.username) { navigate("/dashboard"); return; }
       setProfile(p as Profile);
       setTheme(themeFromJson(p.theme));
+
+      // Prefer local cache (instant), then hydrate from DB.
+      const local = loadLocalPrefs(p.id);
+      if (local) setPrefs(local);
+      const dbPrefs = prefsFromJson(p.settings);
+      setPrefs(dbPrefs);
 
       const { data: b } = await supabase
         .from("blocks")
@@ -70,6 +76,14 @@ const Editor = () => {
       setLoading(false);
     })();
   }, [user, navigate]);
+
+  const updatePrefs = (patch: Partial<BlockPrefs>) => {
+    setPrefs((cur) => {
+      const next = { ...cur, ...patch };
+      if (profile) void persistPrefs(profile.id, next);
+      return next;
+    });
+  };
 
   const selected = useMemo(
     () => blocks.find((b) => b.id === selectedId) || null,
