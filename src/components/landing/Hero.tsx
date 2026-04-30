@@ -24,8 +24,8 @@ const Hero = () => {
           </h1>
 
           <p className="mt-6 text-lg text-muted-foreground max-w-xl leading-relaxed">
-            XIONProfile is a drag-and-drop link-in-bio for the on-chain world.
-            Sign in with one tap, design freely, share <span className="text-foreground/90 font-medium">xionprofile.com/you</span> — no gas, no fees, no fuss.
+            XionID is a drag-and-drop link-in-bio for the on-chain world.
+            Sign in with one tap, design freely, share <span className="text-foreground/90 font-medium">xionid.app/you</span> — no gas, no fees, no fuss.
           </p>
 
           <div className="mt-9 flex flex-col sm:flex-row gap-3">
@@ -53,7 +53,7 @@ const Hero = () => {
           <div className="relative mx-auto max-w-[480px] animate-float">
             <img
               src={heroMockup}
-              alt="XIONProfile glassmorphism mobile mockup with avatar, link buttons and NFT grid"
+              alt="XionID glassmorphism mobile mockup with avatar, link buttons and NFT grid"
               width={1024}
               height={1024}
               className="w-full h-auto drop-shadow-[0_30px_60px_rgba(20,10,40,0.5)]"

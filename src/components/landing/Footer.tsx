@@ -1,4 +1,5 @@
 import { Sparkles } from "lucide-react";
+import { Wordmark } from "@/components/Wordmark";
 
 const Footer = () => {
   return (
@@ -9,9 +10,7 @@ const Footer = () => {
             <div className="h-8 w-8 rounded-lg bg-gradient-primary grid place-items-center">
               <Sparkles className="h-3.5 w-3.5 text-primary-foreground" strokeWidth={2.5} />
             </div>
-            <span className="font-display text-sm font-semibold">
-              XION<span className="text-gradient">Profile</span>
-            </span>
+            <Wordmark className="font-display text-sm font-semibold" />
             <span className="text-xs text-muted-foreground ml-2">
               · A solo vibe-coded mini-project
             </span>
