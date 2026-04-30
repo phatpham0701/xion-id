@@ -117,6 +117,7 @@ const Editor = () => {
     const newBlock = data as Block;
     setBlocks((prev) => [...prev, newBlock]);
     setSelectedId(newBlock.id);
+    updatePrefs(recordBlockAdd(prefs, meta.type));
   };
 
   const updateBlock = (id: string, patch: Partial<Block>) => {
