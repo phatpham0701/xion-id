@@ -191,6 +191,59 @@ const Editor = () => {
     });
   };
 
+  const addBlocks = async (metas: BlockMeta[], label = "Starter kit") => {
+    if (!profile || metas.length === 0) return;
+
+    const startPosition = blocks.length;
+
+    const rows = metas.map((meta, index) => ({
+      profile_id: profile.id,
+      type: meta.type,
+      position: startPosition + index,
+      config: meta.defaultConfig as never,
+      is_visible: true,
+    }));
+
+    const { data, error } = await supabase.from("blocks").insert(rows).select();
+
+    if (error) {
+      toast.error("Couldn't add kit", { description: error.message });
+      return;
+    }
+
+    const newBlocks = (data || []) as Block[];
+
+    const orderedNewBlocks = [...newBlocks].sort((a, b) => a.position - b.position);
+
+    setBlocks((prev) => {
+      const next = [...prev, ...orderedNewBlocks].map((block, index) => ({
+        ...block,
+        position: index,
+      }));
+      return next;
+    });
+
+    const firstNewBlock = orderedNewBlocks[0];
+    if (firstNewBlock) {
+      setSelectedId(firstNewBlock.id);
+
+      requestAnimationFrame(() => {
+        const el = document.querySelector<HTMLElement>(`[data-block-id="${firstNewBlock.id}"]`);
+        if (!el) return;
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        el.classList.add("ring-flash");
+        window.setTimeout(() => el.classList.remove("ring-flash"), 1600);
+      });
+    }
+
+    const nextPrefs = metas.reduce((current, meta) => recordBlockAdd(current, meta.type), prefs);
+    updatePrefs(nextPrefs);
+
+    toast.success(`${label} added`, {
+      description: `${metas.length} blocks were added to your profile. Remember to save after adjusting the order.`,
+    });
+  };
+
   const updateBlock = (id: string, patch: Partial<Block>) => {
     setBlocks((prev) => prev.map((b) => (b.id === id ? { ...b, ...patch } : b)));
   };
@@ -353,7 +406,6 @@ const Editor = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      {/* Studio Toolbar */}
       <header className="border-b border-border/40 glass sticky top-0 z-40 backdrop-blur-xl">
         <div className="px-4 md:px-6 flex h-16 items-center justify-between">
           <div className="flex items-center gap-3 min-w-0">
@@ -418,9 +470,7 @@ const Editor = () => {
         </div>
       </header>
 
-      {/* Studio Layout */}
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-[300px_1fr_340px] gap-0 overflow-hidden">
-        {/* Left — Library */}
         <aside className="border-r border-border/40 overflow-y-auto hidden lg:block bg-background/60">
           <div className="sticky top-0 z-10 border-b border-border/40 bg-background/80 backdrop-blur-xl p-5">
             <div className="flex items-center gap-2 mb-1">
@@ -434,11 +484,10 @@ const Editor = () => {
           </div>
 
           <div className="p-4">
-            <BlockLibrary onAdd={addBlock} prefs={prefs} onPrefsChange={updatePrefs} />
+            <BlockLibrary onAdd={addBlock} onAddMany={addBlocks} prefs={prefs} onPrefsChange={updatePrefs} />
           </div>
         </aside>
 
-        {/* Center — Canvas */}
         <main className="overflow-y-auto py-8 px-4 relative">
           <div className="aurora-orb h-[420px] w-[420px] -top-24 left-1/4 bg-secondary opacity-20 animate-aurora-drift pointer-events-none" />
           <div
@@ -461,7 +510,6 @@ const Editor = () => {
               </div>
             </div>
 
-            {/* Premium phone frame */}
             <div className="rounded-[3rem] border border-white/10 bg-zinc-950/80 p-2 shadow-2xl shadow-primary/10">
               <div className="rounded-[2.65rem] border border-white/10 bg-black p-2">
                 <div
@@ -472,7 +520,6 @@ const Editor = () => {
                     fontFamily: "var(--theme-font)",
                   }}
                 >
-                  {/* Fake phone top area */}
                   <div className="sticky top-0 z-10 -mx-4 -mt-4 mb-4 bg-background/10 px-4 pt-3 backdrop-blur-sm">
                     <div className="mx-auto mb-3 h-1.5 w-20 rounded-full bg-white/20" />
                     <div className="flex items-center justify-center gap-2 pb-3">
@@ -539,18 +586,16 @@ const Editor = () => {
             </div>
           </div>
 
-          {/* Mobile-only: blocks button */}
           <div className="lg:hidden mt-6 max-w-[430px] mx-auto">
             <details className="glass rounded-2xl p-4">
               <summary className="cursor-pointer text-sm font-medium">+ Add blocks</summary>
               <div className="mt-4">
-                <BlockLibrary onAdd={addBlock} prefs={prefs} onPrefsChange={updatePrefs} />
+                <BlockLibrary onAdd={addBlock} onAddMany={addBlocks} prefs={prefs} onPrefsChange={updatePrefs} />
               </div>
             </details>
           </div>
         </main>
 
-        {/* Right — Inspector */}
         <aside className="border-l border-border/40 overflow-y-auto hidden lg:block bg-background/60">
           <div className="sticky top-0 z-10 border-b border-border/40 bg-background/80 backdrop-blur-xl p-5">
             <div className="flex items-center gap-2 mb-1">
