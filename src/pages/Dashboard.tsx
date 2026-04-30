@@ -269,8 +269,8 @@ const Dashboard = () => {
 
           {/* Stats */}
           <div className="space-y-4">
-            <StatCard icon={BarChart3} label="Profile views" value="0" hint="Last 7 days" />
-            <StatCard icon={Sparkles} label="Block clicks" value="0" hint="Last 7 days" />
+            <StatCard icon={BarChart3} label="Profile views" value={String(stats.views)} hint="Last 7 days" />
+            <StatCard icon={Sparkles} label="Block clicks" value={String(stats.clicks)} hint="Last 7 days" />
             <div className="glass rounded-3xl p-6">
               <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Coming soon</div>
               <div className="font-display text-base font-semibold mb-1">XION wallet</div>
