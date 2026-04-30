@@ -1,9 +1,11 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { AbstraxionProvider } from "@burnt-labs/abstraxion";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { XION_CONFIG } from "@/lib/xion";
 import { RequireAuth, RedirectIfAuthed } from "@/components/auth/RouteGuards";
 import Index from "./pages/Index.tsx";
 import Auth from "./pages/Auth.tsx";
@@ -16,8 +18,16 @@ import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
 
+const abstraxionConfig = {
+  treasury: XION_CONFIG.treasury,
+  rpcUrl: XION_CONFIG.rpcUrl,
+  restUrl: XION_CONFIG.restUrl,
+  gasPrice: "0.001uxion",
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
+    <AbstraxionProvider config={abstraxionConfig}>
     <TooltipProvider>
       <Toaster />
       <Sonner />
@@ -67,6 +77,7 @@ const App = () => (
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
+    </AbstraxionProvider>
   </QueryClientProvider>
 );
 
