@@ -21,6 +21,10 @@ import { Inspector } from "@/components/editor/Inspector";
 import { ThemeStudio } from "@/components/editor/ThemeStudio";
 import type { Block, BlockMeta } from "@/lib/blocks";
 import { DEFAULT_THEME, themeFromJson, themeStyleVars, type ProfileTheme } from "@/lib/theme";
+import {
+  DEFAULT_PREFS, prefsFromJson, loadLocalPrefs, persistPrefs, recordBlockAdd,
+  type BlockPrefs,
+} from "@/lib/blockRanking";
 
 type Profile = {
   id: string;
