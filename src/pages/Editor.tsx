@@ -9,7 +9,7 @@ import {
 } from "@dnd-kit/sortable";
 import { toast } from "sonner";
 import {
-  Sparkles, ArrowLeft, Eye, ExternalLink, Loader2, Save, Plus,
+  Sparkles, ArrowLeft, Eye, ExternalLink, Loader2, Save, Plus, LayoutTemplate,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -173,6 +173,9 @@ const Editor = () => {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" asChild className="hidden sm:inline-flex">
+              <Link to="/templates"><LayoutTemplate className="h-4 w-4 mr-1.5" />Templates</Link>
+            </Button>
             <Button variant="ghost" size="sm" asChild>
               <a href={`/${profile.username}`} target="_blank" rel="noreferrer">
                 <Eye className="h-4 w-4 mr-1.5" />
