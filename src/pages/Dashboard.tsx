@@ -15,6 +15,7 @@ import { ProfileEditorCard, type EditableProfile } from "@/components/dashboard/
 import { ShareDialog } from "@/components/dashboard/ShareDialog";
 import { AnalyticsPanel } from "@/components/dashboard/AnalyticsPanel";
 import { RecentActivity } from "@/components/dashboard/RecentActivity";
+import { WalletCard } from "@/components/dashboard/WalletCard";
 
 const usernameSchema = z
   .string()
@@ -229,7 +230,10 @@ const Dashboard = () => {
               onChange={setProfile}
               onShare={() => setShareOpen(true)}
             />
-            <EmptyStateHero />
+            <div className="grid lg:grid-cols-2 gap-6">
+              <WalletCard />
+              <EmptyStateHero />
+            </div>
           </>
         ) : (
           <div className="grid lg:grid-cols-[1.6fr_1fr] gap-6">
@@ -241,7 +245,10 @@ const Dashboard = () => {
               />
               <RecentActivity profileId={profile.id} />
             </div>
-            <AnalyticsPanel profileId={profile.id} />
+            <div className="space-y-6">
+              <WalletCard />
+              <AnalyticsPanel profileId={profile.id} />
+            </div>
           </div>
         )}
       </main>

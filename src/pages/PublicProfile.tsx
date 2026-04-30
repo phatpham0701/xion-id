@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { Loader2, Sparkles, ArrowLeft } from "lucide-react";
+import { Loader2, Sparkles, ArrowLeft, BadgeCheck, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { BlockRenderer } from "@/components/editor/BlockRenderer";
 import { themeFromJson, themeStyleVars } from "@/lib/theme";
 import { trackEvent } from "@/lib/analytics";
+import { XION_CONFIG, truncateAddress } from "@/lib/xion";
 import type { Block } from "@/lib/blocks";
 
 type PublicProfile = {
@@ -15,6 +16,7 @@ type PublicProfile = {
   avatar_url: string | null;
   is_published: boolean;
   theme: unknown;
+  xion_address: string | null;
 };
 
 const PublicProfile = () => {
@@ -29,7 +31,7 @@ const PublicProfile = () => {
     (async () => {
       const { data: p } = await supabase
         .from("profiles")
-        .select("id, username, display_name, bio, avatar_url, is_published, theme")
+        .select("id, username, display_name, bio, avatar_url, is_published, theme, xion_address")
         .eq("username", username)
         .maybeSingle();
 
@@ -131,6 +133,20 @@ const PublicProfile = () => {
             {profile.display_name || profile.username}
           </h1>
           <div className="text-sm text-muted-foreground">@{profile.username}</div>
+          {profile.xion_address && (
+            <a
+              href={XION_CONFIG.explorerAddr(profile.xion_address)}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full glass text-[11px] font-medium hover:scale-105 transition-transform"
+              style={{ borderColor: `hsl(var(--theme-accent) / 0.3)` }}
+              title="Verified XION wallet"
+            >
+              <BadgeCheck className="h-3 w-3" style={{ color: `hsl(var(--theme-accent-glow))` }} />
+              <span className="font-mono">{truncateAddress(profile.xion_address, 8, 6)}</span>
+              <ExternalLink className="h-2.5 w-2.5 opacity-60" />
+            </a>
+          )}
           {profile.bio && (
             <p className="text-sm text-foreground/80 mt-3 leading-relaxed">{profile.bio}</p>
           )}
