@@ -220,7 +220,7 @@ const Editor = () => {
         {/* Left — Library */}
         <aside className="border-r border-border/40 overflow-y-auto p-4 hidden lg:block">
           <div className="text-xs uppercase tracking-wider text-muted-foreground mb-3">Add blocks</div>
-          <BlockLibrary onAdd={addBlock} />
+          <BlockLibrary onAdd={addBlock} prefs={prefs} onPrefsChange={updatePrefs} />
         </aside>
 
         {/* Center — Canvas */}
