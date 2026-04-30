@@ -207,7 +207,10 @@ const Editor = () => {
 
           {/* Mobile frame */}
           <div className="mx-auto w-full max-w-[380px] relative">
-            <div className="glass-strong rounded-[2.5rem] p-4 min-h-[640px] shadow-elevated">
+            <div
+              className="rounded-[2.5rem] p-4 min-h-[640px] shadow-elevated overflow-hidden"
+              style={{ ...styleVars, background: "var(--theme-bg)", fontFamily: "var(--theme-font)" }}
+            >
               <div className="text-center mb-4">
                 <div className="text-xs text-muted-foreground">@{profile.username}</div>
               </div>
@@ -232,6 +235,7 @@ const Editor = () => {
                         <SortableBlock
                           key={b.id}
                           block={b}
+                          theme={theme}
                           selected={selectedId === b.id}
                           onSelect={() => setSelectedId(b.id)}
                         />
