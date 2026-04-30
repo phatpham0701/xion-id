@@ -130,8 +130,13 @@ const Editor = () => {
     });
 
     // Lightweight confirmation with one-tap undo.
+    const issues = validateBlockConfig(meta.type, meta.defaultConfig);
+    const { errors } = summarizeIssues(issues);
+    const description = errors > 0
+      ? `Needs setup: ${issues.find((i) => i.severity === "error")?.message}`
+      : "Tap the block to edit, or undo to remove.";
     toast.success(`${meta.label} added`, {
-      description: "Tap the block to edit, or undo to remove.",
+      description,
       action: {
         label: "Undo",
         onClick: () => { void deleteBlock(newBlock.id); },
