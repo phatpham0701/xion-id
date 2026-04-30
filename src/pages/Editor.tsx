@@ -41,6 +41,7 @@ const Editor = () => {
   const [theme, setTheme] = useState<ProfileTheme>(DEFAULT_THEME);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [prefs, setPrefs] = useState<BlockPrefs>(DEFAULT_PREFS);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
