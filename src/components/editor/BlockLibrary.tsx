@@ -1,4 +1,5 @@
-import { Plus, Sparkles, ArrowUpDown } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Plus, Sparkles, ArrowUpDown, Search, X } from "lucide-react";
 import {
   BLOCK_LIBRARY, CATEGORY_LABELS, CATEGORY_DESCRIPTIONS, type BlockMeta,
 } from "@/lib/blocks";
@@ -8,6 +9,7 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 import { BlockRenderer } from "./BlockRenderer";
 import { DEFAULT_THEME, themeStyleVars, BACKGROUNDS, FONTS } from "@/lib/theme";
 import { cn } from "@/lib/utils";
@@ -142,64 +144,158 @@ const BlockRow = ({
   );
 };
 
+type Badge = NonNullable<BlockMeta["badge"]>;
+type CategoryFilter = BlockMeta["category"] | "all";
+
+const ALL_BADGES: Badge[] = ["Essential", "Popular", "Web3", "Pro"];
+
 export const BlockLibrary = ({ onAdd, prefs, onPrefsChange }: Props) => {
   const showFit = prefs.sortMode === "recommended";
+  const [query, setQuery] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("all");
+  const [badgeFilter, setBadgeFilter] = useState<Set<Badge>>(new Set());
+
+  const toggleBadge = (b: Badge) => {
+    setBadgeFilter((cur) => {
+      const next = new Set(cur);
+      next.has(b) ? next.delete(b) : next.add(b);
+      return next;
+    });
+  };
+
+  const clearFilters = () => {
+    setQuery("");
+    setCategoryFilter("all");
+    setBadgeFilter(new Set());
+  };
+
+  const hasFilters = query.trim() !== "" || categoryFilter !== "all" || badgeFilter.size > 0;
+
+  // Apply search + filters before sorting/grouping.
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return BLOCK_LIBRARY.filter((b) => {
+      if (categoryFilter !== "all" && b.category !== categoryFilter) return false;
+      if (badgeFilter.size > 0 && (!b.badge || !badgeFilter.has(b.badge))) return false;
+      if (!q) return true;
+      const haystack = `${b.label} ${b.description} ${b.useCase} ${b.type}`.toLowerCase();
+      return haystack.includes(q);
+    });
+  }, [query, categoryFilter, badgeFilter]);
 
   return (
-    <div className="space-y-5">
-      {/* Controls */}
-      <div className="space-y-2.5">
-        <div>
-          <label className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-1.5">
-            Profile type
-          </label>
-          <Select
-            value={prefs.persona}
-            onValueChange={(v) => onPrefsChange({ persona: v as Persona })}
+    <div className="space-y-4">
+      {/* Search */}
+      <div className="relative">
+        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+        <Input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search blocks…"
+          className="h-9 pl-8 pr-8 text-xs"
+        />
+        {query && (
+          <button
+            onClick={() => setQuery("")}
+            className="absolute right-2 top-1/2 -translate-y-1/2 h-5 w-5 rounded grid place-items-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            aria-label="Clear search"
           >
-            <SelectTrigger className="h-9 text-xs">
-              <SelectValue />
-            </SelectTrigger>
+            <X className="h-3 w-3" />
+          </button>
+        )}
+      </div>
+
+      {/* Category chips */}
+      <div className="flex flex-wrap gap-1">
+        {(["all", ...Object.keys(CATEGORY_LABELS)] as CategoryFilter[]).map((cat) => {
+          const active = categoryFilter === cat;
+          return (
+            <button
+              key={cat}
+              onClick={() => setCategoryFilter(cat)}
+              className={cn(
+                "text-[10px] px-2 py-1 rounded-full border transition-colors font-medium",
+                active
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-transparent border-border text-muted-foreground hover:text-foreground hover:border-primary/40",
+              )}
+            >
+              {cat === "all" ? "All" : CATEGORY_LABELS[cat as BlockMeta["category"]]}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Badge filter chips */}
+      <div className="flex flex-wrap gap-1 items-center">
+        {ALL_BADGES.map((b) => {
+          const active = badgeFilter.has(b);
+          return (
+            <button
+              key={b}
+              onClick={() => toggleBadge(b)}
+              className={cn(
+                "text-[10px] px-2 py-1 rounded-full border transition-all font-medium",
+                active ? BADGE_STYLES[b] + " ring-1 ring-current" : "bg-transparent border-border text-muted-foreground hover:text-foreground hover:border-primary/40",
+              )}
+            >
+              {b}
+            </button>
+          );
+        })}
+        {hasFilters && (
+          <button
+            onClick={clearFilters}
+            className="ml-auto text-[10px] text-muted-foreground hover:text-foreground transition-colors flex items-center gap-0.5"
+          >
+            <X className="h-3 w-3" /> Clear
+          </button>
+        )}
+      </div>
+
+      {/* Persona + Sort controls (collapsed when actively searching) */}
+      <details className="group" open={!query}>
+        <summary className="cursor-pointer text-[10px] uppercase tracking-wider text-muted-foreground font-medium flex items-center gap-1 select-none">
+          <ArrowUpDown className="h-3 w-3" />
+          Profile type & sort
+        </summary>
+        <div className="space-y-2.5 mt-2.5">
+          <Select value={prefs.persona} onValueChange={(v) => onPrefsChange({ persona: v as Persona })}>
+            <SelectTrigger className="h-9 text-xs"><SelectValue /></SelectTrigger>
             <SelectContent>
               {PERSONAS.map((p) => (
                 <SelectItem key={p.id} value={p.id} className="text-xs">
-                  <span className="mr-1.5">{p.emoji}</span>
-                  {p.label}
+                  <span className="mr-1.5">{p.emoji}</span>{p.label}
                   <span className="ml-2 text-muted-foreground">· {p.hint}</span>
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
-        </div>
-
-        <div>
-          <label className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium block mb-1.5 flex items-center gap-1">
-            <ArrowUpDown className="h-3 w-3" />
-            Sort by
-          </label>
-          <Select
-            value={prefs.sortMode}
-            onValueChange={(v) => onPrefsChange({ sortMode: v as SortMode })}
-          >
-            <SelectTrigger className="h-9 text-xs">
-              <SelectValue />
-            </SelectTrigger>
+          <Select value={prefs.sortMode} onValueChange={(v) => onPrefsChange({ sortMode: v as SortMode })}>
+            <SelectTrigger className="h-9 text-xs"><SelectValue /></SelectTrigger>
             <SelectContent>
               {(Object.keys(SORT_LABELS) as SortMode[]).map((m) => (
-                <SelectItem key={m} value={m} className="text-xs">
-                  {SORT_LABELS[m]}
-                </SelectItem>
+                <SelectItem key={m} value={m} className="text-xs">{SORT_LABELS[m]}</SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
-      </div>
+      </details>
 
-      {/* List */}
-      {prefs.sortMode === "category" ? (
+      {/* Empty state */}
+      {filtered.length === 0 ? (
+        <div className="text-center py-10 px-4">
+          <div className="text-xs text-muted-foreground mb-2">No blocks match your filters.</div>
+          <button onClick={clearFilters} className="text-xs text-primary hover:underline">
+            Clear filters
+          </button>
+        </div>
+      ) : prefs.sortMode === "category" && !hasFilters ? (
+        // Group by category only when no filters are active.
         <div className="space-y-5">
           {(Object.keys(CATEGORY_LABELS) as BlockMeta["category"][]).map((cat) => {
-            const items = BLOCK_LIBRARY.filter((b) => b.category === cat);
+            const items = filtered.filter((b) => b.category === cat);
+            if (items.length === 0) return null;
             return (
               <div key={cat}>
                 <div className="px-1 mb-2">
@@ -223,17 +319,17 @@ export const BlockLibrary = ({ onAdd, prefs, onPrefsChange }: Props) => {
         <div>
           <div className="px-1 mb-2 flex items-center justify-between">
             <div className="text-xs uppercase tracking-wider text-muted-foreground font-medium">
-              {SORT_LABELS[prefs.sortMode]}
+              {hasFilters ? `${filtered.length} result${filtered.length === 1 ? "" : "s"}` : SORT_LABELS[prefs.sortMode]}
             </div>
-            {showFit && (
+            {showFit && !hasFilters && (
               <div className="text-[9px] text-muted-foreground/70">
                 Tuned for {PERSONAS.find((p) => p.id === prefs.persona)?.label}
               </div>
             )}
           </div>
           <div className="space-y-1.5">
-            {sortLibrary(BLOCK_LIBRARY, prefs).map((b) => (
-              <BlockRow key={b.type} meta={b} onAdd={onAdd} showFitScore={showFit} prefs={prefs} />
+            {sortLibrary(filtered, prefs).map((b) => (
+              <BlockRow key={b.type} meta={b} onAdd={onAdd} showFitScore={showFit && !hasFilters} prefs={prefs} />
             ))}
           </div>
         </div>
