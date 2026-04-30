@@ -144,8 +144,44 @@ const BlockRow = ({
   );
 };
 
+type Badge = NonNullable<BlockMeta["badge"]>;
+type CategoryFilter = BlockMeta["category"] | "all";
+
+const ALL_BADGES: Badge[] = ["Essential", "Popular", "Web3", "Pro"];
+
 export const BlockLibrary = ({ onAdd, prefs, onPrefsChange }: Props) => {
   const showFit = prefs.sortMode === "recommended";
+  const [query, setQuery] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("all");
+  const [badgeFilter, setBadgeFilter] = useState<Set<Badge>>(new Set());
+
+  const toggleBadge = (b: Badge) => {
+    setBadgeFilter((cur) => {
+      const next = new Set(cur);
+      next.has(b) ? next.delete(b) : next.add(b);
+      return next;
+    });
+  };
+
+  const clearFilters = () => {
+    setQuery("");
+    setCategoryFilter("all");
+    setBadgeFilter(new Set());
+  };
+
+  const hasFilters = query.trim() !== "" || categoryFilter !== "all" || badgeFilter.size > 0;
+
+  // Apply search + filters before sorting/grouping.
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return BLOCK_LIBRARY.filter((b) => {
+      if (categoryFilter !== "all" && b.category !== categoryFilter) return false;
+      if (badgeFilter.size > 0 && (!b.badge || !badgeFilter.has(b.badge))) return false;
+      if (!q) return true;
+      const haystack = `${b.label} ${b.description} ${b.useCase} ${b.type}`.toLowerCase();
+      return haystack.includes(q);
+    });
+  }, [query, categoryFilter, badgeFilter]);
 
   return (
     <div className="space-y-5">
