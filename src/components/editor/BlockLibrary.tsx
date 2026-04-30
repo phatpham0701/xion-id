@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ComponentType } from "react";
 import {
   Plus,
   Sparkles,
@@ -12,7 +12,6 @@ import {
   BadgeCheck,
   Link2,
   Youtube,
-  Wallet,
   Grid2X2,
   Layers3,
   Wand2,
@@ -39,6 +38,7 @@ import {
 
 type Props = {
   onAdd: (meta: BlockMeta) => void;
+  onAddMany?: (metas: BlockMeta[], label?: string) => void;
   prefs: BlockPrefs;
   onPrefsChange: (patch: Partial<BlockPrefs>) => void;
 };
@@ -50,7 +50,7 @@ type CategoryFilter = BlockMeta["category"] | "all";
 type KitDefinition = {
   title: string;
   description: string;
-  icon: typeof Heart;
+  icon: ComponentType<{ className?: string }>;
   accent: string;
   blockTypes: readonly BlockType[];
 };
@@ -369,13 +369,24 @@ const KitCard = ({
   kit,
   blockMap,
   onAdd,
+  onAddMany,
 }: {
   kit: KitDefinition;
   blockMap: Map<BlockType, BlockMeta>;
   onAdd: (meta: BlockMeta) => void;
+  onAddMany?: (metas: BlockMeta[], label?: string) => void;
 }) => {
   const Icon = kit.icon;
   const items = kit.blockTypes.map((type) => blockMap.get(type)).filter((item): item is BlockMeta => Boolean(item));
+
+  const addFullKit = () => {
+    if (onAddMany) {
+      onAddMany(items, kit.title);
+      return;
+    }
+
+    items.forEach((item) => onAdd(item));
+  };
 
   return (
     <div className="overflow-hidden rounded-2xl border border-border/50 bg-background/40">
@@ -392,25 +403,36 @@ const KitCard = ({
         </div>
       </div>
 
-      <div className="space-y-2 p-3">
-        {items.map((meta) => (
-          <button
-            key={`${kit.title}-${meta.type}`}
-            type="button"
-            onClick={() => onAdd(meta)}
-            className="flex w-full items-center gap-2 rounded-xl border border-border/40 bg-background/40 px-3 py-2 text-left text-xs transition-all hover:border-primary/40 hover:bg-card/70"
-          >
-            <meta.icon className="h-3.5 w-3.5 shrink-0 text-primary" />
-            <span className="min-w-0 flex-1 truncate">{meta.label}</span>
-            <Plus className="h-3.5 w-3.5 text-muted-foreground" />
-          </button>
-        ))}
+      <div className="p-3">
+        <button
+          type="button"
+          onClick={addFullKit}
+          className="mb-3 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-primary px-3 py-2.5 text-xs font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+        >
+          <Sparkles className="h-3.5 w-3.5" />
+          Add full kit
+        </button>
+
+        <div className="space-y-2">
+          {items.map((meta) => (
+            <button
+              key={`${kit.title}-${meta.type}`}
+              type="button"
+              onClick={() => onAdd(meta)}
+              className="flex w-full items-center gap-2 rounded-xl border border-border/40 bg-background/40 px-3 py-2 text-left text-xs transition-all hover:border-primary/40 hover:bg-card/70"
+            >
+              <meta.icon className="h-3.5 w-3.5 shrink-0 text-primary" />
+              <span className="min-w-0 flex-1 truncate">{meta.label}</span>
+              <Plus className="h-3.5 w-3.5 text-muted-foreground" />
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );
 };
 
-export const BlockLibrary = ({ onAdd, prefs, onPrefsChange }: Props) => {
+export const BlockLibrary = ({ onAdd, onAddMany, prefs, onPrefsChange }: Props) => {
   const [query, setQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("all");
   const [badgeFilter, setBadgeFilter] = useState<Set<Badge>>(new Set());
@@ -686,8 +708,7 @@ export const BlockLibrary = ({ onAdd, prefs, onPrefsChange }: Props) => {
               <div>
                 <div className="text-sm font-semibold">Starter kits</div>
                 <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                  Add blocks from curated creator kits. This keeps profiles beautiful, mobile-first, and easy to
-                  publish.
+                  Add a full kit in one click, or add individual blocks one by one.
                 </p>
               </div>
             </div>
@@ -695,7 +716,7 @@ export const BlockLibrary = ({ onAdd, prefs, onPrefsChange }: Props) => {
 
           <div className="space-y-3">
             {KIT_DEFINITIONS.map((kit) => (
-              <KitCard key={kit.title} kit={kit} blockMap={blockMap} onAdd={onAdd} />
+              <KitCard key={kit.title} kit={kit} blockMap={blockMap} onAdd={onAdd} onAddMany={onAddMany} />
             ))}
           </div>
         </TabsContent>
