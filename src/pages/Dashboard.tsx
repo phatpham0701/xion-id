@@ -11,6 +11,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { BRAND, RESERVED_USERNAMES } from "@/lib/brand";
 
 const usernameSchema = z
   .string()
@@ -38,6 +39,11 @@ const Onboarding = ({ profile, onSaved }: { profile: Profile; onSaved: (p: Profi
     const parsed = usernameSchema.safeParse(username);
     if (!parsed.success) return toast.error(parsed.error.issues[0].message);
 
+    const lower = parsed.data.toLowerCase();
+    if (RESERVED_USERNAMES.has(lower)) {
+      return toast.error("That handle is reserved", { description: "Pick another one." });
+    }
+
     setSaving(true);
     try {
       // Check availability (case-insensitive due to citext)
@@ -60,7 +66,7 @@ const Onboarding = ({ profile, onSaved }: { profile: Profile; onSaved: (p: Profi
         .select()
         .single();
       if (error) throw error;
-      toast.success("Profile claimed!", { description: `xionprofile.com/${parsed.data}` });
+      toast.success("Profile claimed!", { description: `${BRAND.domain}/${parsed.data}` });
       onSaved(data as Profile);
     } catch (err) {
       toast.error("Couldn't save", { description: err instanceof Error ? err.message : "Try again" });
@@ -82,13 +88,13 @@ const Onboarding = ({ profile, onSaved }: { profile: Profile; onSaved: (p: Profi
             Choose your <span className="text-gradient">handle</span>
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            This is your permanent XIONProfile URL. Pick wisely.
+            This is your permanent XionID URL. Pick wisely.
           </p>
         </div>
 
         <form onSubmit={claim} className="space-y-4">
           <div className="glass rounded-2xl flex items-center pl-4 pr-1 h-14 focus-within:border-primary/50 transition-colors">
-            <span className="text-sm text-muted-foreground select-none">xionprofile.com/</span>
+            <span className="text-sm text-muted-foreground select-none">{BRAND.domain}/</span>
             <Input
               autoFocus
               value={username}
@@ -190,12 +196,12 @@ const Dashboard = () => {
       {/* Header */}
       <header className="border-b border-border/40 glass sticky top-0 z-40">
         <div className="container flex h-16 items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
+          <Link to="/" className="flex items-center gap-2" aria-label="XionID home">
             <div className="h-9 w-9 rounded-xl bg-gradient-primary grid place-items-center shadow-glow-primary glow-primary">
               <Sparkles className="h-4 w-4 text-primary-foreground" strokeWidth={2.5} />
             </div>
             <span className="font-display text-lg font-semibold tracking-tight">
-              XION<span className="text-gradient">Profile</span>
+              Xion<span className="text-gradient">ID</span>
             </span>
           </Link>
           <div className="flex items-center gap-2">

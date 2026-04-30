@@ -68,7 +68,7 @@ const AuthCard = () => {
           options: { emailRedirectTo: `${window.location.origin}/dashboard` },
         });
         if (error) throw error;
-        toast.success("Welcome aboard!", { description: "Your XIONProfile is ready." });
+        toast.success("Welcome aboard!", { description: "Your XionID is ready." });
         navigate("/dashboard");
       } else {
         const { error } = await supabase.auth.signInWithPassword({
@@ -98,12 +98,12 @@ const AuthCard = () => {
           <Sparkles className="h-4 w-4 text-primary-foreground" strokeWidth={2.5} />
         </div>
         <span className="font-display text-lg font-semibold tracking-tight">
-          XION<span className="text-gradient">Profile</span>
+          Xion<span className="text-gradient">ID</span>
         </span>
       </div>
 
       <h1 className="font-display text-3xl font-bold tracking-tight mb-1.5">
-        {mode === "signup" ? "Create your profile" : "Welcome back"}
+        {mode === "signup" ? "Create your XionID" : "Welcome back"}
       </h1>
       <p className="text-sm text-muted-foreground mb-7">
         {mode === "signup"

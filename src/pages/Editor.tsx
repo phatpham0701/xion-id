@@ -168,7 +168,7 @@ const Editor = () => {
                 <Sparkles className="h-3.5 w-3.5 text-primary-foreground" strokeWidth={2.5} />
               </div>
               <span className="text-sm font-mono text-muted-foreground truncate">
-                xionprofile.com/{profile.username}
+                xionid.app/{profile.username}
               </span>
             </div>
           </div>

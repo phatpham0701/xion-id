@@ -16,7 +16,7 @@ const steps = [
   {
     icon: Share2,
     n: "03",
-    title: "Share xionprofile.com/you",
+    title: "Share xionid.app/you",
     desc: "Your profile lives at a clean handle URL. Share once, update forever. Free, gasless, on XION.",
   },
 ];

@@ -22,7 +22,7 @@ const CTA = () => {
 
           <div className="relative max-w-2xl mx-auto">
             <h2 className="font-display text-4xl md:text-6xl font-bold tracking-tight leading-[1.05]">
-              Claim your <span className="text-gradient">xionprofile</span>.
+              Claim your <span className="text-gradient">XionID</span>.
             </h2>
             <p className="mt-5 text-muted-foreground text-lg">
               Free for life. Gasless on XION. Live in under a minute.
@@ -30,7 +30,7 @@ const CTA = () => {
 
             <form className="mt-9 flex flex-col sm:flex-row gap-2 max-w-md mx-auto" onSubmit={onSubmit}>
               <div className="flex-1 glass rounded-full flex items-center pl-5 pr-1 h-12">
-                <span className="text-muted-foreground text-sm">xionprofile.com/</span>
+                <span className="text-muted-foreground text-sm">xionid.app/</span>
                 <input
                   type="text"
                   value={handle}
@@ -38,6 +38,7 @@ const CTA = () => {
                   placeholder="yourname"
                   className="flex-1 bg-transparent outline-none text-sm placeholder:text-muted-foreground/60 px-1"
                   maxLength={24}
+                  aria-label="Choose your handle"
                 />
               </div>
               <Button size="lg" type="submit" className="bg-gradient-primary text-primary-foreground hover:opacity-90 font-medium h-12 px-6 rounded-full shadow-glow-primary glow-primary group">
