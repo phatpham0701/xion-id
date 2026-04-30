@@ -110,6 +110,8 @@ export type Database = {
           updated_at: string
           user_id: string
           username: string | null
+          wallet_connected_at: string | null
+          xion_address: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -123,6 +125,8 @@ export type Database = {
           updated_at?: string
           user_id: string
           username?: string | null
+          wallet_connected_at?: string | null
+          xion_address?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -136,6 +140,8 @@ export type Database = {
           updated_at?: string
           user_id?: string
           username?: string | null
+          wallet_connected_at?: string | null
+          xion_address?: string | null
         }
         Relationships: []
       }
@@ -160,6 +166,36 @@ export type Database = {
         }
         Relationships: []
       }
+      wallet_badges: {
+        Row: {
+          id: string
+          kind: Database["public"]["Enums"]["badge_kind"]
+          metadata: Json
+          profile_id: string
+          tier: number
+          verified_at: string
+          xion_address: string
+        }
+        Insert: {
+          id?: string
+          kind: Database["public"]["Enums"]["badge_kind"]
+          metadata?: Json
+          profile_id: string
+          tier?: number
+          verified_at?: string
+          xion_address: string
+        }
+        Update: {
+          id?: string
+          kind?: Database["public"]["Enums"]["badge_kind"]
+          metadata?: Json
+          profile_id?: string
+          tier?: number
+          verified_at?: string
+          xion_address?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -175,6 +211,17 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user"
+      badge_kind:
+        | "og_2024"
+        | "og_2025"
+        | "nft_collector"
+        | "nft_minter"
+        | "tipper"
+        | "dapp_explorer"
+        | "campaign_participant"
+        | "contest_winner"
+        | "whale"
+        | "early_adopter"
       block_type:
         | "link"
         | "heading"
@@ -318,6 +365,18 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user"],
+      badge_kind: [
+        "og_2024",
+        "og_2025",
+        "nft_collector",
+        "nft_minter",
+        "tipper",
+        "dapp_explorer",
+        "campaign_participant",
+        "contest_winner",
+        "whale",
+        "early_adopter",
+      ],
       block_type: [
         "link",
         "heading",
