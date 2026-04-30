@@ -191,7 +191,7 @@ const PublicProfile = () => {
                 href={XION_CONFIG.explorerAddr(profile.xion_address)}
                 target="_blank"
                 rel="noreferrer"
-                onClick={() => trackEvent(profile.id, "wallet_click")}
+                onClick={() => trackEvent(profile.id, "block_click", "wallet_address")}
                 className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1.5 text-[11px] font-medium text-primary transition-transform hover:scale-105"
                 title="Connected XION wallet"
               >
