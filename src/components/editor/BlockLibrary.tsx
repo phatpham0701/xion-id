@@ -75,7 +75,7 @@ const IssueList = ({ issues, title }: { issues: ValidationIssue[]; title: string
   );
 };
 
-const BlockPreview = ({ meta }: { meta: BlockMeta }) => {
+const BlockPreview = ({ meta, onExpand }: { meta: BlockMeta; onExpand: () => void }) => {
   const style = themeStyleVars(PREVIEW_THEME);
   const previewBlock = {
     id: `preview-${meta.type}`,
@@ -85,9 +85,7 @@ const BlockPreview = ({ meta }: { meta: BlockMeta }) => {
     config: meta.previewConfig,
     is_visible: true,
   };
-  // Validate what the live preview is actually rendering.
   const previewIssues = validateBlockConfig(meta.type, meta.previewConfig);
-  // Validate what gets inserted when user clicks "Add" — usually has empty fields.
   const defaultIssues = validateBlockConfig(meta.type, meta.defaultConfig);
 
   return (
@@ -109,18 +107,26 @@ const BlockPreview = ({ meta }: { meta: BlockMeta }) => {
         </div>
       </div>
 
-      <div
-        className="rounded-2xl p-4 overflow-hidden border border-border/40"
+      {/* Click the inline preview to open full-screen view. */}
+      <button
+        type="button"
+        onClick={onExpand}
+        className="relative w-full rounded-2xl p-4 overflow-hidden border border-border/40 group hover:border-primary/40 transition-colors text-left"
         style={{
           ...style,
           background: BACKGROUNDS[PREVIEW_THEME.background].css,
           fontFamily: FONTS[PREVIEW_THEME.font].family,
         }}
+        aria-label="Open full-screen preview"
       >
-        <div className="text-foreground">
+        <div className="text-foreground pointer-events-none">
           <BlockRenderer block={previewBlock} theme={PREVIEW_THEME} />
         </div>
-      </div>
+        <div className="absolute top-2 right-2 h-6 px-1.5 rounded-md bg-background/80 backdrop-blur-sm border border-border opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 text-[10px] font-medium text-foreground">
+          <Maximize2 className="h-3 w-3" />
+          Full preview
+        </div>
+      </button>
 
       {/* Issues with the live preview content (rare — sample data should be valid). */}
       {previewIssues.length > 0 && (
