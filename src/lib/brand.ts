@@ -14,7 +14,7 @@ export const profileUrl = (username: string) =>
 // Routes & system handles that must NOT be claimable as a username,
 // because the public profile lives at "/:username".
 export const RESERVED_USERNAMES = new Set<string>([
-  "auth", "dashboard", "editor", "admin", "api", "settings",
+  "auth", "dashboard", "editor", "templates", "admin", "api", "settings",
   "login", "logout", "signup", "signin", "register",
   "about", "help", "support", "terms", "privacy", "legal",
   "home", "explore", "discover", "search", "new", "create",
