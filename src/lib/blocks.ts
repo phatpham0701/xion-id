@@ -1,11 +1,11 @@
 import {
   Link as LinkIcon, Type, Heading1, Image as ImageIcon, Music, Video,
-  AtSign, Wallet, Gem, Coins, Heart, Mail, Calendar, User,
+  AtSign, Wallet, Gem, Coins, Heart, Mail, Calendar, User, LayoutGrid,
 } from "lucide-react";
 
 export type BlockType =
   | "link" | "heading" | "text" | "avatar" | "social"
-  | "wallet" | "nft" | "token_balance"
+  | "wallet" | "nft" | "nft_gallery" | "token_balance"
   | "image" | "video_embed" | "music_embed"
   | "tip_jar" | "contact_form" | "calendar";
 
@@ -164,6 +164,18 @@ export const BLOCK_LIBRARY: BlockMeta[] = [
     category: "web3",
     defaultConfig: { contract: "", tokenId: "", title: "Featured NFT" },
     previewConfig: { contract: "xion1...", tokenId: "142", title: "Fidenza #142" },
+  },
+  {
+    type: "nft_gallery",
+    label: "NFT gallery",
+    description: "Live grid of NFTs you hold, fetched on-chain.",
+    useCase: "Show your full collection from one or more CW721 contracts.",
+    tip: "Paste collection contract addresses — we'll auto-fetch your tokens.",
+    badge: "Web3",
+    icon: LayoutGrid,
+    category: "web3",
+    defaultConfig: { title: "My NFTs", contracts: [], limit: 8 },
+    previewConfig: { title: "My XION NFTs", contracts: ["xion1..."], limit: 6 },
   },
   {
     type: "token_balance",

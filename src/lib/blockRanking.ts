@@ -19,7 +19,7 @@ export const PERSONAS: { id: Persona; label: string; emoji: string; hint: string
 const POPULARITY: Record<BlockType, number> = {
   avatar: 100, link: 95, social: 88, heading: 60, text: 70,
   image: 55, video_embed: 50, music_embed: 35,
-  wallet: 40, nft: 30, token_balance: 18,
+  wallet: 40, nft: 30, nft_gallery: 42, token_balance: 18,
   tip_jar: 28, calendar: 45, contact_form: 38,
 };
 
@@ -29,7 +29,7 @@ const PERSONA_BOOST: Record<Persona, Partial<Record<BlockType, number>>> = {
     video_embed: 60, music_embed: 55, image: 35, link: 30, social: 30, tip_jar: 40,
   },
   web3: {
-    wallet: 70, nft: 55, token_balance: 50, tip_jar: 45, link: 20,
+    wallet: 70, nft: 55, nft_gallery: 65, token_balance: 50, tip_jar: 45, link: 20,
   },
   professional: {
     calendar: 70, contact_form: 60, link: 30, text: 25, social: 20,

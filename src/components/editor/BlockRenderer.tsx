@@ -21,6 +21,7 @@ import {
 import type { Block } from "@/lib/blocks";
 import { getBlockMeta } from "@/lib/blocks";
 import { LiveTipJarBlock } from "@/components/blocks/LiveTipJarBlock";
+import { LiveNftGalleryBlock } from "@/components/blocks/LiveNftGalleryBlock";
 import type { ProfileTheme } from "@/lib/theme";
 import { cn } from "@/lib/utils";
 
@@ -518,9 +519,59 @@ export const BlockRenderer = ({ block, theme, onClick, ownerXionAddress, interac
       );
     }
 
+    case "nft_gallery": {
+      const title = getString(config, "title", "My NFTs");
+      const rawContracts = (config as { contracts?: unknown }).contracts;
+      const contracts = Array.isArray(rawContracts)
+        ? (rawContracts.filter((c) => typeof c === "string" && c.trim()) as string[])
+        : [];
+      const limit = Math.max(1, Math.min(24, Number((config as { limit?: number }).limit ?? 8)));
+
+      return (
+        <StyledBlock
+          style={{
+            ...blockStyle,
+            backgroundStyle: blockStyle.backgroundStyle === "none" ? "glass" : blockStyle.backgroundStyle,
+          }}
+        >
+          {interactive ? (
+            <LiveNftGalleryBlock
+              ownerAddress={ownerXionAddress}
+              contracts={contracts}
+              limit={limit}
+              title={title}
+            />
+          ) : (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <div className="grid h-9 w-9 place-items-center rounded-2xl bg-secondary/15 text-secondary">
+                  <Gem className="h-4 w-4" />
+                </div>
+                <div>
+                  <div className="text-sm font-bold">{title}</div>
+                  <div className="text-[10px] text-muted-foreground">
+                    {contracts.length} collection{contracts.length === 1 ? "" : "s"} · live on profile
+                  </div>
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                {Array.from({ length: Math.min(6, limit) }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="aspect-square rounded-2xl border border-white/10 bg-gradient-to-br from-primary/10 to-secondary/10"
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+        </StyledBlock>
+      );
+    }
+
     case "token_balance": {
       const label = getString(config, "label", "Token balance");
       const token = getString(config, "token", "XION");
+
 
       return (
         <StyledBlock

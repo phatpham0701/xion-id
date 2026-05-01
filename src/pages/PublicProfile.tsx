@@ -6,6 +6,7 @@ import { BlockRenderer } from "@/components/editor/BlockRenderer";
 import { themeFromJson, themeStyleVars } from "@/lib/theme";
 import { trackEvent } from "@/lib/analytics";
 import { XION_CONFIG, truncateAddress } from "@/lib/xion";
+import { PublicBadgesStrip } from "@/components/blocks/PublicBadgesBlock";
 import type { Block } from "@/lib/blocks";
 
 type PublicProfile = {
@@ -214,6 +215,8 @@ const PublicProfile = () => {
             ) : null}
           </div>
         </header>
+
+        <PublicBadgesStrip profileId={profile.id} />
 
         <section className="space-y-3">
           {blocks.length === 0 ? (
