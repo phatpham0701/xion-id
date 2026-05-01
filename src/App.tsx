@@ -22,13 +22,13 @@ const queryClient = new QueryClient();
 // or invalid treasury makes Abstraxion crash with
 // "Unable to load application details" because it tries to query a contract
 // that doesn't exist on chain.
-const abstraxionConfig: Record<string, unknown> = {
+const abstraxionConfig = {
   chainId: XION_CONFIG.chainId,
   rpcUrl: XION_CONFIG.rpcUrl,
   restUrl: XION_CONFIG.restUrl,
   gasPrice: "0.001uxion",
   ...(XION_CONFIG.treasury ? { treasury: XION_CONFIG.treasury } : {}),
-};
+} as Parameters<typeof AbstraxionProvider>[0]["config"];
 
 function App() {
   return (
