@@ -82,7 +82,7 @@ export type RecordTipParams = {
 };
 
 export const recordTip = async (params: RecordTipParams): Promise<void> => {
-  const amountUxion = xionToUxion(params.amountXion).toString();
+  const amountUxion = Number(xionToUxion(params.amountXion));
   const trimmed = params.message?.trim().slice(0, MAX_MESSAGE_LEN) || null;
 
   const { error } = await supabase.from("tips").insert({
