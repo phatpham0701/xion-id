@@ -567,8 +567,11 @@ export const BlockRenderer = ({ block, theme, onClick, ownerXionAddress, interac
         </StyledBlock>
       );
     }
+
+    case "token_balance": {
       const label = getString(config, "label", "Token balance");
       const token = getString(config, "token", "XION");
+
 
       return (
         <StyledBlock
