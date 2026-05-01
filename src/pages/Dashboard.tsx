@@ -17,6 +17,7 @@ import { AnalyticsPanel } from "@/components/dashboard/AnalyticsPanel";
 import { RecentActivity } from "@/components/dashboard/RecentActivity";
 import { WalletCard } from "@/components/dashboard/WalletCard";
 import { TipAnalyticsCard } from "@/components/dashboard/TipAnalyticsCard";
+import { BadgesCard } from "@/components/dashboard/BadgesCard";
 
 const usernameSchema = z
   .string()
@@ -235,6 +236,7 @@ const Dashboard = () => {
               <WalletCard />
               <EmptyStateHero />
             </div>
+            <BadgesCard profileId={profile.id} />
           </>
         ) : (
           <div className="grid lg:grid-cols-[1.6fr_1fr] gap-6">
@@ -248,6 +250,7 @@ const Dashboard = () => {
             </div>
             <div className="space-y-6">
               <WalletCard />
+              <BadgesCard profileId={profile.id} />
               <TipAnalyticsCard profileId={profile.id} />
               <AnalyticsPanel profileId={profile.id} />
             </div>

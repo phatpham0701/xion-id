@@ -250,6 +250,52 @@ export const Inspector = ({ block, onChange, onDelete }: Props) => {
           </>
         );
 
+      case "nft_gallery": {
+        const contracts = Array.isArray((config as { contracts?: unknown }).contracts)
+          ? ((config as { contracts: unknown[] }).contracts.filter(
+              (x): x is string => typeof x === "string",
+            ))
+          : [];
+        const contractsText = contracts.join("\n");
+        const limit = Number((config as { limit?: number }).limit ?? 8);
+        return (
+          <>
+            <Field label="Title">
+              <Input value={c.title || ""} onChange={(e) => set("title", e.target.value)} />
+            </Field>
+            <Field
+              label="Collection contracts"
+              hint="One CW721 contract address per line. We fetch your tokens from each."
+            >
+              <Textarea
+                rows={3}
+                value={contractsText}
+                onChange={(e) =>
+                  set(
+                    "contracts",
+                    e.target.value
+                      .split(/\n+/)
+                      .map((s) => s.trim())
+                      .filter(Boolean),
+                  )
+                }
+                placeholder="xion1abc...&#10;xion1xyz..."
+                className="font-mono text-xs"
+              />
+            </Field>
+            <Field label="Max items" hint="Total NFTs to show across all collections (1–24).">
+              <Input
+                type="number"
+                min={1}
+                max={24}
+                value={String(limit)}
+                onChange={(e) => set("limit", Math.max(1, Math.min(24, Number(e.target.value) || 8)))}
+              />
+            </Field>
+          </>
+        );
+      }
+
       case "token_balance":
         return (
           <>

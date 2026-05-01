@@ -73,11 +73,11 @@ export const WalletCard = () => {
           <div className="mt-4 rounded-2xl border border-glass-border/60 p-3">
             <div className="flex items-center justify-between text-xs">
               <span className="font-medium">On-chain badges</span>
-              <span className="text-muted-foreground">Coming in Step 3</span>
+              <span className="text-primary">Live ⚡</span>
             </div>
             <p className="mt-1.5 text-[11px] text-muted-foreground leading-relaxed">
-              We'll scan your wallet history and award badges like <em>OG 2024</em>,
-              <em> NFT Collector</em>, <em>dApp Explorer</em> — all verified on-chain.
+              Use the <em>Badges</em> card below to scan your wallet and unlock badges like
+              <em> OG 2024</em>, <em>NFT Collector</em>, and <em>dApp Explorer</em>.
             </p>
           </div>
 
