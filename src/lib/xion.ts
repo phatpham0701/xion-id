@@ -7,7 +7,9 @@
 // If unset, wallet connect will be disabled with a friendly message instead
 // of crashing inside Abstraxion's "Unable to load application details" modal.
 
-const ENV_TREASURY = (import.meta.env.VITE_XION_TREASURY as string | undefined)?.trim();
+const FALLBACK_TREASURY = "xion1m69vedc7x4p0rx3gkgwyrk87qnqda62evvwut7923evqztnx97gq3cst8h";
+const ENV_TREASURY =
+  (import.meta.env.VITE_XION_TREASURY as string | undefined)?.trim() || FALLBACK_TREASURY;
 
 // Bech32 quick check — Abstraxion will reject anything that isn't a
 // well-formed xion1… contract address with a valid checksum.
