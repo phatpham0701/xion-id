@@ -1,4 +1,4 @@
-import type { GranteeSignerClient } from "@burnt-labs/abstraxion";
+import type { SigningClient } from "@burnt-labs/abstraxion";
 import { supabase } from "@/integrations/supabase/client";
 import { XION_CONFIG } from "@/lib/xion";
 
