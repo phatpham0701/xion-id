@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import type { Block } from "@/lib/blocks";
 import { getBlockMeta } from "@/lib/blocks";
+import { LiveTipJarBlock } from "@/components/blocks/LiveTipJarBlock";
 import type { ProfileTheme } from "@/lib/theme";
 import { cn } from "@/lib/utils";
 
