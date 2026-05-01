@@ -1,4 +1,5 @@
 import { useState } from "react";
+// (no extra type imports needed — sendTip accepts any abstraxion SigningClient)
 import { Heart, Loader2, ExternalLink, Check, Zap, AlertCircle } from "lucide-react";
 import { useAbstraxionAccount, useAbstraxionSigningClient } from "@burnt-labs/abstraxion";
 import { toast } from "sonner";
