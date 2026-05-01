@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { Copy, Check, ExternalLink, Loader2, LogOut, Wallet, Zap } from "lucide-react";
+import { AlertTriangle, Copy, Check, ExternalLink, Loader2, LogOut, Wallet, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useXionWallet } from "@/hooks/useXionWallet";
-import { XION_CONFIG, truncateAddress } from "@/lib/xion";
+import { XION_CONFIG, isTreasuryConfigured, truncateAddress } from "@/lib/xion";
 import { toast } from "sonner";
 
 export const WalletCard = () => {
