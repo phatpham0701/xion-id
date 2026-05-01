@@ -268,7 +268,7 @@ const Placeholder = ({ label, style }: { label: string; style: BlockStyle }) => 
   </StyledBlock>
 );
 
-export const BlockRenderer = ({ block, theme, onClick, ownerXionAddress }: Props) => {
+export const BlockRenderer = ({ block, theme, onClick, ownerXionAddress, interactive = false }: Props) => {
   const config = getConfig(block);
   const blockStyle = getBlockStyle(config);
   const radius = "var(--theme-radius)";
