@@ -159,7 +159,7 @@ export const LiveTipJarBlock = ({
       }
 
       // Analytics event for the owner's dashboard.
-      trackEvent(profileId, "block_click", `tip_${blockId}`).catch(() => {});
+      trackEvent(profileId, "block_click", blockId).catch(() => {});
 
       setSuccess({ hash: txHash, amount: effectiveAmount });
       toast.success(`Tipped ${effectiveAmount} ${currency} ⚡`, {
