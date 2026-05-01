@@ -31,7 +31,29 @@ export const WalletCard = () => {
         </div>
       </div>
 
-      {!isConnected ? (
+      {!isTreasuryConfigured() ? (
+        <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="h-4 w-4 shrink-0 text-amber-500 mt-0.5" />
+            <div className="text-xs text-foreground/80 leading-relaxed">
+              <div className="font-semibold text-foreground mb-1">XION treasury not configured</div>
+              <p className="text-muted-foreground">
+                Wallet connect needs a treasury contract on <code className="font-mono">xion-testnet-2</code> to load app details and sponsor gas.
+                Create one at{" "}
+                <a
+                  href="https://dashboard.burnt.com"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-primary underline underline-offset-2"
+                >
+                  dashboard.burnt.com
+                </a>{" "}
+                then set <code className="font-mono">VITE_XION_TREASURY</code> in your project settings.
+              </p>
+            </div>
+          </div>
+        </div>
+      ) : !isConnected ? (
         <>
           <Button
             onClick={connect}
