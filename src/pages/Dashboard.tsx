@@ -16,6 +16,7 @@ import { ShareDialog } from "@/components/dashboard/ShareDialog";
 import { AnalyticsPanel } from "@/components/dashboard/AnalyticsPanel";
 import { RecentActivity } from "@/components/dashboard/RecentActivity";
 import { WalletCard } from "@/components/dashboard/WalletCard";
+import { TipAnalyticsCard } from "@/components/dashboard/TipAnalyticsCard";
 
 const usernameSchema = z
   .string()
@@ -247,6 +248,7 @@ const Dashboard = () => {
             </div>
             <div className="space-y-6">
               <WalletCard />
+              <TipAnalyticsCard profileId={profile.id} />
               <AnalyticsPanel profileId={profile.id} />
             </div>
           </div>

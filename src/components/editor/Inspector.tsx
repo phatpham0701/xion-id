@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
@@ -261,7 +262,19 @@ export const Inspector = ({ block, onChange, onDelete }: Props) => {
           </>
         );
 
-      case "tip_jar":
+      case "tip_jar": {
+        const amounts = Array.isArray(c.suggestedAmounts) ? (c.suggestedAmounts as unknown[]) : [0.1, 0.5, 1];
+        const a0 = String(amounts[0] ?? "");
+        const a1 = String(amounts[1] ?? "");
+        const a2 = String(amounts[2] ?? "");
+        const setAmount = (idx: number, val: string) => {
+          const next = [a0, a1, a2];
+          next[idx] = val;
+          set(
+            "suggestedAmounts",
+            next.map((v) => parseFloat(v)).filter((n) => Number.isFinite(n) && n > 0),
+          );
+        };
         return (
           <>
             <Field label="Title">
@@ -285,8 +298,36 @@ export const Inspector = ({ block, onChange, onDelete }: Props) => {
                 placeholder="Support my work with a quick XION tip."
               />
             </Field>
+            <Field label="Suggested amounts" hint="Up to 3 quick-pick amounts shown to tippers.">
+              <div className="grid grid-cols-3 gap-2">
+                <Input type="number" min="0" step="0.01" value={a0} onChange={(e) => setAmount(0, e.target.value)} placeholder="0.1" />
+                <Input type="number" min="0" step="0.01" value={a1} onChange={(e) => setAmount(1, e.target.value)} placeholder="0.5" />
+                <Input type="number" min="0" step="0.01" value={a2} onChange={(e) => setAmount(2, e.target.value)} placeholder="1" />
+              </div>
+            </Field>
+            <div className="flex items-center justify-between rounded-xl border border-border/50 bg-background/40 px-3 py-2.5">
+              <div>
+                <div className="text-sm font-medium">Allow custom amount</div>
+                <p className="text-[11px] text-muted-foreground">Tippers can type any amount.</p>
+              </div>
+              <Switch
+                checked={(c.allowCustom as unknown as boolean) !== false}
+                onCheckedChange={(v) => set("allowCustom", v)}
+              />
+            </div>
+            <div className="flex items-center justify-between rounded-xl border border-border/50 bg-background/40 px-3 py-2.5">
+              <div>
+                <div className="text-sm font-medium">Allow message</div>
+                <p className="text-[11px] text-muted-foreground">Add a 280-char note to each tip.</p>
+              </div>
+              <Switch
+                checked={(c.allowMessage as unknown as boolean) !== false}
+                onCheckedChange={(v) => set("allowMessage", v)}
+              />
+            </div>
           </>
         );
+      }
 
       case "contact_form":
         return (

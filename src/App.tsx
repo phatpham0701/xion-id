@@ -26,7 +26,8 @@ const abstraxionConfig = {
   gasPrice: "0.001uxion",
 };
 
-const App = () => (
+function App() {
+  return (
   <QueryClientProvider client={queryClient}>
     <AbstraxionProvider config={abstraxionConfig}>
     <TooltipProvider>
@@ -80,6 +81,7 @@ const App = () => (
     </TooltipProvider>
     </AbstraxionProvider>
   </QueryClientProvider>
-);
+  );
+}
 
 export default App;

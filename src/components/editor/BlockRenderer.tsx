@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import type { Block } from "@/lib/blocks";
 import { getBlockMeta } from "@/lib/blocks";
+import { LiveTipJarBlock } from "@/components/blocks/LiveTipJarBlock";
 import type { ProfileTheme } from "@/lib/theme";
 import { cn } from "@/lib/utils";
 
@@ -28,6 +29,8 @@ type Props = {
   theme: ProfileTheme;
   onClick?: () => void;
   ownerXionAddress?: string | null;
+  /** When true, web3 blocks render their interactive (on-chain) variant. */
+  interactive?: boolean;
 };
 
 type BlockStyle = {
@@ -265,7 +268,7 @@ const Placeholder = ({ label, style }: { label: string; style: BlockStyle }) => 
   </StyledBlock>
 );
 
-export const BlockRenderer = ({ block, theme, onClick, ownerXionAddress }: Props) => {
+export const BlockRenderer = ({ block, theme, onClick, ownerXionAddress, interactive = false }: Props) => {
   const config = getConfig(block);
   const blockStyle = getBlockStyle(config);
   const radius = "var(--theme-radius)";
@@ -550,7 +553,19 @@ export const BlockRenderer = ({ block, theme, onClick, ownerXionAddress }: Props
       const cta = getString(config, "cta", "Tip on XION");
       const description =
         getString(config, "description") ||
-        "Scan, choose an amount, and support this creator through a XION-powered flow.";
+        "Send a quick on-chain tip — gas is sponsored by the creator's treasury.";
+
+      const rawAmounts = (config as { suggestedAmounts?: unknown }).suggestedAmounts;
+      const suggestedAmounts =
+        Array.isArray(rawAmounts) && rawAmounts.length > 0
+          ? (rawAmounts
+              .map((a) => Number(a))
+              .filter((n) => Number.isFinite(n) && n > 0)
+              .slice(0, 3) as number[])
+          : [0.1, 0.5, 1];
+
+      const allowCustom = (config as { allowCustom?: boolean }).allowCustom ?? true;
+      const allowMessage = (config as { allowMessage?: boolean }).allowMessage ?? true;
 
       return (
         <StyledBlock
@@ -561,48 +576,62 @@ export const BlockRenderer = ({ block, theme, onClick, ownerXionAddress }: Props
             shadow: blockStyle.shadow === "none" ? "glow" : blockStyle.shadow,
           }}
         >
-          <div className="space-y-4">
-            <div
-              className={cn(
-                "flex items-start gap-3",
-                blockStyle.alignment === "center" && "justify-center text-center",
-              )}
-            >
-              <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-primary/20 text-primary">
-                <Heart className="h-5 w-5" />
-              </div>
-
-              <div className={cn("min-w-0", blockStyle.alignment === "center" ? "text-center" : "text-left")}>
-                <div className="text-base font-bold text-foreground">{title}</div>
-                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{description}</p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-3 gap-2">
-              {["0.1", "0.5", "1"].map((amount) => (
-                <div
-                  key={amount}
-                  className="rounded-2xl border border-white/10 bg-background/45 px-3 py-2 text-center text-xs font-semibold text-foreground backdrop-blur"
-                >
-                  {amount} {currency}
+          {interactive ? (
+            <LiveTipJarBlock
+              profileId={block.profile_id}
+              blockId={block.id}
+              recipientAddress={ownerXionAddress}
+              title={title}
+              description={description}
+              cta={cta}
+              currency={currency}
+              suggestedAmounts={suggestedAmounts.length ? suggestedAmounts : [0.1, 0.5, 1]}
+              allowCustom={allowCustom}
+              allowMessage={allowMessage}
+            />
+          ) : (
+            <div className="space-y-4">
+              <div
+                className={cn(
+                  "flex items-start gap-3",
+                  blockStyle.alignment === "center" && "justify-center text-center",
+                )}
+              >
+                <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-primary/20 text-primary">
+                  <Heart className="h-5 w-5" />
                 </div>
-              ))}
-            </div>
+                <div className={cn("min-w-0", blockStyle.alignment === "center" ? "text-center" : "text-left")}>
+                  <div className="text-base font-bold text-foreground">{title}</div>
+                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{description}</p>
+                </div>
+              </div>
 
-            <div
-              className="flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/20"
-              style={{
-                background: "linear-gradient(135deg, hsl(var(--theme-accent)), hsl(var(--theme-accent-glow)))",
-              }}
-            >
-              <Zap className="h-4 w-4" />
-              {cta}
-            </div>
+              <div className="grid grid-cols-3 gap-2">
+                {suggestedAmounts.map((amount) => (
+                  <div
+                    key={amount}
+                    className="rounded-2xl border border-white/10 bg-background/45 px-3 py-2 text-center text-xs font-semibold text-foreground backdrop-blur"
+                  >
+                    {amount} {currency}
+                  </div>
+                ))}
+              </div>
 
-            <div className="rounded-full border border-primary/30 bg-background/40 px-3 py-1.5 text-center text-[11px] text-muted-foreground">
-              XION testnet tip integration in progress
+              <div
+                className="flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/20"
+                style={{
+                  background: "linear-gradient(135deg, hsl(var(--theme-accent)), hsl(var(--theme-accent-glow)))",
+                }}
+              >
+                <Zap className="h-4 w-4" />
+                {cta}
+              </div>
+
+              <div className="rounded-full border border-primary/30 bg-background/40 px-3 py-1.5 text-center text-[11px] text-muted-foreground">
+                Preview · live tipping enabled on the public profile
+              </div>
             </div>
-          </div>
+          )}
         </StyledBlock>
       );
     }
