@@ -26,7 +26,7 @@ export const formatXion = (uxion: bigint | number | string, digits = 4): string 
 };
 
 export type SendTipParams = {
-  client: GranteeSignerClient;
+  client: SigningClient;
   senderAddress: string;
   recipientAddress: string;
   amountXion: number;
