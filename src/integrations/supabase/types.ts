@@ -145,6 +145,45 @@ export type Database = {
         }
         Relationships: []
       }
+      tips: {
+        Row: {
+          amount_uxion: number
+          block_height: number | null
+          block_id: string | null
+          created_at: string
+          id: string
+          message: string | null
+          profile_id: string
+          recipient_address: string
+          sender_address: string
+          tx_hash: string
+        }
+        Insert: {
+          amount_uxion: number
+          block_height?: number | null
+          block_id?: string | null
+          created_at?: string
+          id?: string
+          message?: string | null
+          profile_id: string
+          recipient_address: string
+          sender_address: string
+          tx_hash: string
+        }
+        Update: {
+          amount_uxion?: number
+          block_height?: number | null
+          block_id?: string | null
+          created_at?: string
+          id?: string
+          message?: string | null
+          profile_id?: string
+          recipient_address?: string
+          sender_address?: string
+          tx_hash?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string

@@ -1,139 +1,59 @@
+# Step 2 — On-chain Tip Jar (gasless via Treasury)
 
-# Phase 2 – Step 1: Abstraxion Wallet Foundation
+## A) Quick fix first
+Convert `App` from arrow to function declaration in `src/App.tsx` to silence the `Function components cannot be given refs` warning from `lovable-tagger`.
 
-Bước đầu tiên của Xion integration: cho phép user đăng nhập ví XION qua Abstraxion (Meta Account / social login), lưu địa chỉ `xion1...` vào profile, và chuẩn bị schema cho các step sau (tip jar, on-chain badges, NFT scanner).
+## B) Tip Jar — what we build
 
-## Phạm vi step này
+A new block type **`tip_jar`** that any visitor can use to send XION (uxion) directly to the profile owner's wallet, with the gas fee sponsored by your treasury contract (so visitors pay 0 gas).
 
-1. Cài Abstraxion SDK + cấu hình XION testnet-2 với treasury của bạn.
-2. Bọc app bằng `AbstraxionProvider` (có config gasless qua treasury).
-3. Tạo hook `useXionWallet()` thống nhất (connect / disconnect / address / status).
-4. Mở rộng `profiles` table với `xion_address` + `wallet_connected_at`.
-5. UI mới trong **Dashboard** & **Editor**: nút "Connect XION Wallet" với badge trạng thái.
-6. Hiển thị địa chỉ XION (truncated `xion1m6...8h`) trên public profile khi đã connect.
-7. Tạo bảng `wallet_badges` (chưa cấp badge — chỉ schema + RLS, để Step 3 fill data on-chain).
+### User flow
+1. Owner adds "Tip Jar" block from the Block Library → picks suggested amounts (e.g. 1 / 5 / 10 XION) + optional message prompt.
+2. Visitor opens public profile → clicks "Tip 5 XION" → Abstraxion modal opens (Meta Account login if not connected) → signs → tx broadcast → success toast with Mintscan link.
+3. Tip is recorded on-chain (MsgSend) AND mirrored into a new `tips` table for analytics/leaderboard.
 
-Các step **chưa làm** trong lần này (sẽ làm tiếp sau khi Step 1 chạy ổn):
-- Step 2: Tip Jar gửi XION on-chain qua treasury.
-- Step 3: Edge function scanner quét tx history → cấp badges (OG 2024, NFT Holder, Tipper, dApp user…).
-- Step 4: Tip history + analytics.
-
-## Technical details
-
-### Packages
-- `@burnt-labs/abstraxion` — Meta Account / social login wallet
-- `@burnt-labs/abstraxion-core`
-- `@burnt-labs/ui` — base styles cho modal Abstraxion (chỉ import CSS)
-- `@cosmjs/stargate` — sẵn sàng cho Step 2 query/broadcast
-
-### Cấu hình XION (file mới `src/lib/xion.ts`)
-```ts
-export const XION_CONFIG = {
-  treasury: "xion1m69vedc7x4p0rx3gkgwyrk87qnqda62evvwut7923evqztnx97gq3cst8h",
-  rpcUrl: "https://rpc.xion-testnet-2.burnt.com:443",
-  restUrl: "https://api.xion-testnet-2.burnt.com:443",
-  chainId: "xion-testnet-2",
-  denom: "uxion",
-  explorerTx: (h: string) => `https://explorer.burnt.com/xion-testnet-2/tx/${h}`,
-  explorerAddr: (a: string) => `https://explorer.burnt.com/xion-testnet-2/account/${a}`,
-};
-```
-Không cần secret — đây là endpoints public testnet. Step sau nếu chuyển mainnet, swap qua `import.meta.env`.
-
-### Provider tree (`src/App.tsx`)
-Bọc thêm `AbstraxionProvider` ngay trong `BrowserRouter`, truyền `treasury`, `rpcUrl`, `restUrl`. Import `@burnt-labs/abstraxion/dist/index.css` ở `main.tsx`.
-
-### Hook `src/hooks/useXionWallet.ts`
-Wrap `useAbstraxionAccount` + `useModal` của Abstraxion để expose API tối giản cho UI:
-```ts
-{ address, isConnected, isConnecting, connect(), disconnect(), openModal() }
-```
-Khi `address` xuất hiện và user đã đăng nhập Supabase → gọi `syncWalletToProfile(address)` (upsert `xion_address` + `wallet_connected_at` vào profile của user).
-
-### Database changes (migration)
+### Database (1 migration)
 ```sql
--- profiles: thêm 2 cột
-ALTER TABLE public.profiles
-  ADD COLUMN xion_address text,
-  ADD COLUMN wallet_connected_at timestamptz;
-
-CREATE UNIQUE INDEX profiles_xion_address_unique
-  ON public.profiles(xion_address) WHERE xion_address IS NOT NULL;
-
--- wallet_badges: chuẩn bị cho Step 3
-CREATE TYPE public.badge_kind AS ENUM (
-  'og_2024','og_2025','nft_collector','nft_minter','tipper',
-  'dapp_explorer','campaign_participant','contest_winner','whale','early_adopter'
+create table public.tips (
+  id uuid primary key default gen_random_uuid(),
+  profile_id uuid not null,            -- recipient profile
+  block_id uuid,                        -- which tip_jar block
+  recipient_address text not null,      -- owner's xion_address at time of tip
+  sender_address text not null,         -- visitor's xion_address
+  amount_uxion bigint not null,         -- raw uxion amount
+  message text,                         -- optional, max 280 chars
+  tx_hash text not null unique,
+  block_height bigint,
+  created_at timestamptz not null default now()
 );
-
-CREATE TABLE public.wallet_badges (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  profile_id uuid NOT NULL,
-  xion_address text NOT NULL,
-  kind public.badge_kind NOT NULL,
-  tier int NOT NULL DEFAULT 1,
-  metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
-  verified_at timestamptz NOT NULL DEFAULT now(),
-  UNIQUE(profile_id, kind)
-);
-
-ALTER TABLE public.wallet_badges ENABLE ROW LEVEL SECURITY;
-
--- ai cũng xem được (public profile hiển thị badge)
-CREATE POLICY "Badges viewable by everyone"
-  ON public.wallet_badges FOR SELECT USING (true);
-
--- chỉ owner xoá; insert/update do service role làm (qua scanner edge fn ở Step 3)
-CREATE POLICY "Owners can delete their badges"
-  ON public.wallet_badges FOR DELETE TO authenticated
-  USING (EXISTS (SELECT 1 FROM profiles p WHERE p.id = profile_id AND p.user_id = auth.uid()));
+-- RLS: public SELECT (for leaderboards), INSERT allowed for anon+authed
+--      (tx_hash uniqueness + on-chain verification keeps it honest)
 ```
-RLS giữ nguyên pattern hiện có. `xion_address` không bị giới hạn unique cứng giữa user (cùng ví không thể link 2 profile, nhờ partial unique index).
+Add `tip_jar` to the existing `block_type` enum.
 
-### UI changes
+### Files to create
+- `src/lib/tipJar.ts` — build `MsgSend`, broadcast via `useAbstraxionSigningClient`, parse tx hash/height, record into `tips` table.
+- `src/components/blocks/TipJarBlock.tsx` — visitor-facing UI: amount chips, custom amount, optional message, "Connect & Tip" button, success state with explorer link.
+- `src/components/blocks/TipJarInspector.tsx` — owner editor: title, suggested amounts, allow custom amount, allow message, min/max amount.
+- `src/hooks/useTipHistory.ts` — fetch tips for a profile (recent + totals).
+- `src/components/dashboard/TipAnalyticsCard.tsx` — owner dashboard widget: total received, tip count, top tippers, recent tips list with explorer links.
 
-**`src/components/dashboard/WalletCard.tsx` (mới)**
-Card glass hiển thị:
-- Chưa connect → button "Connect XION Wallet" (gradient primary, icon ⚡).
-- Đã connect → avatar gradient + địa chỉ truncated + "Copy" + "View on explorer" + "Disconnect".
-- Placeholder section "Badges (verified on-chain)" với skeleton + chú thích "Step 3 sẽ tự động quét và cấp huy hiệu".
+### Files to edit
+- `src/lib/blocks.ts` — register `tip_jar` block type with default config.
+- `src/components/editor/BlockLibrary.tsx` — add Tip Jar to library (with ⚡ icon, "On-chain" badge).
+- `src/components/editor/BlockRenderer.tsx` — render `TipJarBlock` for `tip_jar` type.
+- `src/components/editor/Inspector.tsx` — wire `TipJarInspector` for `tip_jar`.
+- `src/pages/Dashboard.tsx` — add `TipAnalyticsCard` to the right column (only if owner has at least one tip_jar block).
+- `src/App.tsx` — fix forwardRef warning.
 
-Nhúng card này vào **Dashboard** (cột phải, trên `AnalyticsPanel`) và một version compact trong header **Editor**.
+### Technical details
+- **Gasless**: pass treasury address in `granter` field of fee, so the treasury fee grant pays gas. This is already enabled because `AbstraxionProvider` is configured with `treasury`.
+- **Validation**: amount must be > 0 and ≤ 1000 XION (sanity cap, configurable per block). Message capped at 280 chars, sanitized.
+- **Owner must have wallet connected**: if profile owner has no `xion_address`, the Tip Jar block renders a friendly "Owner hasn't connected a wallet yet" state instead of a broken button.
+- **Tip recording**: after broadcast success, client-side `INSERT` into `tips` with the on-chain tx_hash. Uniqueness on `tx_hash` prevents duplicates. (A future hardening step would be a server-side verifier edge function — noted for Step 3.)
+- **Analytics**: also fire an `analytics_events` row with `event_type = 'tip_sent'` for the existing analytics panel.
 
-**`src/pages/PublicProfile.tsx`**
-Khi `profile.xion_address` có giá trị → render badge nhỏ dưới display name:
-```
-⚡ xion1m6...st8h   ✓ Verified wallet
-```
-Click mở explorer ở tab mới. Chỉ hiển thị nếu owner đã connect.
-
-**`src/components/editor/BlockRenderer.tsx`** — block `wallet`
-Nếu `c.address` rỗng nhưng owner đã connect ví → auto fallback dùng `profile.xion_address` thay vì để trống. Việc này khiến block "wallet" trở nên zero-config.
-
-### Validation & UX
-- Toast: "Wallet connected ⚡" / "Disconnected".
-- Đang connecting hiển thị Loader2 spinner trong button.
-- Nếu Abstraxion modal bị đóng giữa chừng → silent (không toast lỗi).
-- Lỗi thực sự (treasury sai, RPC down) → `toast.error` kèm description ngắn.
-
-### Files sẽ tạo / sửa
-- create `src/lib/xion.ts`
-- create `src/hooks/useXionWallet.ts`
-- create `src/components/dashboard/WalletCard.tsx`
-- edit `src/App.tsx` (bọc `AbstraxionProvider`)
-- edit `src/main.tsx` (import CSS Abstraxion)
-- edit `src/pages/Dashboard.tsx` (mount `WalletCard`)
-- edit `src/pages/Editor.tsx` (compact wallet status ở header)
-- edit `src/pages/PublicProfile.tsx` (verified wallet badge)
-- edit `src/components/editor/BlockRenderer.tsx` (fallback address cho block `wallet`)
-- migration: cột `xion_address` + bảng `wallet_badges`
-
-## Acceptance criteria
-1. Bấm "Connect XION Wallet" → modal Abstraxion mở → đăng nhập email/social → modal đóng → địa chỉ `xion1...` xuất hiện trong card.
-2. Reload trang → wallet vẫn connected (Abstraxion tự persist), `xion_address` đã ghi vào DB.
-3. Bấm "Disconnect" → ví ngắt, địa chỉ biến mất khỏi UI (DB giữ nguyên để badges Step 3 không mất — chỉ clear khi user xoá hẳn profile).
-4. Public profile của user hiển thị verified wallet badge với địa chỉ truncated.
-5. Block `wallet` trong editor tự lấy địa chỉ XION nếu owner để trống config.
-6. Không có console error; bundle build sạch.
-
-Nếu OK mình bắt đầu thực thi ngay. Sau khi Step 1 chạy mượt, mình tiếp tục Step 2 (Tip Jar on-chain).
+### Out of scope for this step (saved for later)
+- NFT gallery on-chain fetch → Step 3
+- Wallet history scan + auto badges (OG 2024, NFT collector, dApp explorer) → Step 4
+- Server-side tip verifier edge function → hardening pass
