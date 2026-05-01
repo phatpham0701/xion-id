@@ -311,7 +311,7 @@ export const Inspector = ({ block, onChange, onDelete }: Props) => {
                 <p className="text-[11px] text-muted-foreground">Tippers can type any amount.</p>
               </div>
               <Switch
-                checked={c.allowCustom !== false}
+                checked={(c.allowCustom as unknown as boolean) !== false}
                 onCheckedChange={(v) => set("allowCustom", v)}
               />
             </div>
@@ -321,7 +321,7 @@ export const Inspector = ({ block, onChange, onDelete }: Props) => {
                 <p className="text-[11px] text-muted-foreground">Add a 280-char note to each tip.</p>
               </div>
               <Switch
-                checked={c.allowMessage !== false}
+                checked={(c.allowMessage as unknown as boolean) !== false}
                 onCheckedChange={(v) => set("allowMessage", v)}
               />
             </div>
