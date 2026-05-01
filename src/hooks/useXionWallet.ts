@@ -52,8 +52,14 @@ export const useXionWallet = () => {
     try {
       await login();
     } catch (err) {
-      toast.error("Connect failed", {
-        description: err instanceof Error ? err.message : "Try again",
+      const msg = err instanceof Error ? err.message : String(err);
+      const isAppDetails =
+        /application details|treasury|grant|contract/i.test(msg) ||
+        /unable to load/i.test(msg);
+      toast.error(isAppDetails ? "XION treasury not reachable" : "Connect failed", {
+        description: isAppDetails
+          ? "Check that VITE_XION_TREASURY points to a contract on xion-testnet-2 (create one at dashboard.burnt.com)."
+          : msg || "Try again",
       });
     }
   };
