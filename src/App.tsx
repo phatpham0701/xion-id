@@ -18,12 +18,16 @@ import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
 
-const abstraxionConfig = {
+// Only include `treasury` when one is actually configured. Passing an empty
+// or invalid treasury makes Abstraxion crash with
+// "Unable to load application details" because it tries to query a contract
+// that doesn't exist on chain.
+const abstraxionConfig: Record<string, unknown> = {
   chainId: XION_CONFIG.chainId,
-  treasury: XION_CONFIG.treasury,
   rpcUrl: XION_CONFIG.rpcUrl,
   restUrl: XION_CONFIG.restUrl,
   gasPrice: "0.001uxion",
+  ...(XION_CONFIG.treasury ? { treasury: XION_CONFIG.treasury } : {}),
 };
 
 function App() {
