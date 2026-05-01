@@ -186,7 +186,7 @@ export const scanWallet = async (address: string, profileId: string): Promise<Sc
       xion_address: address,
       kind: b.kind,
       tier: b.tier,
-      metadata: b.metadata,
+      metadata: b.metadata as never,
     }));
     const { error } = await supabase
       .from("wallet_badges")
