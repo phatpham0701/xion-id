@@ -29,6 +29,8 @@ type Props = {
   theme: ProfileTheme;
   onClick?: () => void;
   ownerXionAddress?: string | null;
+  /** When true, web3 blocks render their interactive (on-chain) variant. */
+  interactive?: boolean;
 };
 
 type BlockStyle = {
