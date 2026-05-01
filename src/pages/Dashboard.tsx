@@ -248,6 +248,7 @@ const Dashboard = () => {
             </div>
             <div className="space-y-6">
               <WalletCard />
+              <TipAnalyticsCard profileId={profile.id} />
               <AnalyticsPanel profileId={profile.id} />
             </div>
           </div>
