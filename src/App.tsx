@@ -81,6 +81,7 @@ function App() {
     </TooltipProvider>
     </AbstraxionProvider>
   </QueryClientProvider>
-);
+  );
+}
 
 export default App;
