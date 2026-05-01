@@ -236,7 +236,10 @@ const Dashboard = () => {
               <WalletCard />
               <EmptyStateHero />
             </div>
-            <BadgesCard profileId={profile.id} />
+            <div className="grid lg:grid-cols-2 gap-6">
+              <BadgesCard profileId={profile.id} />
+              <TipAnalyticsCard profileId={profile.id} />
+            </div>
           </>
         ) : (
           <div className="grid lg:grid-cols-[1.6fr_1fr] gap-6">
