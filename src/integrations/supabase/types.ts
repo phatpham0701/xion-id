@@ -276,6 +276,7 @@ export type Database = {
         | "tip_jar"
         | "contact_form"
         | "calendar"
+        | "nft_gallery"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -431,6 +432,7 @@ export const Constants = {
         "tip_jar",
         "contact_form",
         "calendar",
+        "nft_gallery",
       ],
     },
   },
