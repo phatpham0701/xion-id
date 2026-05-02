@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 
-type EventType = "profile_view" | "block_click";
+type EventType = "profile_view" | "block_click" | "tip_sent" | "wallet_connect";
 
 export const trackEvent = async (
   profileId: string,

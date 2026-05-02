@@ -70,34 +70,63 @@ export const sendTip = async ({
   return { txHash, height: typeof r.height === "number" ? r.height : null };
 };
 
-export type RecordTipParams = {
+export type VerifyTipParams = {
   profileId: string;
   blockId?: string | null;
-  recipientAddress: string;
-  senderAddress: string;
-  amountXion: number;
-  message?: string | null;
   txHash: string;
-  blockHeight: number | null;
+  message?: string | null;
 };
 
-export const recordTip = async (params: RecordTipParams): Promise<void> => {
-  const amountUxion = Number(xionToUxion(params.amountXion));
+export type VerifyTipStatus = "verified" | "already_recorded" | "pending";
+
+export type VerifyTipResult = {
+  status: VerifyTipStatus;
+  error?: string;
+};
+
+/**
+ * Calls the `verify-tip` edge function which validates the on-chain transaction
+ * (sender, recipient, denom, amount) and writes to the `tips` table with the
+ * service role. The `tips` table no longer accepts client-side INSERTs.
+ */
+export const verifyAndRecordTip = async (
+  params: VerifyTipParams,
+): Promise<VerifyTipResult> => {
   const trimmed = params.message?.trim().slice(0, MAX_MESSAGE_LEN) || null;
 
-  const { error } = await supabase.from("tips").insert({
-    profile_id: params.profileId,
-    block_id: params.blockId ?? null,
-    recipient_address: params.recipientAddress,
-    sender_address: params.senderAddress,
-    amount_uxion: amountUxion,
-    message: trimmed,
-    tx_hash: params.txHash,
-    block_height: params.blockHeight,
+  const { data, error } = await supabase.functions.invoke("verify-tip", {
+    body: {
+      tx_hash: params.txHash,
+      profile_id: params.profileId,
+      block_id: params.blockId ?? null,
+      message: trimmed,
+    },
   });
 
-  if (error && error.code !== "23505") {
-    // 23505 = unique violation (already recorded — not fatal)
-    throw error;
+  if (error) {
+    // Non-2xx (incl. 202 pending) lands here with FunctionsHttpError.
+    const ctx = (error as unknown as { context?: { status?: number } }).context;
+    if (ctx?.status === 202) {
+      return { status: "pending", error: "Transaction not indexed yet" };
+    }
+    return { status: "pending", error: error.message };
   }
+
+  const status = (data?.status as VerifyTipStatus | undefined) ?? "verified";
+  return { status };
+};
+
+/** @deprecated Use `verifyAndRecordTip` — client INSERTs to `tips` are no longer allowed. */
+export const recordTip = async (params: {
+  profileId: string;
+  blockId?: string | null;
+  txHash: string;
+  message?: string | null;
+}): Promise<void> => {
+  await verifyAndRecordTip({
+    profileId: params.profileId,
+    blockId: params.blockId,
+    txHash: params.txHash,
+    message: params.message,
+  });
 };

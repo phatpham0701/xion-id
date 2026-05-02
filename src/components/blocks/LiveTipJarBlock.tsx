@@ -10,8 +10,8 @@ import { XION_CONFIG, truncateAddress } from "@/lib/xion";
 import {
   MAX_MESSAGE_LEN,
   MAX_TIP_XION,
-  recordTip,
   sendTip,
+  verifyAndRecordTip,
 } from "@/lib/tipJar";
 import { trackEvent } from "@/lib/analytics";
 
@@ -142,29 +142,39 @@ export const LiveTipJarBlock = ({
         memo,
       });
 
-      // Mirror to DB for analytics — non-blocking failure.
-      try {
-        await recordTip({
-          profileId,
-          blockId,
-          recipientAddress,
-          senderAddress,
-          amountXion: effectiveAmount,
-          message: memo || null,
-          txHash,
-          blockHeight: height,
-        });
-      } catch (recErr) {
-        console.warn("[tip] couldn't mirror to DB:", recErr);
+      // Server-side verify + record. Edge function fetches tx from LCD,
+      // validates sender/recipient/denom/amount, then inserts via service role.
+      const verify = await verifyAndRecordTip({
+        profileId,
+        blockId,
+        txHash,
+        message: memo || null,
+      });
+
+      // If LCD hasn't indexed the tx yet, retry once in the background.
+      if (verify.status === "pending") {
+        setTimeout(() => {
+          verifyAndRecordTip({
+            profileId,
+            blockId,
+            txHash,
+            message: memo || null,
+          }).catch(() => {});
+        }, 8000);
       }
 
       // Analytics event for the owner's dashboard.
-      trackEvent(profileId, "block_click", blockId).catch(() => {});
+      trackEvent(profileId, "tip_sent", blockId).catch(() => {});
 
       setSuccess({ hash: txHash, amount: effectiveAmount });
       toast.success(`Tipped ${effectiveAmount} ${currency} ⚡`, {
-        description: "Transaction confirmed on XION testnet-2.",
+        description:
+          verify.status === "pending"
+            ? "Broadcast! Verifying on-chain in a moment…"
+            : "Transaction verified on XION testnet-2.",
       });
+      // Avoid unused var warning in some lint configs
+      void height;
     } catch (err) {
       toast.error("Tip failed", {
         description: err instanceof Error ? err.message : "Try again",
