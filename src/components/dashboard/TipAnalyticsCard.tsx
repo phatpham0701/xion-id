@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Heart, ExternalLink, Loader2, TrendingUp } from "lucide-react";
+import { Heart, ExternalLink, TrendingUp } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { XION_CONFIG, truncateAddress } from "@/lib/xion";
 import { formatXion } from "@/lib/tipJar";
@@ -54,22 +54,34 @@ export const TipAnalyticsCard = ({ profileId }: { profileId: string }) => {
         <div className="rounded-2xl border border-border/50 bg-background/40 p-3">
           <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Total received</div>
           <div className="mt-1 font-display text-xl font-bold">
-            {loading ? "—" : `${formatXion(totalUxion)} XION`}
+            {loading ? (
+              <div className="h-6 w-20 rounded-md bg-muted/40 animate-pulse" />
+            ) : (
+              `${formatXion(totalUxion)} XION`
+            )}
           </div>
         </div>
         <div className="rounded-2xl border border-border/50 bg-background/40 p-3">
           <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Tips count</div>
           <div className="mt-1 font-display text-xl font-bold flex items-center gap-1">
-            {loading ? "—" : tipCount}
-            {tipCount > 0 ? <TrendingUp className="h-3.5 w-3.5 text-primary" /> : null}
+            {loading ? (
+              <div className="h-6 w-10 rounded-md bg-muted/40 animate-pulse" />
+            ) : (
+              <>
+                {tipCount}
+                {tipCount > 0 ? <TrendingUp className="h-3.5 w-3.5 text-primary" /> : null}
+              </>
+            )}
           </div>
         </div>
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center py-6 text-muted-foreground">
-          <Loader2 className="h-4 w-4 animate-spin" />
-        </div>
+        <ul className="space-y-2">
+          {[0, 1, 2].map((i) => (
+            <li key={i} className="h-14 rounded-2xl bg-muted/20 animate-pulse" />
+          ))}
+        </ul>
       ) : tipCount === 0 ? (
         <div className="rounded-2xl border border-dashed border-border/50 bg-background/30 p-4 text-center">
           <p className="text-xs text-muted-foreground">

@@ -49,6 +49,15 @@ export const useXionWallet = () => {
   }, [address, user]);
 
   const connect = async () => {
+    // Abstraxion opens a popup that's blocked when running inside an iframe
+    // (Lovable preview). Detect & guide instead of silently failing.
+    if (typeof window !== "undefined" && window.top !== window.self) {
+      toast.error("Open in a new tab to connect", {
+        description:
+          "Wallet popups are blocked inside the preview iframe. Open the preview in its own tab and try again.",
+      });
+      return;
+    }
     try {
       await login();
     } catch (err) {
