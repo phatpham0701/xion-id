@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Heart, ExternalLink, Loader2, TrendingUp } from "lucide-react";
+import { Heart, ExternalLink, TrendingUp } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { XION_CONFIG, truncateAddress } from "@/lib/xion";
 import { formatXion } from "@/lib/tipJar";
