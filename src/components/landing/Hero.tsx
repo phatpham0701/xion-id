@@ -50,6 +50,15 @@ const Hero = () => {
 /** Premium product mockup: profile + badges + rewards + studio strip. */
 const HeroMockup = () => (
   <div className="relative mx-auto max-w-[460px]">
+    {/* Subtle orbit ring + signal dots motif */}
+    <div className="pointer-events-none absolute -inset-10 -z-10" aria-hidden>
+      <div className="absolute inset-6 rounded-[42px] border border-primary/15" />
+      <div className="absolute inset-12 rounded-[36px] border border-secondary/10" />
+      <span className="absolute top-2 left-1/2 -translate-x-1/2 h-1.5 w-1.5 rounded-full bg-accent shadow-glow-accent" />
+      <span className="absolute top-1/2 -left-1 h-1 w-1 rounded-full bg-secondary" />
+      <span className="absolute bottom-4 right-6 h-1 w-1 rounded-full bg-primary" />
+    </div>
+
     {/* Profile card */}
     <div className="glass-strong rounded-3xl p-5 shadow-elevated animate-float">
       <div className="flex items-center gap-3">
