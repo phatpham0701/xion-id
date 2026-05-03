@@ -135,6 +135,7 @@ export type DemoState = {
 
 const SEED: DemoState = {
   version: 1,
+  onboarded: false,
   profile: {
     username: "alex",
     displayName: "Alex Rivera",
@@ -153,6 +154,12 @@ const SEED: DemoState = {
     { id: "r2", title: "Backstage AMA invite", description: "Private session with the creator.", cost: 200, claimed: false },
     { id: "r3", title: "Signed digital print", description: "Numbered, 1 of 100.", cost: 120, claimed: true },
   ],
+  offers: [
+    { id: "o1", brand: "Nimbus Coffee", title: "20% off any drink", blurb: "For verified Explorers in your city.", category: "food", unlocked: true, emoji: "☕" },
+    { id: "o2", brand: "Lumen Apparel", title: "Early access drop", blurb: "Pre-launch window for Collectors.", category: "shopping", unlocked: true, emoji: "🧥" },
+    { id: "o3", brand: "Sound District", title: "Free concert ticket", blurb: "OG members only · Sat night.", category: "events", unlocked: false, emoji: "🎟️" },
+    { id: "o4", brand: "Atlas Stays", title: "Late checkout, free", blurb: "Available at 200+ partner hotels.", category: "travel", unlocked: false, emoji: "🏨" },
+  ],
   campaigns: [
     { id: "c1", title: "Spring identity drop", blurb: "Claim your free passport upgrade.", endsAt: "2026-06-30T00:00:00Z", participants: 1284, joined: false },
     { id: "c2", title: "Weekend scan-to-win", blurb: "Scan a partner code to enter.", endsAt: "2026-05-10T00:00:00Z", participants: 412, joined: false },
@@ -166,6 +173,12 @@ const SEED: DemoState = {
     { id: "s1", fromName: "Jess", amount: 5, message: "Love what you're building!", createdAt: "2026-04-28T12:00:00Z" },
     { id: "s2", fromName: "Marco", amount: 12, createdAt: "2026-04-30T09:30:00Z" },
     { id: "s3", fromName: "Anonymous", amount: 1, message: "gm ✨", createdAt: "2026-05-02T08:15:00Z" },
+  ],
+  activity: [
+    { id: "a1", kind: "badge", title: "Explorer badge verified", detail: "5 partner apps in 30 days", at: "2026-05-01T18:22:00Z" },
+    { id: "a2", kind: "offer", title: "Unlocked: 20% off Nimbus Coffee", detail: "Local · in-store", at: "2026-04-30T11:04:00Z" },
+    { id: "a3", kind: "support", title: "Marco supported you", detail: "Thanks for the post.", at: "2026-04-30T09:30:00Z" },
+    { id: "a4", kind: "scan", title: "Checked in at partner café", at: "2026-04-28T08:14:00Z" },
   ],
 };
 
