@@ -12,7 +12,7 @@ const Footer = () => {
             </div>
             <Wordmark className="font-display text-sm font-semibold" />
             <span className="text-xs text-muted-foreground ml-2">
-              · A solo vibe-coded mini-project
+              · Verified identity and rewards passport.
             </span>
           </div>
 
