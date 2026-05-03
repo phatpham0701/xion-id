@@ -84,14 +84,49 @@ export type DemoProfile = {
   passportLevel: 1 | 2 | 3;
 };
 
+export type DemoOffer = {
+  id: string;
+  brand: string;
+  title: string;
+  blurb: string;
+  category: "shopping" | "events" | "food" | "travel" | "creator";
+  unlocked: boolean;
+  emoji: string;
+};
+
+export type DemoActivity = {
+  id: string;
+  kind: "badge" | "reward" | "offer" | "scan" | "support" | "campaign" | "profile";
+  title: string;
+  detail?: string;
+  at: string;
+};
+
+export type DemoGoalKey = "offers" | "page" | "badges" | "campaign";
+export type DemoStarterKey =
+  | "essential"
+  | "minimal"
+  | "badgeFirst"
+  | "quickSupport"
+  | "creatorHub"
+  | "athlete"
+  | "shopper"
+  | "community"
+  | "fundraise";
+
 export type DemoState = {
   version: 1;
+  onboarded: boolean;
+  selectedGoal?: DemoGoalKey;
+  selectedStarter?: DemoStarterKey;
   profile: DemoProfile;
   badges: DemoBadge[];
   rewards: DemoReward[];
+  offers: DemoOffer[];
   campaigns: DemoCampaign[];
   qrItems: DemoQrItem[];
   support: DemoSupportEntry[];
+  activity: DemoActivity[];
 };
 
 // ─────────────────────────────────────────────────────────────
