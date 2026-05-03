@@ -153,9 +153,6 @@ const Dashboard = () => {
               avatarUrl={profile.avatar_url}
               bio={profile.bio}
               isPublished={profile.is_published}
-              onEdit={() => navigate("/editor")}
-              onShare={() => setShareOpen(true)}
-              onPreview={() => window.open(`/${username}`, "_blank")}
             />
           </div>
         </div>
