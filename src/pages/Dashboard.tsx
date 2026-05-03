@@ -43,8 +43,7 @@ const Dashboard = () => {
       const { data, error } = await supabase
         .from("profiles")
         .select("id, username, display_name, avatar_url, bio, is_published")
-        .eq("user_id", user.id)
-        .maybeSingle();
+        .eq("user_id", user.id).maybeSingle();
       if (error) toast.error("Couldn't load profile", { description: error.message });
       setProfile(data as EditableProfile | null);
       setLoading(false);
@@ -86,10 +85,7 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen relative">
       <div className="aurora-orb h-[460px] w-[460px] -top-40 -left-20 bg-secondary opacity-40 animate-aurora-drift" />
-      <div
-        className="aurora-orb h-[420px] w-[420px] top-40 -right-20 bg-primary opacity-30 animate-aurora-drift"
-        style={{ animationDelay: "-7s" }}
-      />
+      <div className="aurora-orb h-[420px] w-[420px] top-40 -right-20 bg-primary opacity-30 animate-aurora-drift" style={{ animationDelay: "-7s" }} />
 
       <header className="border-b border-border/40 glass sticky top-0 z-40">
         <div className="container flex h-16 items-center justify-between">
@@ -101,10 +97,7 @@ const Dashboard = () => {
           </Link>
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="sm" asChild className="hidden sm:inline-flex">
-              <Link to="/templates">
-                <LayoutTemplate className="h-4 w-4 mr-1.5" />
-                Templates
-              </Link>
+              <Link to="/templates"><LayoutTemplate className="h-4 w-4 mr-1.5" />Templates</Link>
             </Button>
             <span className="hidden md:inline text-xs text-muted-foreground mr-2">{user?.email}</span>
             <Button variant="ghost" size="sm" onClick={handleSignOut}>
@@ -137,7 +130,10 @@ const Dashboard = () => {
 
         <NextBestAction onPrimary={() => setScanOpen(true)} />
 
-        <QuickActionTiles onScan={() => setScanOpen(true)} onClaimRewards={() => navigate("/rewards")} />
+        <QuickActionTiles
+          onScan={() => setScanOpen(true)}
+          onClaimRewards={() => navigate("/rewards")}
+        />
 
         {/* Compact preview row */}
         <div className="grid lg:grid-cols-[1.4fr_1fr] gap-5">
@@ -154,13 +150,23 @@ const Dashboard = () => {
               bio={profile.bio}
               isPublished={profile.is_published}
             />
+            <ProfileEditorCard
+              profile={profile}
+              onChange={setProfile}
+              onShare={() => setShareOpen(true)}
+            />
           </div>
         </div>
       </main>
 
       <BadgeScanWizard open={scanOpen} onOpenChange={setScanOpen} />
 
-      <ShareDialog open={shareOpen} onOpenChange={setShareOpen} profileUrl={profileUrl} username={username} />
+      <ShareDialog
+        open={shareOpen}
+        onOpenChange={setShareOpen}
+        profileUrl={profileUrl}
+        username={username}
+      />
     </div>
   );
 };
