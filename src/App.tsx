@@ -76,6 +76,16 @@ function App() {
                 </RequireAuth>
               }
             />
+            <Route
+              path="/campaigns"
+              element={<RequireAuth><Campaigns /></RequireAuth>}
+            />
+            <Route
+              path="/qr"
+              element={<RequireAuth><QrCenter /></RequireAuth>}
+            />
+            {/* Public campaign page — open route */}
+            <Route path="/c/:id" element={<PublicCampaign />} />
             {/* Public template preview — open route, no auth required */}
             <Route path="/preview/template/:id" element={<TemplatePreview />} />
             {/* Public profile — must be last named route before catch-all */}
