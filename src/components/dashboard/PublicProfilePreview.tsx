@@ -15,6 +15,8 @@ type Props = {
 export const PublicProfilePreview = ({ username, displayName, avatarUrl, bio, isPublished }: Props) => {
   const url = typeof window !== "undefined" ? `${window.location.origin}/${username}` : `/${username}`;
   const initial = (displayName || username || "X").slice(0, 1).toUpperCase();
+  const demo = useDemo();
+  const featured = demo.badges.filter((b) => b.featured && !b.hidden).slice(0, 6);
 
   const copy = async () => {
     await navigator.clipboard.writeText(url);
