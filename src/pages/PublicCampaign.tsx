@@ -1,3 +1,4 @@
+import { BrandLogo } from "@/components/BrandLogo";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import QRCode from "qrcode";
@@ -74,7 +75,7 @@ const PublicCampaign = () => {
             <div className="h-8 w-8 rounded-xl bg-gradient-primary grid place-items-center">
               <Sparkles className="h-4 w-4 text-primary-foreground" />
             </div>
-            <span className="font-display font-semibold">Xion<span className="text-gradient">ID</span></span>
+            <span className="font-display font-semibold"><Wordmark /></span>
           </Link>
         </div>
       </header>

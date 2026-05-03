@@ -94,11 +94,9 @@ const AuthCard = () => {
   return (
     <div className="glass-strong rounded-3xl p-8 md:p-10 w-full max-w-md animate-scale-in">
       <div className="flex items-center gap-2 mb-8">
-        <div className="h-9 w-9 rounded-xl bg-gradient-primary grid place-items-center shadow-glow-primary glow-primary">
-          <Sparkles className="h-4 w-4 text-primary-foreground" strokeWidth={2.5} />
-        </div>
+        <BrandLogo size={36} />
         <span className="font-display text-lg font-semibold tracking-tight">
-          Xion<span className="text-gradient">ID</span>
+          <Wordmark />
         </span>
       </div>
 
