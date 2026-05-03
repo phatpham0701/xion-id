@@ -31,10 +31,6 @@ import {
   Share2,
   Globe,
   EyeOff,
-  Check,
-  Layers3,
-  Image as ImageIcon,
-  Palette,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
