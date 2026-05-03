@@ -78,13 +78,49 @@ export type DemoReward = {
   claimedAt?: string;
 };
 
+export type CampaignCategory = "creator" | "community" | "education" | "event" | "wellness";
+
+export type CampaignTierKey = "supporter" | "super" | "founding";
+
+export type CampaignTier = {
+  key: CampaignTierKey;
+  label: string;
+  amount: number; // demo currency units
+  perks: string;
+};
+
+export type CampaignSupporter = {
+  id: string;
+  name: string;
+  tier: CampaignTierKey;
+  amount: number;
+  message?: string;
+  at: string;
+};
+
+export type CampaignMilestone = {
+  label: string;
+  at: string;
+  reached: boolean;
+};
+
 export type DemoCampaign = {
   id: string;
   title: string;
   blurb: string;
+  story?: string;
+  category?: CampaignCategory;
+  coverEmoji?: string;
+  visibility?: "public" | "private";
+  goalAmount?: number;
+  raised?: number;
+  tiers?: CampaignTier[];
+  supporters?: CampaignSupporter[];
+  milestones?: CampaignMilestone[];
   endsAt: string;
   participants: number;
   joined: boolean;
+  ownerHandle?: string;
 };
 
 export type DemoQrItem = {
