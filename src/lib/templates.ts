@@ -57,7 +57,7 @@ export const TEMPLATES: ProfileTemplate[] = [
     category: "starter",
     theme: t({ background: "noir", font: "inter", buttonShape: "soft", buttonStyle: "outline", accentHue: 0 }),
     blocks: [
-      { type: "avatar", config: { name: "Your name", subtitle: "@you" } },
+      { type: "avatar", config: { name: "Paulus Aron", subtitle: "@paulus · verified identity" } },
       { type: "text",   config: { text: "A one-line intro about who you are." } },
       { type: "link",   config: { title: "Visit my page", url: "https://", emoji: "🔗" } },
       { type: "text",   config: { text: "🏅 Featured badges: OG · Explorer" } },
