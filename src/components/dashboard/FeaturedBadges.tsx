@@ -37,7 +37,7 @@ export const FeaturedBadges = ({ onScan }: Props) => {
           <h2 className="font-display text-base font-semibold">Featured proof</h2>
           <span className="text-[11px] text-muted-foreground">{s.badges.length} total</span>
         </div>
-        <Link to="/dashboard#all-badges" className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-0.5">
+        <Link to="/badges" className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-0.5">
           View all <ChevronRight className="h-3 w-3" />
         </Link>
       </div>

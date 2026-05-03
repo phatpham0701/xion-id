@@ -34,7 +34,7 @@ export const MatchedRewards = ({ onScan }: Props) => {
           <Gift className="h-4 w-4 text-primary" />
           <h2 className="font-display text-base font-semibold">Matched for you</h2>
         </div>
-        <Link to="/dashboard#rewards-locker" className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-0.5">
+        <Link to="/rewards" className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-0.5">
           Open box <ChevronRight className="h-3 w-3" />
         </Link>
       </div>
@@ -68,7 +68,7 @@ export const MatchedRewards = ({ onScan }: Props) => {
                 </div>
                 {r.unlocked ? (
                   <Button size="sm" asChild className="bg-gradient-primary shrink-0 h-8">
-                    <Link to="/dashboard#rewards-locker">Claim</Link>
+                    <Link to="/rewards">Claim</Link>
                   </Button>
                 ) : (
                   <Button size="sm" variant="outline" onClick={onScan} className="shrink-0 h-8 text-xs">
