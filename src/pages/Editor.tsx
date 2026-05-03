@@ -28,6 +28,13 @@ import {
   Wand2,
   Smartphone,
   ShieldCheck,
+  Share2,
+  Globe,
+  EyeOff,
+  Check,
+  Layers3,
+  Image as ImageIcon,
+  Palette,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -37,7 +44,12 @@ import { BlockLibrary } from "@/components/editor/BlockLibrary";
 import { SortableBlock } from "@/components/editor/SortableBlock";
 import { Inspector } from "@/components/editor/Inspector";
 import { ThemeStudio } from "@/components/editor/ThemeStudio";
+import { SectionsPanel } from "@/components/editor/SectionsPanel";
+import { AssetsPanel } from "@/components/editor/AssetsPanel";
+import { TemplatesPanel } from "@/components/editor/TemplatesPanel";
 import type { Block, BlockMeta } from "@/lib/blocks";
+import type { SectionPreset } from "@/lib/sectionPresets";
+import { useStudioMode } from "@/lib/studioMode";
 import { DEFAULT_THEME, themeFromJson, themeStyleVars, type ProfileTheme } from "@/lib/theme";
 import {
   DEFAULT_PREFS,
