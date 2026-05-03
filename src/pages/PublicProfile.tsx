@@ -1,11 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { Loader2, Sparkles, ArrowLeft, BadgeCheck, ExternalLink, ShieldCheck, QrCode, Heart } from "lucide-react";
+import { Loader2, Sparkles, ArrowLeft, BadgeCheck, ShieldCheck, QrCode, Heart } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { BlockRenderer } from "@/components/editor/BlockRenderer";
 import { themeFromJson, themeStyleVars } from "@/lib/theme";
 import { trackEvent } from "@/lib/analytics";
-import { XION_CONFIG, truncateAddress } from "@/lib/xion";
 import { PublicBadgesStrip } from "@/components/blocks/PublicBadgesBlock";
 import type { Block } from "@/lib/blocks";
 
