@@ -170,9 +170,10 @@ export const setDemoState = (next: DemoState): void => {
 export const updateDemoState = (mutator: (s: DemoState) => DemoState | void): DemoState => {
   const current = getDemoState();
   const draft = clone(current);
-  const result = mutator(draft) ?? draft;
-  setDemoState(result);
-  return result;
+  const result = mutator(draft);
+  const next = (result ?? draft) as DemoState;
+  setDemoState(next);
+  return next;
 };
 
 export const resetDemoState = (): DemoState => {
