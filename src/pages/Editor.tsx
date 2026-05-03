@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { BrandLogo } from "@/components/BrandLogo";
 import { Link, useNavigate } from "react-router-dom";
 import {
   DndContext,
