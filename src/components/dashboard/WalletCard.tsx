@@ -2,7 +2,7 @@ import { useState } from "react";
 import { AlertTriangle, Copy, Check, ExternalLink, Loader2, LogOut, Wallet, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useXionWallet } from "@/hooks/useXionWallet";
-import { XION_CONFIG, isTreasuryConfigured, truncateAddress } from "@/lib/xion";
+import { XION_CONFIG, isTreasuryConfigured, getXionConfigError, xionEnvStatus, truncateAddress } from "@/lib/xion";
 import { toast } from "sonner";
 
 export const WalletCard = () => {
@@ -36,22 +36,27 @@ export const WalletCard = () => {
           <div className="flex items-start gap-3">
             <AlertTriangle className="h-4 w-4 shrink-0 text-amber-500 mt-0.5" />
             <div className="text-xs text-foreground/80 leading-relaxed">
-              <div className="font-semibold text-foreground mb-1">XION treasury not configured</div>
+              <div className="font-semibold text-foreground mb-1">XION access not configured</div>
               <p className="text-muted-foreground">
-                Wallet connect needs a treasury contract on <code className="font-mono">xion-testnet-2</code> to load app details and sponsor gas.
-                Create one at{" "}
-                <a
-                  href="https://dashboard.burnt.com"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-primary underline underline-offset-2"
-                >
-                  dashboard.burnt.com
-                </a>{" "}
-                then set <code className="font-mono">VITE_XION_TREASURY</code> in your project settings.
+                {getXionConfigError() ??
+                  "XION access is not configured yet. Add VITE_TREASURY_ADDRESS and VITE_AUTH_APP_URL."}
               </p>
+              <details className="mt-2 text-[11px] text-muted-foreground/80">
+                <summary className="cursor-pointer select-none">Developer details</summary>
+                <ul className="mt-1.5 space-y-0.5 font-mono">
+                  {Object.entries(xionEnvStatus()).map(([k, ok]) => (
+                    <li key={k}>
+                      {ok ? "✓" : "✗"} {k}
+                    </li>
+                  ))}
+                </ul>
+              </details>
             </div>
           </div>
+          <Button disabled className="w-full h-11 mt-4 opacity-60 cursor-not-allowed">
+            <Zap className="h-4 w-4 mr-1.5" strokeWidth={2.5} />
+            Connect XION
+          </Button>
         </div>
       ) : !isConnected ? (
         <>
