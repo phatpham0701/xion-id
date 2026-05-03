@@ -4,19 +4,15 @@ import { Link, useParams } from "react-router-dom";
 import {
   ArrowLeft,
   BadgeCheck,
-  CalendarDays,
   CheckCircle2,
   ExternalLink,
-  Eye,
   Gift,
-  Info,
   Loader2,
   LockKeyhole,
   QrCode,
   ShieldCheck,
   Sparkles,
   Ticket,
-  X,
 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -40,19 +36,12 @@ type PublicProfileData = {
 type PublicBadge = {
   id: string;
   label: string;
-  tierName?: "Silver" | "Gold" | "Diamond" | "silver" | "gold" | "diamond" | string;
-  tier?: "Silver" | "Gold" | "Diamond" | "silver" | "gold" | "diamond" | string;
-  category?: string;
-  description?: string;
+  tierName: "Silver" | "Gold" | "Diamond" | string;
+  category: string;
+  description: string;
   emoji?: string;
   featured?: boolean;
   hidden?: boolean;
-  proofSource?: string;
-  issuedBy?: string;
-  issuedAt?: string;
-  visibility?: string;
-  unlockUse?: string;
-  privacyNote?: string;
 };
 
 const PAULUS_PITCH_BADGES: PublicBadge[] = [
@@ -61,16 +50,10 @@ const PAULUS_PITCH_BADGES: PublicBadge[] = [
     label: "Active Lifestyle",
     tierName: "Gold",
     category: "Lifestyle",
-    description: "Verified from selected activity signal",
+    description: "Selected activity signal",
     emoji: "🏃",
     featured: true,
     hidden: false,
-    proofSource: "Selected fitness and lifestyle activity signal",
-    issuedBy: "XIONID demo verification layer",
-    issuedAt: "Demo profile",
-    visibility: "Public — selected by profile owner",
-    unlockUse: "Helps match wellness, sport, and active lifestyle rewards.",
-    privacyNote: "This badge shows only the verified category. Raw activity data is not exposed.",
   },
   {
     id: "premium-shopper",
@@ -81,13 +64,6 @@ const PAULUS_PITCH_BADGES: PublicBadge[] = [
     emoji: "💎",
     featured: true,
     hidden: false,
-    proofSource: "Selected purchase / reward eligibility signal",
-    issuedBy: "XIONID demo verification layer",
-    issuedAt: "Demo profile",
-    visibility: "Public — selected by profile owner",
-    unlockUse: "Helps match premium consumer, loyalty, and lifestyle offers.",
-    privacyNote:
-      "This badge proves eligibility without revealing receipts, spending history, or private purchase details.",
   },
   {
     id: "verified-member",
@@ -98,12 +74,6 @@ const PAULUS_PITCH_BADGES: PublicBadge[] = [
     emoji: "✅",
     featured: true,
     hidden: false,
-    proofSource: "Public XIONID profile and selected identity signal",
-    issuedBy: "XIONID",
-    issuedAt: "Demo profile",
-    visibility: "Public — selected by profile owner",
-    unlockUse: "Creates a trusted baseline for public profile, badge wall, and rewards.",
-    privacyNote: "This confirms a public XIONID identity exists. It does not expose private account details.",
   },
   {
     id: "offer-explorer",
@@ -114,12 +84,6 @@ const PAULUS_PITCH_BADGES: PublicBadge[] = [
     emoji: "🎯",
     featured: true,
     hidden: false,
-    proofSource: "Profile readiness and reward preference signal",
-    issuedBy: "XIONID demo reward layer",
-    issuedAt: "Demo profile",
-    visibility: "Public — selected by profile owner",
-    unlockUse: "Signals that this profile can receive matched offers and voucher campaigns.",
-    privacyNote: "Brands see the badge, not the underlying private signals unless the user chooses to reveal more.",
   },
 ];
 
@@ -154,44 +118,6 @@ const getSettingsObject = (settings: unknown): Record<string, unknown> => {
   return settings as Record<string, unknown>;
 };
 
-const getNestedObject = (object: Record<string, unknown>, key: string): Record<string, unknown> => {
-  const value = object[key];
-
-  if (!value || typeof value !== "object" || Array.isArray(value)) {
-    return {};
-  }
-
-  return value as Record<string, unknown>;
-};
-
-const normalizeTier = (badge: PublicBadge): string => {
-  const rawTier = badge.tierName || badge.tier || "Silver";
-  const normalized = String(rawTier).trim().toLowerCase();
-
-  if (normalized.includes("diamond")) return "Diamond";
-  if (normalized.includes("gold")) return "Gold";
-  return "Silver";
-};
-
-const normalizeBadge = (badge: PublicBadge): PublicBadge => {
-  const tierName = normalizeTier(badge);
-
-  return {
-    ...badge,
-    tierName,
-    category: badge.category || "Proof",
-    description: badge.description || "Selected proof signal",
-    proofSource: badge.proofSource || "Selected verification signal",
-    issuedBy: badge.issuedBy || "XIONID verification layer",
-    issuedAt: badge.issuedAt || "Demo profile",
-    visibility: badge.visibility || "Public — selected by profile owner",
-    unlockUse: badge.unlockUse || "Can help unlock relevant offers, rewards, and access.",
-    privacyNote:
-      badge.privacyNote ||
-      "This badge shows only selected public proof. Private source data stays hidden unless the owner chooses otherwise.",
-  };
-};
-
 const getPublicBadgesFromSettings = (settings: unknown): PublicBadge[] => {
   const settingsObject = getSettingsObject(settings);
   const publicBadgeRoot = settingsObject.xionidPublicBadges;
@@ -210,15 +136,7 @@ const getPublicBadgesFromSettings = (settings: unknown): PublicBadge[] => {
       const candidate = badge as Partial<PublicBadge>;
       return Boolean(candidate.id && candidate.label);
     })
-    .filter((badge) => badge.featured !== false && badge.hidden !== true)
-    .map(normalizeBadge);
-};
-
-const getShowOfferBox = (settings: unknown): boolean => {
-  const settingsObject = getSettingsObject(settings);
-  const publicProfileSettings = getNestedObject(settingsObject, "xionidPublicProfile");
-
-  return publicProfileSettings.showOfferBox !== false;
+    .filter((badge) => badge.featured !== false && badge.hidden !== true);
 };
 
 const isPlaceholderBlock = (block: Block): boolean => {
@@ -275,7 +193,6 @@ const getTierClasses = (tierName: string) => {
       card: "border-cyan-300/30 bg-gradient-to-br from-cyan-300/15 via-blue-400/10 to-violet-500/15 shadow-[0_0_30px_rgba(105,168,255,0.18)]",
       seal: "from-cyan-200 via-sky-300 to-violet-400 text-slate-950",
       pill: "border-cyan-200/30 bg-cyan-200/10 text-cyan-100",
-      modalGlow: "from-cyan-300/20 via-blue-400/10 to-violet-500/20",
     };
   }
 
@@ -284,7 +201,6 @@ const getTierClasses = (tierName: string) => {
       card: "border-amber-300/30 bg-gradient-to-br from-amber-200/15 via-yellow-400/10 to-orange-500/10 shadow-[0_0_30px_rgba(230,185,75,0.14)]",
       seal: "from-amber-100 via-yellow-300 to-amber-500 text-amber-950",
       pill: "border-amber-200/30 bg-amber-200/10 text-amber-100",
-      modalGlow: "from-amber-300/20 via-yellow-400/10 to-orange-500/20",
     };
   }
 
@@ -292,20 +208,15 @@ const getTierClasses = (tierName: string) => {
     card: "border-slate-300/20 bg-gradient-to-br from-slate-200/12 via-white/5 to-slate-500/10",
     seal: "from-slate-100 via-slate-300 to-slate-500 text-slate-950",
     pill: "border-slate-200/20 bg-white/5 text-slate-200",
-    modalGlow: "from-slate-300/15 via-white/5 to-slate-500/10",
   };
 };
 
-const FeaturedBadgeCard = ({ badge, onClick }: { badge: PublicBadge; onClick: () => void }) => {
-  const tierName = normalizeTier(badge);
-  const tierClasses = getTierClasses(tierName);
+const FeaturedBadgeCard = ({ badge }: { badge: PublicBadge }) => {
+  const tierClasses = getTierClasses(badge.tierName);
 
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`group w-full rounded-3xl border p-4 text-left transition-all duration-200 hover:-translate-y-1 hover:scale-[1.01] focus:outline-none focus:ring-2 focus:ring-cyan-300/40 ${tierClasses.card}`}
-      aria-label={`View details for ${badge.label} badge`}
+    <article
+      className={`group rounded-3xl border p-4 transition-all duration-200 hover:-translate-y-1 ${tierClasses.card}`}
     >
       <div className="flex items-start gap-3">
         <div
@@ -318,162 +229,16 @@ const FeaturedBadgeCard = ({ badge, onClick }: { badge: PublicBadge; onClick: ()
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="truncate text-sm font-semibold text-white">{badge.label}</h3>
             <span className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold ${tierClasses.pill}`}>
-              {tierName}
+              {badge.tierName}
             </span>
           </div>
 
-          <p className="mt-1 text-xs font-medium text-slate-300">{badge.category || "Proof"}</p>
+          <p className="mt-1 text-xs font-medium text-slate-300">{badge.category}</p>
 
-          <p className="mt-2 text-xs leading-relaxed text-slate-400">{badge.description || "Selected proof signal"}</p>
-
-          <p className="mt-3 inline-flex items-center gap-1 text-[11px] font-semibold text-cyan-200 opacity-80 transition group-hover:opacity-100">
-            <Info className="h-3.5 w-3.5" />
-            View badge details
-          </p>
+          <p className="mt-2 text-xs leading-relaxed text-slate-400">{badge.description}</p>
         </div>
       </div>
-    </button>
-  );
-};
-
-const BadgeDetailModal = ({ badge, onClose }: { badge: PublicBadge; onClose: () => void }) => {
-  const normalizedBadge = normalizeBadge(badge);
-  const tierName = normalizeTier(normalizedBadge);
-  const tierClasses = getTierClasses(tierName);
-
-  useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
-    };
-
-    window.addEventListener("keydown", onKeyDown);
-
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [onClose]);
-
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 px-4 py-6 backdrop-blur-md"
-      role="dialog"
-      aria-modal="true"
-      aria-label={`${normalizedBadge.label} badge details`}
-      onClick={onClose}
-    >
-      <div
-        className="relative w-full max-w-lg overflow-hidden rounded-[2rem] border border-white/10 bg-[#07111f] shadow-[0_32px_100px_rgba(0,0,0,0.55)]"
-        onClick={(event) => event.stopPropagation()}
-      >
-        <div
-          className={`pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-br ${tierClasses.modalGlow} blur-2xl`}
-        />
-
-        <div className="relative p-6 sm:p-7">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <div
-                className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-[1.5rem] bg-gradient-to-br text-2xl font-black shadow-xl ${tierClasses.seal}`}
-              >
-                {normalizedBadge.emoji || <BadgeCheck className="h-7 w-7" />}
-              </div>
-
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-200/80">Badge details</p>
-
-                <h2 className="mt-1 text-2xl font-black tracking-tight text-white">{normalizedBadge.label}</h2>
-
-                <div className="mt-2 flex flex-wrap items-center gap-2">
-                  <span className={`rounded-full border px-2.5 py-1 text-xs font-semibold ${tierClasses.pill}`}>
-                    {tierName}
-                  </span>
-
-                  <span className="rounded-full border border-white/10 bg-white/[0.05] px-2.5 py-1 text-xs font-semibold text-slate-200">
-                    {normalizedBadge.category}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.05] text-slate-300 transition hover:bg-white/[0.1] hover:text-white"
-              aria-label="Close badge details"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-
-          <p className="mt-6 text-sm leading-relaxed text-slate-300">{normalizedBadge.description}</p>
-
-          <div className="mt-6 grid gap-3">
-            <div className="rounded-2xl border border-white/10 bg-white/[0.045] p-4">
-              <div className="flex items-start gap-3">
-                <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-emerald-300" />
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">Proof source</p>
-                  <p className="mt-1 text-sm font-medium text-white">{normalizedBadge.proofSource}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-white/10 bg-white/[0.045] p-4">
-              <div className="flex items-start gap-3">
-                <BadgeCheck className="mt-0.5 h-5 w-5 shrink-0 text-cyan-300" />
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">Issued by</p>
-                  <p className="mt-1 text-sm font-medium text-white">{normalizedBadge.issuedBy}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-white/10 bg-white/[0.045] p-4">
-              <div className="flex items-start gap-3">
-                <Eye className="mt-0.5 h-5 w-5 shrink-0 text-violet-300" />
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">Visibility</p>
-                  <p className="mt-1 text-sm font-medium text-white">{normalizedBadge.visibility}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-white/10 bg-white/[0.045] p-4">
-              <div className="flex items-start gap-3">
-                <Gift className="mt-0.5 h-5 w-5 shrink-0 text-amber-300" />
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">Reward use case</p>
-                  <p className="mt-1 text-sm font-medium text-white">{normalizedBadge.unlockUse}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-5 rounded-2xl border border-emerald-300/15 bg-emerald-300/10 p-4">
-            <div className="flex items-start gap-3">
-              <LockKeyhole className="mt-0.5 h-5 w-5 shrink-0 text-emerald-300" />
-              <div>
-                <p className="text-sm font-semibold text-emerald-100">Privacy note</p>
-                <p className="mt-1 text-sm leading-relaxed text-emerald-50/75">{normalizedBadge.privacyNote}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="inline-flex items-center gap-2 text-xs font-medium text-slate-400">
-              <CalendarDays className="h-4 w-4" />
-              {normalizedBadge.issuedAt}
-            </div>
-
-            <button
-              type="button"
-              onClick={onClose}
-              className="inline-flex items-center justify-center rounded-full bg-white px-5 py-2.5 text-sm font-bold text-slate-950 transition hover:bg-slate-200"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+    </article>
   );
 };
 
@@ -482,7 +247,6 @@ const PublicProfile = () => {
   const [profile, setProfile] = useState<PublicProfileData | null>(null);
   const [blocks, setBlocks] = useState<Block[]>([]);
   const [status, setStatus] = useState<"loading" | "ready" | "not_found">("loading");
-  const [selectedBadge, setSelectedBadge] = useState<PublicBadge | null>(null);
 
   useEffect(() => {
     if (!username) return;
@@ -550,8 +314,6 @@ const PublicProfile = () => {
 
   const isPaulusProfile = profile?.username?.toLowerCase() === "paulus";
 
-  const showOfferBox = useMemo(() => getShowOfferBox(profile?.settings), [profile?.settings]);
-
   const publicBadges = useMemo(() => {
     const badgesFromSettings = getPublicBadgesFromSettings(profile?.settings);
 
@@ -565,14 +327,6 @@ const PublicProfile = () => {
 
     return [];
   }, [isPaulusProfile, profile?.settings]);
-
-  const openBadgeDetails = (badge: PublicBadge) => {
-    setSelectedBadge(normalizeBadge(badge));
-
-    if (profile?.id) {
-      trackEvent(profile.id, "block_click", `badge:${badge.id}`);
-    }
-  };
 
   if (status === "loading") {
     return (
@@ -696,16 +450,14 @@ const PublicProfile = () => {
                 See verified badges
               </a>
 
-              {showOfferBox ? (
-                <a
-                  href="#offer-box"
-                  onClick={() => trackEvent(profile.id, "block_click", "offer_box")}
-                  className="inline-flex items-center justify-center gap-2 rounded-full border border-white/10 bg-white/[0.06] px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/[0.1]"
-                >
-                  <Gift className="h-4 w-4" />
-                  View Offer Box
-                </a>
-              ) : null}
+              <a
+                href="#offer-box"
+                onClick={() => trackEvent(profile.id, "block_click", "offer_box")}
+                className="inline-flex items-center justify-center gap-2 rounded-full border border-white/10 bg-white/[0.06] px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/[0.1]"
+              >
+                <Gift className="h-4 w-4" />
+                View Offer Box
+              </a>
             </div>
 
             <div className="mt-5 flex flex-wrap justify-center gap-2">
@@ -741,7 +493,7 @@ const PublicProfile = () => {
                 <h2 className="mt-3 text-2xl font-bold tracking-tight text-white">Selected proof signals</h2>
 
                 <p className="mt-1 text-sm leading-relaxed text-slate-400">
-                  Click any badge to view proof details and privacy context.
+                  Only selected badges are public. Private signals stay hidden.
                 </p>
               </div>
 
@@ -753,13 +505,13 @@ const PublicProfile = () => {
 
             <div className="grid gap-3 sm:grid-cols-2">
               {publicBadges.slice(0, 6).map((badge) => (
-                <FeaturedBadgeCard key={badge.id} badge={badge} onClick={() => openBadgeDetails(badge)} />
+                <FeaturedBadgeCard key={badge.id} badge={badge} />
               ))}
             </div>
           </section>
         ) : null}
 
-        {isPaulusProfile && showOfferBox ? (
+        {isPaulusProfile ? (
           <section
             id="offer-box"
             className="mt-6 rounded-[2rem] border border-white/10 bg-white/[0.045] p-5 shadow-2xl backdrop-blur-xl sm:p-6"
@@ -850,8 +602,6 @@ const PublicProfile = () => {
           <p className="text-xs text-slate-500">Verified identity and rewards passport.</p>
         </footer>
       </div>
-
-      {selectedBadge ? <BadgeDetailModal badge={selectedBadge} onClose={() => setSelectedBadge(null)} /> : null}
     </main>
   );
 };
