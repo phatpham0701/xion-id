@@ -1,11 +1,9 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { AbstraxionProvider } from "@burnt-labs/abstraxion";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
-import { XION_CONFIG } from "@/lib/xion";
 import { RequireAuth, RedirectIfAuthed } from "@/components/auth/RouteGuards";
 import Index from "./pages/Index.tsx";
 import Auth from "./pages/Auth.tsx";
@@ -21,22 +19,9 @@ import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
 
-// Only include `treasury` when one is actually configured. Passing an empty
-// or invalid treasury makes Abstraxion crash with
-// "Unable to load application details" because it tries to query a contract
-// that doesn't exist on chain.
-const abstraxionConfig = {
-  chainId: XION_CONFIG.chainId,
-  rpcUrl: XION_CONFIG.rpcUrl,
-  restUrl: XION_CONFIG.restUrl,
-  gasPrice: "0.001uxion",
-  ...(XION_CONFIG.treasury ? { treasury: XION_CONFIG.treasury } : {}),
-} as Parameters<typeof AbstraxionProvider>[0]["config"];
-
 function App() {
   return (
   <QueryClientProvider client={queryClient}>
-    <AbstraxionProvider config={abstraxionConfig}>
     <TooltipProvider>
       <Toaster />
       <Sonner />
@@ -96,7 +81,6 @@ function App() {
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
-    </AbstraxionProvider>
   </QueryClientProvider>
   );
 }
