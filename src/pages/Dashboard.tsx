@@ -18,7 +18,7 @@ import { FeaturedBadges } from "@/components/dashboard/FeaturedBadges";
 import { MatchedRewards } from "@/components/dashboard/MatchedRewards";
 import { NextBestAction } from "@/components/dashboard/NextBestAction";
 import { BadgeScanWizard } from "@/components/dashboard/BadgeScanWizard";
-import { RecentActivity } from "@/components/dashboard/RecentActivity";
+import { DemoActivity } from "@/components/dashboard/DemoActivity";
 import { DemoActivity } from "@/components/dashboard/DemoActivity";
 import { PublicProfilePreview } from "@/components/dashboard/PublicProfilePreview";
 import { getDemoState } from "@/lib/demoMode";
@@ -141,7 +141,12 @@ const Dashboard = () => {
           <div className="space-y-5 min-w-0">
             <FeaturedBadges onScan={() => setScanOpen(true)} />
             <MatchedRewards onScan={() => setScanOpen(true)} />
-            <RecentActivity />
+            <DemoActivity />
+            <DemoActivity />
+            <DemoActivity />
+            <DemoActivity />
+            <DemoActivity />
+            <DemoActivity />
           </div>
           <div className="space-y-5 min-w-0">
             <PublicProfilePreview
