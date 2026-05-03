@@ -87,7 +87,7 @@ const Dashboard = () => {
 
       <header className="border-b border-border/40 glass sticky top-0 z-40">
         <div className="container flex h-16 items-center justify-between">
-          <Link to="/" className="flex items-center gap-2" aria-label="XionID home">
+          <Link to="/" className="flex items-center gap-2" aria-label="XIONID home">
             <div className="h-9 w-9 rounded-xl bg-gradient-primary grid place-items-center shadow-glow-primary glow-primary">
               <Sparkles className="h-4 w-4 text-primary-foreground" strokeWidth={2.5} />
             </div>

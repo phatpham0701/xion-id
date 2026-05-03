@@ -68,7 +68,7 @@ const AuthCard = () => {
           options: { emailRedirectTo: `${window.location.origin}/dashboard` },
         });
         if (error) throw error;
-        toast.success("Welcome aboard!", { description: "Your XionID is ready." });
+        toast.success("Welcome aboard!", { description: "Your XIONID is ready." });
         navigate("/dashboard");
       } else {
         const { error } = await supabase.auth.signInWithPassword({
@@ -103,7 +103,7 @@ const AuthCard = () => {
       </div>
 
       <h1 className="font-display text-3xl font-bold tracking-tight mb-1.5">
-        {mode === "signup" ? "Create your XionID" : "Welcome back"}
+        {mode === "signup" ? "Create your XIONID" : "Welcome back"}
       </h1>
       <p className="text-sm text-muted-foreground mb-7">
         {mode === "signup"

@@ -20,7 +20,7 @@ const TemplatePreviewPage = () => {
   const style = useMemo(() => (tpl ? themeStyleVars(tpl.theme) : {}), [tpl]);
 
   useEffect(() => {
-    if (tpl) document.title = `${tpl.name} template · XionID`;
+    if (tpl) document.title = `${tpl.name} template · XIONID`;
   }, [tpl]);
 
   if (!tpl) {
