@@ -1,0 +1,208 @@
+import { useMemo, useState } from "react";
+import { Award, Plus, Eye, EyeOff, Star, ShieldCheck, Filter } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { useDemo } from "./QuickStats";
+import {
+  BADGE_CATEGORY_META,
+  BADGE_TIER_META,
+  setBadgeFeatured,
+  setBadgeHidden,
+  type BadgeCategory,
+  type BadgeTier,
+  type DemoBadge,
+} from "@/lib/demoMode";
+import { toast } from "sonner";
+
+type Props = {
+  onScan: () => void;
+};
+
+const ALL = "all" as const;
+type Filter<T extends string> = typeof ALL | T;
+
+export const BadgesPanel = ({ onScan }: Props) => {
+  const s = useDemo();
+  const [cat, setCat] = useState<Filter<BadgeCategory>>(ALL);
+  const [tier, setTier] = useState<Filter<BadgeTier>>(ALL);
+  const [openId, setOpenId] = useState<string | null>(null);
+
+  const filtered = useMemo(() => {
+    return s.badges.filter((b) => {
+      if (cat !== ALL && b.category !== cat) return false;
+      if (tier !== ALL && b.tierName !== tier) return false;
+      return true;
+    });
+  }, [s.badges, cat, tier]);
+
+  const recent = [...s.badges]
+    .sort((a, b) => +new Date(b.verifiedAt) - +new Date(a.verifiedAt))
+    .slice(0, 3);
+
+  const open = openId ? s.badges.find((b) => b.id === openId) ?? null : null;
+
+  return (
+    <div className="glass-strong rounded-3xl p-5 md:p-6">
+      <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
+        <div className="flex items-center gap-2">
+          <Award className="h-4 w-4 text-primary" />
+          <h2 className="font-display text-base font-semibold">Badges</h2>
+          <Badge variant="secondary" className="text-[10px]">{s.badges.length}</Badge>
+        </div>
+        <Button size="sm" onClick={onScan} className="bg-gradient-primary">
+          <Plus className="h-3.5 w-3.5" /> Verify a signal
+        </Button>
+      </div>
+
+      {/* Recently issued */}
+      {recent.length > 0 && (
+        <div className="mb-4">
+          <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">Recently issued</div>
+          <div className="flex gap-2 overflow-x-auto pb-1">
+            {recent.map((b) => (
+              <button
+                key={b.id}
+                onClick={() => setOpenId(b.id)}
+                className="shrink-0 rounded-2xl border border-glass-border bg-background/40 hover:border-primary/40 transition-all px-3 py-2 flex items-center gap-2 min-w-[180px]"
+              >
+                <div className={`h-8 w-8 rounded-xl grid place-items-center text-base bg-gradient-to-br ${BADGE_TIER_META[b.tierName].ring}`}>{b.emoji}</div>
+                <div className="text-left min-w-0">
+                  <div className="text-xs font-semibold truncate">{b.label}</div>
+                  <div className="text-[10px] text-muted-foreground">{BADGE_TIER_META[b.tierName].label}</div>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Filters */}
+      <div className="flex items-center gap-2 mb-3 flex-wrap">
+        <Filter className="h-3.5 w-3.5 text-muted-foreground" />
+        <FilterChip label="All" active={cat === ALL} onClick={() => setCat(ALL)} />
+        {(Object.keys(BADGE_CATEGORY_META) as BadgeCategory[]).map((k) => (
+          <FilterChip
+            key={k}
+            label={`${BADGE_CATEGORY_META[k].emoji} ${BADGE_CATEGORY_META[k].label}`}
+            active={cat === k}
+            onClick={() => setCat(k)}
+          />
+        ))}
+      </div>
+      <div className="flex items-center gap-2 mb-4 flex-wrap">
+        <FilterChip label="All tiers" active={tier === ALL} onClick={() => setTier(ALL)} />
+        {(Object.keys(BADGE_TIER_META) as BadgeTier[]).map((k) => (
+          <FilterChip
+            key={k}
+            label={`${BADGE_TIER_META[k].emoji} ${BADGE_TIER_META[k].label}`}
+            active={tier === k}
+            onClick={() => setTier(k)}
+          />
+        ))}
+      </div>
+
+      {/* Grid */}
+      {filtered.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-border/60 p-6 text-center">
+          <p className="text-sm text-muted-foreground">No badges in this filter yet.</p>
+          <Button size="sm" variant="outline" className="mt-3" onClick={onScan}>Scan for a badge</Button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+          {filtered.map((b) => (
+            <button
+              key={b.id}
+              onClick={() => setOpenId(b.id)}
+              className={`text-left rounded-2xl border p-3 transition-all ${
+                b.hidden
+                  ? "border-dashed border-border/60 bg-background/20 opacity-70"
+                  : "border-glass-border bg-background/40 hover:border-primary/40"
+              }`}
+            >
+              <div className="flex items-start justify-between">
+                <div className={`h-10 w-10 rounded-xl grid place-items-center text-xl bg-gradient-to-br ${BADGE_TIER_META[b.tierName].ring}`}>{b.emoji}</div>
+                {b.featured && <Star className="h-3.5 w-3.5 text-primary fill-primary" />}
+              </div>
+              <div className="text-sm font-semibold mt-2 truncate">{b.label}</div>
+              <div className="text-[10px] uppercase tracking-wider text-muted-foreground mt-0.5">
+                {BADGE_TIER_META[b.tierName].label} · {BADGE_CATEGORY_META[b.category].label}
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Detail modal */}
+      <Dialog open={!!open} onOpenChange={(o) => !o && setOpenId(null)}>
+        <DialogContent className="max-w-md">
+          {open && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="font-display text-xl flex items-center gap-2">
+                  <span>{open.emoji}</span> {open.label}
+                </DialogTitle>
+                <DialogDescription className="flex items-center gap-2 flex-wrap">
+                  <Badge variant="secondary" className="text-[10px]">
+                    {BADGE_TIER_META[open.tierName].emoji} {BADGE_TIER_META[open.tierName].label}
+                  </Badge>
+                  <Badge variant="outline" className="text-[10px]">
+                    {BADGE_CATEGORY_META[open.category].emoji} {BADGE_CATEGORY_META[open.category].label}
+                  </Badge>
+                </DialogDescription>
+              </DialogHeader>
+              <div className={`rounded-2xl p-5 bg-gradient-to-br ${BADGE_TIER_META[open.tierName].ring} grid place-items-center`}>
+                <div className="text-6xl">{open.emoji}</div>
+              </div>
+              <p className="text-sm text-foreground/80 leading-relaxed">{open.description}</p>
+              {open.privacyNote && (
+                <p className="text-[11px] text-muted-foreground flex items-start gap-1.5 border-t border-border/40 pt-3">
+                  <ShieldCheck className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" />
+                  {open.privacyNote}
+                </p>
+              )}
+              <div className="grid grid-cols-2 gap-2 pt-1">
+                <Button
+                  variant={open.featured ? "default" : "outline"}
+                  onClick={() => {
+                    const next = !open.featured;
+                    setBadgeFeatured(open.id, next);
+                    toast.success(next ? "Featured on profile" : "Removed from profile");
+                  }}
+                  className={open.featured ? "bg-gradient-primary" : ""}
+                >
+                  <Star className="h-4 w-4" />
+                  {open.featured ? "Featured" : "Feature on profile"}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    const next = !open.hidden;
+                    setBadgeHidden(open.id, next);
+                    toast.success(next ? "Badge hidden" : "Badge visible");
+                  }}
+                >
+                  {open.hidden ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                  {open.hidden ? "Show" : "Hide"}
+                </Button>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
+
+const FilterChip = ({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) => (
+  <button
+    onClick={onClick}
+    className={`text-[11px] px-2.5 py-1 rounded-full border transition-colors ${
+      active
+        ? "bg-primary text-primary-foreground border-primary"
+        : "bg-background/40 border-glass-border text-muted-foreground hover:text-foreground hover:border-border"
+    }`}
+  >
+    {label}
+  </button>
+);

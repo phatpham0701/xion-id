@@ -88,7 +88,7 @@ const Editor = () => {
     (async () => {
       const { data: p } = await supabase
         .from("profiles")
-        .select("id, username, display_name, theme, settings")
+        .select("id, username, display_name, theme, settings, is_published")
         .eq("user_id", user.id)
         .maybeSingle();
 

@@ -1,6 +1,8 @@
 import { Eye, ExternalLink, Copy, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { useDemo } from "./QuickStats";
+import { BADGE_TIER_META } from "@/lib/demoMode";
 
 type Props = {
   username: string;
@@ -13,6 +15,8 @@ type Props = {
 export const PublicProfilePreview = ({ username, displayName, avatarUrl, bio, isPublished }: Props) => {
   const url = typeof window !== "undefined" ? `${window.location.origin}/${username}` : `/${username}`;
   const initial = (displayName || username || "X").slice(0, 1).toUpperCase();
+  const demo = useDemo();
+  const featured = demo.badges.filter((b) => b.featured && !b.hidden).slice(0, 6);
 
   const copy = async () => {
     await navigator.clipboard.writeText(url);
@@ -50,6 +54,23 @@ export const PublicProfilePreview = ({ username, displayName, avatarUrl, bio, is
           </div>
         </div>
         {bio && <p className="text-sm text-foreground/80 mt-3 leading-relaxed line-clamp-3">{bio}</p>}
+
+        {featured.length > 0 && (
+          <div className="mt-3 pt-3 border-t border-border/40">
+            <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">Featured badges</div>
+            <div className="flex flex-wrap gap-1.5">
+              {featured.map((b) => (
+                <div
+                  key={b.id}
+                  title={`${b.label} · ${BADGE_TIER_META[b.tierName].label}`}
+                  className={`h-8 w-8 rounded-xl grid place-items-center text-base bg-gradient-to-br ${BADGE_TIER_META[b.tierName].ring}`}
+                >
+                  {b.emoji}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="mt-3 glass rounded-2xl px-3 py-2 flex items-center gap-2">

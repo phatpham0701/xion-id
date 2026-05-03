@@ -13,7 +13,9 @@ import { ProfileSummary } from "@/components/dashboard/ProfileSummary";
 import { QuickStats } from "@/components/dashboard/QuickStats";
 import { QuickActionTiles } from "@/components/dashboard/QuickActionTiles";
 import { RecommendedRewards } from "@/components/dashboard/RecommendedRewards";
-import { BadgeInventory, RewardLocker } from "@/components/dashboard/Snapshots";
+import { BadgesPanel } from "@/components/dashboard/BadgesPanel";
+import { RewardsLocker } from "@/components/dashboard/RewardsLocker";
+import { BadgeScanWizard } from "@/components/dashboard/BadgeScanWizard";
 import { DemoActivity } from "@/components/dashboard/DemoActivity";
 import { PublicProfilePreview } from "@/components/dashboard/PublicProfilePreview";
 import { getDemoState } from "@/lib/demoMode";
@@ -24,6 +26,7 @@ const Dashboard = () => {
   const [profile, setProfile] = useState<EditableProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [shareOpen, setShareOpen] = useState(false);
+  const [scanOpen, setScanOpen] = useState(false);
   const [demoOnboarded, setDemoOnboarded] = useState<boolean>(() => getDemoState().onboarded);
 
   useEffect(() => {
@@ -123,13 +126,14 @@ const Dashboard = () => {
         <QuickStats />
 
         {/* 3. Quick actions */}
-        <QuickActionTiles />
+        <QuickActionTiles onScan={() => setScanOpen(true)} onClaimRewards={() => {
+          document.getElementById("rewards-locker")?.scrollIntoView({ behavior: "smooth", block: "start" });
+        }} />
 
-        {/* 4–7 grid */}
         <div className="grid lg:grid-cols-[1.4fr_1fr] gap-5">
           <div className="space-y-5">
-            <RecommendedRewards />
-            <BadgeInventory />
+            <BadgesPanel onScan={() => setScanOpen(true)} />
+            <div id="rewards-locker"><RewardsLocker /></div>
             <DemoActivity />
           </div>
           <div className="space-y-5">
@@ -140,7 +144,7 @@ const Dashboard = () => {
               bio={profile.bio}
               isPublished={profile.is_published}
             />
-            <RewardLocker />
+            <RecommendedRewards />
             <ProfileEditorCard
               profile={profile}
               onChange={setProfile}
@@ -149,6 +153,8 @@ const Dashboard = () => {
           </div>
         </div>
       </main>
+
+      <BadgeScanWizard open={scanOpen} onOpenChange={setScanOpen} />
 
       <ShareDialog
         open={shareOpen}
