@@ -551,6 +551,23 @@ export const TEMPLATE_CATEGORIES: { id: ProfileTemplate["category"] | "all"; lab
 
 export const getTemplate = (id: string) => TEMPLATES.find((t) => t.id === id);
 
+/**
+ * Pitch-aligned, curated template set. Other templates remain available via
+ * direct URL but the gallery surfaces only these to keep the demo focused.
+ */
+export const FEATURED_TEMPLATES: { id: string; name: string; persona: string; outcome: string }[] = [
+  { id: "essential-rewards", name: "Essential Rewards Passport",  persona: "Best all-rounder",     outcome: "Profile, badges & live offers in one tap." },
+  { id: "minimal-public",    name: "Paulus Lifestyle Passport",   persona: "Lifestyle minimal",    outcome: "A clean public card with featured proof." },
+  { id: "creator-hub",       name: "Alice Creator Campaign",      persona: "Creator campaign",     outcome: "Drops, perks and supporter offers." },
+  { id: "athlete-passport",  name: "Wellness & Fitness Passport", persona: "Wellness & fitness",   outcome: "Stats, sponsors and event check-ins." },
+  { id: "badge-first",       name: "Education Credentials Passport", persona: "Verified learner", outcome: "Lead with diplomas and verified courses." },
+  { id: "consultant",        name: "Candidate Passport",          persona: "Career & hiring",      outcome: "Verified skills, references and contact." },
+  { id: "photographer",      name: "Events & Travel Passport",    persona: "Events & travel",      outcome: "Trips, attended events and partner perks." },
+  { id: "creator-aurora",    name: "Creator Marketing Passport",  persona: "Creator marketing",    outcome: "Brand collabs, audience signals and CTAs." },
+];
+
+export const FEATURED_TEMPLATE_IDS = new Set(FEATURED_TEMPLATES.map((t) => t.id));
+
 /** Map onboarding `DemoStarterKey` → template id. */
 export const STARTER_TO_TEMPLATE: Record<string, string> = {
   essential:    "essential-rewards",

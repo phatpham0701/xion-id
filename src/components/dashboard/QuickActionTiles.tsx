@@ -25,7 +25,7 @@ export const QuickActionTiles = ({ onScan, onClaimRewards }: Props) => {
 
   const primary: Tile[] = [
     { label: "Verify signal",   icon: ScanLine, onClick: onScan,         hint: "Add a new proof" },
-    { label: "Open Offer Box",  icon: Gift,     onClick: onClaimRewards, hint: "See your matches" },
+    { label: "Open Offer Box",  icon: Gift,     to: "/rewards",          hint: "See your matches" },
     { label: "Edit in Studio",  icon: Pencil,   to: "/editor",           hint: "Tune your passport" },
     { label: "Create QR",       icon: QrCode,   to: "/qr",               hint: "Share offline" },
   ];

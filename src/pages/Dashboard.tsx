@@ -17,8 +17,6 @@ import { QuickActionTiles } from "@/components/dashboard/QuickActionTiles";
 import { FeaturedBadges } from "@/components/dashboard/FeaturedBadges";
 import { MatchedRewards } from "@/components/dashboard/MatchedRewards";
 import { NextBestAction } from "@/components/dashboard/NextBestAction";
-import { BadgesPanel } from "@/components/dashboard/BadgesPanel";
-import { RewardsLocker } from "@/components/dashboard/RewardsLocker";
 import { BadgeScanWizard } from "@/components/dashboard/BadgeScanWizard";
 import { DemoActivity } from "@/components/dashboard/DemoActivity";
 import { PublicProfilePreview } from "@/components/dashboard/PublicProfilePreview";
@@ -134,7 +132,7 @@ const Dashboard = () => {
 
         <QuickActionTiles
           onScan={() => setScanOpen(true)}
-          onClaimRewards={() => document.getElementById("rewards-locker")?.scrollIntoView({ behavior: "smooth", block: "start" })}
+          onClaimRewards={() => navigate("/rewards")}
         />
 
         {/* Compact preview row */}
@@ -159,16 +157,6 @@ const Dashboard = () => {
             />
           </div>
         </div>
-
-        {/* Deep panels — full inventory + locker, kept available but below the fold */}
-        <section id="all-badges" className="pt-2">
-          <h2 className="sr-only">All proof</h2>
-          <BadgesPanel onScan={() => setScanOpen(true)} />
-        </section>
-
-        <section id="rewards-locker">
-          <RewardsLocker />
-        </section>
       </main>
 
       <BadgeScanWizard open={scanOpen} onOpenChange={setScanOpen} />

@@ -10,6 +10,8 @@ import Auth from "./pages/Auth.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
 import Editor from "./pages/Editor.tsx";
 import Templates from "./pages/Templates.tsx";
+import BadgesAll from "./pages/BadgesAll.tsx";
+import RewardsBox from "./pages/RewardsBox.tsx";
 import TemplatePreview from "./pages/TemplatePreview.tsx";
 import Campaigns from "./pages/Campaigns.tsx";
 import PublicCampaign from "./pages/PublicCampaign.tsx";
@@ -68,6 +70,14 @@ function App() {
             <Route
               path="/qr"
               element={<RequireAuth><QrCenter /></RequireAuth>}
+            />
+            <Route
+              path="/badges"
+              element={<RequireAuth><BadgesAll /></RequireAuth>}
+            />
+            <Route
+              path="/rewards"
+              element={<RequireAuth><RewardsBox /></RequireAuth>}
             />
             {/* Public campaign page — open route */}
             <Route path="/c/:id" element={<PublicCampaign />} />

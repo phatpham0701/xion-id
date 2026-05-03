@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
-  TEMPLATES, TEMPLATE_CATEGORIES, type ProfileTemplate,
+  TEMPLATES, TEMPLATE_CATEGORIES, FEATURED_TEMPLATES, FEATURED_TEMPLATE_IDS, type ProfileTemplate,
 } from "@/lib/templates";
 import { TemplatePreview } from "./TemplatePreview";
 
@@ -33,18 +33,8 @@ const blockSummary = (tpl: ProfileTemplate): string[] => {
   return Array.from(set).slice(0, 4);
 };
 
-const PERSONAS: Record<string, { persona: string; outcome: string }> = {
-  "essential-rewards":     { persona: "Best all-rounder",     outcome: "Profile, badges & live offers in one tap" },
-  "minimal-public":        { persona: "Minimal public card",  outcome: "Just your name, bio and one CTA" },
-  "badge-first":           { persona: "Proof-first identity", outcome: "Lead with verified signals" },
-  "quick-support":         { persona: "Accept support fast",  outcome: "Tip jar with a 1-minute setup" },
-  "creator-hub":           { persona: "Creator support hub",  outcome: "Drops, perks, and supporters in sync" },
-  "athlete-passport":      { persona: "Wellness & fitness",   outcome: "Stats, sponsors and event check-ins" },
-  "shopper-perks":         { persona: "Personal offers",      outcome: "Vouchers from brands you actually like" },
-  "community-leader":      { persona: "Community leader",     outcome: "Members, events, and supporters" },
-  "fundraise-starter":     { persona: "Campaign starter",     outcome: "Goal, supporters, progress at a glance" },
-  "local-business-rewards":{ persona: "Local business",       outcome: "Today's offers, check-in & loyalty" },
-};
+const PERSONAS: Record<string, { persona: string; outcome: string; name?: string }> =
+  Object.fromEntries(FEATURED_TEMPLATES.map((t) => [t.id, { persona: t.persona, outcome: t.outcome, name: t.name }]));
 
 const TemplateCard = ({
   tpl, active, onSelect,
@@ -74,7 +64,7 @@ const TemplateCard = ({
           <div className="flex items-center gap-1.5">
             <span className="text-base">{tpl.emoji}</span>
             <button onClick={onSelect} className="text-sm font-display font-semibold truncate text-left hover:text-primary transition-colors">
-              {tpl.name}
+              {meta?.name ?? tpl.name}
             </button>
           </div>
           {meta && <div className="text-[10px] uppercase tracking-[0.18em] text-accent mt-1">{meta.persona}</div>}
@@ -115,9 +105,10 @@ export const TemplateGallery = ({
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [applying, setApplying] = useState(false);
 
-  const filtered = category === "all"
-    ? TEMPLATES
-    : TEMPLATES.filter((t) => t.category === category);
+  // Pitch-aligned curated set only — generic templates are still reachable via
+  // direct URL but the gallery is intentionally focused.
+  const featured = TEMPLATES.filter((t) => FEATURED_TEMPLATE_IDS.has(t.id));
+  const filtered = category === "all" ? featured : featured.filter((t) => t.category === category);
 
   const apply = async () => {
     const tpl = TEMPLATES.find((t) => t.id === selectedId);
@@ -186,7 +177,7 @@ export const TemplateGallery = ({
             <span className="text-[11px] text-muted-foreground">Based on your starter</span>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {TEMPLATES.filter((t) => ["essential-rewards", "creator-hub", "badge-first"].includes(t.id)).map((tpl) => (
+            {featured.filter((t) => ["essential-rewards", "creator-hub", "athlete-passport"].includes(t.id)).map((tpl) => (
               <TemplateCard
                 key={`rec-${tpl.id}`}
                 tpl={tpl}
