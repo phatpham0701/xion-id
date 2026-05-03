@@ -1,12 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { z } from "zod";
 import { toast } from "sonner";
 import { ArrowRight, ArrowLeft, Check, Loader2, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { BRAND, RESERVED_USERNAMES } from "@/lib/brand";
+import { RESERVED_USERNAMES } from "@/lib/brand";
 import {
   DEMO_GOALS,
   DEMO_STARTERS,
@@ -16,13 +15,6 @@ import {
 } from "@/lib/demoMode";
 import type { EditableProfile } from "@/components/dashboard/ProfileEditorCard";
 
-const usernameSchema = z
-  .string()
-  .trim()
-  .min(3, { message: "At least 3 characters" })
-  .max(24, { message: "Max 24 characters" })
-  .regex(/^[a-zA-Z0-9_.\-]+$/, { message: "Only letters, numbers, _ . -" });
-
 type Props = {
   profile: EditableProfile;
   onSaved: (p: EditableProfile) => void;
@@ -30,51 +22,76 @@ type Props = {
 
 type Step = "goal" | "starter";
 
+const USERNAME_RE = /^[a-zA-Z0-9_.\-]+$/;
+
+const sanitize = (raw: string): string => {
+  const cleaned = raw.toLowerCase().replace(/[^a-z0-9_.\-]/g, "").slice(0, 20);
+  return cleaned.length >= 3 ? cleaned : "";
+};
+
+const generateDemoUsername = async (email?: string | null): Promise<string> => {
+  const prefix = email ? sanitize(email.split("@")[0]) : "";
+  const base = prefix || "demo-user";
+  const candidates = [
+    base,
+    `${base}-${Math.floor(1000 + Math.random() * 9000)}`,
+    `${base}-${Math.floor(1000 + Math.random() * 9000)}`,
+  ];
+  for (const cand of candidates) {
+    if (RESERVED_USERNAMES.has(cand)) continue;
+    if (!USERNAME_RE.test(cand) || cand.length < 3) continue;
+    try {
+      const { data } = await supabase
+        .from("profiles").select("id").eq("username", cand).maybeSingle();
+      if (!data) return cand;
+    } catch {
+      return cand; // Supabase unavailable — fall back to candidate
+    }
+  }
+  return `demo-user-${Math.floor(10000 + Math.random() * 90000)}`;
+};
+
 export const OnboardingFlow = ({ profile, onSaved }: Props) => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [step, setStep] = useState<Step>("goal");
   const [goal, setGoal] = useState<DemoGoalKey | null>(null);
   const [starter, setStarter] = useState<DemoStarterKey | null>(null);
-  const [username, setUsername] = useState("");
   const [saving, setSaving] = useState(false);
 
   const recommended = goal ? DEMO_STARTERS.filter((s) => s.goalFit.includes(goal)) : DEMO_STARTERS;
   const others = goal ? DEMO_STARTERS.filter((s) => !s.goalFit.includes(goal)) : [];
 
   const finish = async () => {
-    if (!goal || !starter) return;
-
-    const parsed = usernameSchema.safeParse(username);
-    if (!parsed.success) return toast.error(parsed.error.issues[0].message);
-    const lower = parsed.data.toLowerCase();
-    if (RESERVED_USERNAMES.has(lower)) {
-      return toast.error("That handle is reserved", { description: "Pick another one." });
-    }
-
+    if (!starter || !goal) return;
     setSaving(true);
     try {
-      // Claim handle if not already claimed.
+      // Auto-generate a demo username if none claimed yet.
       if (!profile.username) {
-        const { data: existing, error: checkErr } = await supabase
-          .from("profiles").select("id").eq("username", parsed.data).maybeSingle();
-        if (checkErr) throw checkErr;
-        if (existing && existing.id !== profile.id) {
-          toast.error("That handle is taken", { description: "Try another." });
-          setSaving(false);
-          return;
+        const generated = await generateDemoUsername(user?.email);
+        try {
+          const { data, error } = await supabase
+            .from("profiles").update({ username: generated }).eq("id", profile.id)
+            .select("id, username, display_name, avatar_url, bio, is_published").single();
+          if (!error && data) {
+            onSaved(data as EditableProfile);
+          } else {
+            // Graceful fallback: keep going with a local profile shape.
+            onSaved({ ...profile, username: generated });
+          }
+        } catch {
+          onSaved({ ...profile, username: generated });
         }
-        const { data, error } = await supabase
-          .from("profiles").update({ username: parsed.data }).eq("id", profile.id)
-          .select("id, username, display_name, avatar_url, bio, is_published").single();
-        if (error) throw error;
-        onSaved(data as EditableProfile);
       }
 
       completeDemoOnboarding(goal, starter);
-      toast.success("You're in!", { description: "Your passport is ready." });
+      toast.success("Demo passport ready.");
       navigate("/dashboard");
-    } catch (err) {
-      toast.error("Couldn't save", { description: err instanceof Error ? err.message : "Try again" });
+    } catch {
+      // Never surface raw errors in demo mode.
+      completeDemoOnboarding(goal, starter);
+      toast.success("Demo passport ready.");
+      navigate("/dashboard");
     } finally {
       setSaving(false);
     }
