@@ -70,12 +70,14 @@ const Dashboard = () => {
     );
   }
 
-  // 2-step onboarding: required when handle missing OR demo not onboarded.
-  if (!profile.username || !demoOnboarded) {
+  // Onboarding only blocks when the user hasn't completed the demo flow.
+  // Once onboarded, render the dashboard even if the username isn't claimed yet
+  // (Claim Your ID lives as a quick action).
+  if (!demoOnboarded) {
     return <OnboardingFlow profile={profile} onSaved={setProfile} />;
   }
 
-  const username = profile.username;
+  const username = profile.username ?? "you";
   const profileUrl = `${window.location.origin}/${username}`;
 
   return (
