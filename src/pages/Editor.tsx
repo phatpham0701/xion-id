@@ -61,9 +61,10 @@ type Profile = {
   id: string;
   username: string | null;
   display_name: string | null;
+  is_published: boolean;
 };
 
-const STARTER_SUGGESTIONS = ["Creator Hero", "Tip Jar", "XION Passport", "Link Hub"];
+const STARTER_SUGGESTIONS = ["Profile Hero", "Support Module", "Badge Wall", "Reward Preview"];
 
 const Editor = () => {
   const { user } = useAuth();
