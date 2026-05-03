@@ -286,6 +286,26 @@ export const claimDemoReward = (rewardId: string): DemoState =>
     }
   });
 
+/** Claim a reward that may not yet exist in user state — upsert + claim. */
+export const upsertAndClaimReward = (reward: DemoReward): DemoState =>
+  updateDemoState((s) => {
+    let r = s.rewards.find((x) => x.id === reward.id);
+    if (!r) {
+      r = { ...reward };
+      s.rewards.unshift(r);
+    }
+    r.claimed = true;
+    r.status = "claimed";
+    r.claimedAt = new Date().toISOString();
+    s.activity.unshift({
+      id: `a-claim-${Date.now()}`,
+      kind: "reward",
+      title: `Claimed: ${r.title}`,
+      detail: r.brand,
+      at: r.claimedAt,
+    });
+  });
+
 export const joinDemoCampaign = (campaignId: string): DemoState =>
   updateDemoState((s) => {
     const c = s.campaigns.find((x) => x.id === campaignId);
