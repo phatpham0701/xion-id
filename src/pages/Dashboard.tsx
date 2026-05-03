@@ -1,146 +1,36 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { z } from "zod";
 import { toast } from "sonner";
-import {
-  Sparkles, LogOut, Loader2, LayoutTemplate, Pencil, Wand2,
-} from "lucide-react";
+import { Sparkles, LogOut, LayoutTemplate } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { BRAND, RESERVED_USERNAMES } from "@/lib/brand";
 import { ProfileEditorCard, type EditableProfile } from "@/components/dashboard/ProfileEditorCard";
 import { ShareDialog } from "@/components/dashboard/ShareDialog";
-import { AnalyticsPanel } from "@/components/dashboard/AnalyticsPanel";
-import { RecentActivity } from "@/components/dashboard/RecentActivity";
-import { WalletCard } from "@/components/dashboard/WalletCard";
-import { TipAnalyticsCard } from "@/components/dashboard/TipAnalyticsCard";
-import { BadgesCard } from "@/components/dashboard/BadgesCard";
-
-const usernameSchema = z
-  .string()
-  .trim()
-  .min(3, { message: "At least 3 characters" })
-  .max(24, { message: "Max 24 characters" })
-  .regex(/^[a-zA-Z0-9_.\-]+$/, { message: "Only letters, numbers, _ . -" });
-
-const Onboarding = ({ profile, onSaved }: { profile: EditableProfile; onSaved: (p: EditableProfile) => void }) => {
-  const navigate = useNavigate();
-  const [username, setUsername] = useState("");
-  const [saving, setSaving] = useState(false);
-
-  const claim = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const parsed = usernameSchema.safeParse(username);
-    if (!parsed.success) return toast.error(parsed.error.issues[0].message);
-
-    const lower = parsed.data.toLowerCase();
-    if (RESERVED_USERNAMES.has(lower)) {
-      return toast.error("That handle is reserved", { description: "Pick another one." });
-    }
-
-    setSaving(true);
-    try {
-      const { data: existing, error: checkErr } = await supabase
-        .from("profiles").select("id").eq("username", parsed.data).maybeSingle();
-      if (checkErr) throw checkErr;
-      if (existing && existing.id !== profile.id) {
-        toast.error("That handle is taken", { description: "Try another one." });
-        setSaving(false);
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from("profiles").update({ username: parsed.data }).eq("id", profile.id)
-        .select("id, username, display_name, avatar_url, bio, is_published").single();
-      if (error) throw error;
-      toast.success("Profile claimed!", { description: `${BRAND.domain}/${parsed.data}` });
-      onSaved(data as EditableProfile);
-      // Nudge new users straight to templates
-      navigate("/templates");
-    } catch (err) {
-      toast.error("Couldn't save", { description: err instanceof Error ? err.message : "Try again" });
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  return (
-    <div className="min-h-screen grid place-items-center px-4 py-12 relative overflow-hidden">
-      <div className="aurora-orb h-[420px] w-[420px] -top-20 -left-10 bg-secondary animate-aurora-drift" />
-      <div className="aurora-orb h-[460px] w-[460px] bottom-0 -right-20 bg-primary animate-aurora-drift" style={{ animationDelay: "-7s" }} />
-      <div className="glass-strong rounded-3xl p-8 md:p-10 w-full max-w-lg animate-scale-in">
-        <div className="text-center mb-8">
-          <div className="mx-auto h-12 w-12 rounded-2xl bg-gradient-primary grid place-items-center shadow-glow-primary glow-primary mb-4">
-            <Sparkles className="h-5 w-5 text-primary-foreground" strokeWidth={2.5} />
-          </div>
-          <h1 className="font-display text-3xl font-bold tracking-tight">
-            Choose your <span className="text-gradient">handle</span>
-          </h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            This is your permanent XionID URL. Pick wisely.
-          </p>
-        </div>
-
-        <form onSubmit={claim} className="space-y-4">
-          <div className="glass rounded-2xl flex items-center pl-4 pr-1 h-14 focus-within:border-primary/50 transition-colors">
-            <span className="text-sm text-muted-foreground select-none">{BRAND.domain}/</span>
-            <Input
-              autoFocus
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="yourname"
-              className="border-0 bg-transparent px-1 h-full text-base focus-visible:ring-0 focus-visible:ring-offset-0"
-              maxLength={24}
-            />
-          </div>
-          <p className="text-xs text-muted-foreground text-center">
-            3–24 chars · letters, numbers, <code className="font-mono">_ . -</code>
-          </p>
-          <Button
-            type="submit"
-            disabled={saving || username.length < 3}
-            className="w-full h-12 bg-gradient-primary text-primary-foreground hover:opacity-90 font-medium shadow-glow-primary glow-primary"
-          >
-            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Claim handle & pick a template"}
-          </Button>
-        </form>
-      </div>
-    </div>
-  );
-};
-
-const EmptyStateHero = () => (
-  <div className="glass-strong rounded-3xl p-8 md:p-10 text-center animate-fade-in">
-    <div className="mx-auto h-14 w-14 rounded-2xl bg-gradient-primary grid place-items-center shadow-glow-primary glow-primary mb-5">
-      <Wand2 className="h-6 w-6 text-primary-foreground" strokeWidth={2.5} />
-    </div>
-    <h2 className="font-display text-2xl md:text-3xl font-bold tracking-tight mb-2">
-      Your profile is <span className="text-gradient">empty</span>
-    </h2>
-    <p className="text-muted-foreground max-w-md mx-auto mb-6">
-      Pick a template to start with a polished profile in one tap, or build from scratch in the editor.
-    </p>
-    <div className="flex flex-wrap justify-center gap-2">
-      <Button asChild className="bg-gradient-primary text-primary-foreground font-medium">
-        <Link to="/templates"><LayoutTemplate className="h-4 w-4 mr-1.5" />Browse 15 templates</Link>
-      </Button>
-      <Button asChild variant="outline" className="glass border-glass-border">
-        <Link to="/editor"><Pencil className="h-4 w-4 mr-1.5" />Build from scratch</Link>
-      </Button>
-    </div>
-  </div>
-);
+import { OnboardingFlow } from "@/components/onboarding/OnboardingFlow";
+import { ProfileSummary } from "@/components/dashboard/ProfileSummary";
+import { QuickStats } from "@/components/dashboard/QuickStats";
+import { QuickActionTiles } from "@/components/dashboard/QuickActionTiles";
+import { RecommendedRewards } from "@/components/dashboard/RecommendedRewards";
+import { BadgeInventory, RewardLocker } from "@/components/dashboard/Snapshots";
+import { DemoActivity } from "@/components/dashboard/DemoActivity";
+import { PublicProfilePreview } from "@/components/dashboard/PublicProfilePreview";
+import { getDemoState } from "@/lib/demoMode";
 
 const Dashboard = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<EditableProfile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [blockCount, setBlockCount] = useState<number | null>(null);
   const [shareOpen, setShareOpen] = useState(false);
+  const [demoOnboarded, setDemoOnboarded] = useState<boolean>(() => getDemoState().onboarded);
+
+  useEffect(() => {
+    const refresh = () => setDemoOnboarded(getDemoState().onboarded);
+    window.addEventListener("xionid:demo:change", refresh);
+    return () => window.removeEventListener("xionid:demo:change", refresh);
+  }, []);
 
   useEffect(() => {
     if (!user) return;
@@ -151,11 +41,6 @@ const Dashboard = () => {
         .eq("user_id", user.id).maybeSingle();
       if (error) toast.error("Couldn't load profile", { description: error.message });
       setProfile(data as EditableProfile | null);
-      if (data?.id) {
-        const { count } = await supabase
-          .from("blocks").select("id", { count: "exact", head: true }).eq("profile_id", data.id);
-        setBlockCount(count ?? 0);
-      }
       setLoading(false);
     })();
   }, [user]);
@@ -182,12 +67,13 @@ const Dashboard = () => {
     );
   }
 
-  if (!profile.username) {
-    return <Onboarding profile={profile} onSaved={setProfile} />;
+  // 2-step onboarding: required when handle missing OR demo not onboarded.
+  if (!profile.username || !demoOnboarded) {
+    return <OnboardingFlow profile={profile} onSaved={setProfile} />;
   }
 
-  const profileUrl = `${window.location.origin}/${profile.username}`;
-  const isEmpty = blockCount === 0;
+  const username = profile.username;
+  const profileUrl = `${window.location.origin}/${username}`;
 
   return (
     <div className="min-h-screen relative">
@@ -217,55 +103,58 @@ const Dashboard = () => {
         </div>
       </header>
 
-      <main className="container py-10 md:py-14 relative space-y-6">
+      <main className="container py-8 md:py-10 relative space-y-5">
         <div className="animate-fade-in">
-          <h1 className="font-display text-4xl md:text-5xl font-bold tracking-tight">
-            Your <span className="text-gradient">studio</span>
+          <h1 className="font-display text-3xl md:text-4xl font-bold tracking-tight">
+            Your <span className="text-gradient">passport</span>
           </h1>
-          <p className="mt-2 text-muted-foreground">Edit, decorate, and share your on-chain profile.</p>
+          <p className="mt-1 text-sm text-muted-foreground">A calm command center for your identity, badges, and rewards.</p>
         </div>
 
-        {isEmpty ? (
-          <>
+        {/* 1. Profile summary */}
+        <ProfileSummary
+          displayName={profile.display_name}
+          username={username}
+          avatarUrl={profile.avatar_url}
+          isPublished={profile.is_published}
+        />
+
+        {/* 2. Quick stats */}
+        <QuickStats />
+
+        {/* 3. Quick actions */}
+        <QuickActionTiles />
+
+        {/* 4–7 grid */}
+        <div className="grid lg:grid-cols-[1.4fr_1fr] gap-5">
+          <div className="space-y-5">
+            <RecommendedRewards />
+            <BadgeInventory />
+            <DemoActivity />
+          </div>
+          <div className="space-y-5">
+            <PublicProfilePreview
+              username={username}
+              displayName={profile.display_name}
+              avatarUrl={profile.avatar_url}
+              bio={profile.bio}
+              isPublished={profile.is_published}
+            />
+            <RewardLocker />
             <ProfileEditorCard
               profile={profile}
               onChange={setProfile}
               onShare={() => setShareOpen(true)}
             />
-            <div className="grid lg:grid-cols-2 gap-6">
-              <WalletCard />
-              <EmptyStateHero />
-            </div>
-            <div className="grid lg:grid-cols-2 gap-6">
-              <BadgesCard profileId={profile.id} />
-              <TipAnalyticsCard profileId={profile.id} />
-            </div>
-          </>
-        ) : (
-          <div className="grid lg:grid-cols-[1.6fr_1fr] gap-6">
-            <div className="space-y-6">
-              <ProfileEditorCard
-                profile={profile}
-                onChange={setProfile}
-                onShare={() => setShareOpen(true)}
-              />
-              <RecentActivity profileId={profile.id} />
-            </div>
-            <div className="space-y-6">
-              <WalletCard />
-              <BadgesCard profileId={profile.id} />
-              <TipAnalyticsCard profileId={profile.id} />
-              <AnalyticsPanel profileId={profile.id} />
-            </div>
           </div>
-        )}
+        </div>
       </main>
 
       <ShareDialog
         open={shareOpen}
         onOpenChange={setShareOpen}
         profileUrl={profileUrl}
-        username={profile.username}
+        username={username}
       />
     </div>
   );
