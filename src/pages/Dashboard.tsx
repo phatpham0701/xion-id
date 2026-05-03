@@ -19,7 +19,6 @@ import { MatchedRewards } from "@/components/dashboard/MatchedRewards";
 import { NextBestAction } from "@/components/dashboard/NextBestAction";
 import { BadgeScanWizard } from "@/components/dashboard/BadgeScanWizard";
 import { DemoActivity } from "@/components/dashboard/DemoActivity";
-import { DemoActivity } from "@/components/dashboard/DemoActivity";
 import { PublicProfilePreview } from "@/components/dashboard/PublicProfilePreview";
 import { getDemoState } from "@/lib/demoMode";
 
