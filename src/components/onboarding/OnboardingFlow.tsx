@@ -169,35 +169,20 @@ export const OnboardingFlow = ({ profile, onSaved }: Props) => {
                 )}
               </div>
 
-              {/* Handle */}
-              {!profile.username && (
-                <div className="mt-7">
-                  <label className="text-xs uppercase tracking-wider text-muted-foreground">Pick your public ID</label>
-                  <div className="mt-2 glass rounded-2xl flex items-center pl-4 pr-1 h-12">
-                    <span className="text-sm text-muted-foreground select-none">{BRAND.domain}/</span>
-                    <Input
-                      autoFocus
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                      placeholder="yourname"
-                      className="border-0 bg-transparent px-1 h-full text-base focus-visible:ring-0 focus-visible:ring-offset-0"
-                      maxLength={24}
-                    />
-                  </div>
-                  <p className="text-[11px] text-muted-foreground mt-1.5">
-                    3–24 chars · letters, numbers, <code className="font-mono">_ . -</code>
-                  </p>
-                </div>
-              )}
-
               <div className="mt-7 flex items-center justify-between">
-                <Button variant="ghost" onClick={() => setStep("goal")} className="text-muted-foreground">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => setStep("goal")}
+                  className="text-muted-foreground"
+                >
                   <ArrowLeft className="h-4 w-4 mr-1" />
                   Back
                 </Button>
                 <Button
+                  type="button"
                   onClick={finish}
-                  disabled={!starter || saving || (!profile.username && username.length < 3)}
+                  disabled={!starter || saving}
                   className="bg-gradient-primary text-primary-foreground font-medium h-11 px-6 shadow-glow-primary glow-primary"
                 >
                   {saving ? (
