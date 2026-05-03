@@ -550,3 +550,17 @@ export const TEMPLATE_CATEGORIES: { id: ProfileTemplate["category"] | "all"; lab
 ];
 
 export const getTemplate = (id: string) => TEMPLATES.find((t) => t.id === id);
+
+/** Map onboarding `DemoStarterKey` → template id. */
+export const STARTER_TO_TEMPLATE: Record<string, string> = {
+  essential:    "essential-rewards",
+  minimal:      "minimal-public",
+  badgeFirst:   "badge-first",
+  quickSupport: "quick-support",
+  creatorHub:   "creator-hub",
+  athlete:      "athlete-passport",
+  shopper:      "shopper-perks",
+  community:    "community-leader",
+  fundraise:    "fundraise-starter",
+  localBusiness:"local-business-rewards",
+};
