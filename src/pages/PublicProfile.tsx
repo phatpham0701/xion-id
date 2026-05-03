@@ -239,6 +239,33 @@ const PublicProfile = () => {
           </div>
         </header>
 
+        {publicBadges.length > 0 && (
+          <section className="mb-5 rounded-[2rem] border border-white/10 bg-background/45 p-5 backdrop-blur-xl">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-sm font-display font-semibold tracking-tight">Featured proof</h2>
+              <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">{publicBadges.length} verified</span>
+            </div>
+            <div className="grid grid-cols-2 gap-2.5">
+              {publicBadges.slice(0, 8).map((b) => (
+                <div key={b.id} className="rounded-2xl border border-glass-border bg-background/40 p-3 flex items-center gap-3">
+                  <ProofSeal emoji={b.emoji} tier={b.tierName} size="sm" />
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[10px] uppercase tracking-wider text-accent">{b.tierName}</div>
+                    <div className="text-sm font-semibold leading-tight truncate">{b.label}</div>
+                    <div className="text-[10px] text-muted-foreground truncate">{b.category}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            {publicBadges.some((b) => b.privacyNote) && (
+              <p className="mt-3 text-[11px] text-muted-foreground flex items-start gap-1.5">
+                <ShieldCheck className="h-3 w-3 text-accent mt-0.5 shrink-0" />
+                Only the badge — never the underlying data — is shared.
+              </p>
+            )}
+          </section>
+        )}
+
         <PublicBadgesStrip profileId={profile.id} />
 
         <section className="space-y-3">
