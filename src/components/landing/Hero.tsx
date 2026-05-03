@@ -22,7 +22,7 @@ const Hero = () => {
           </h1>
 
           <p className="mt-6 text-lg text-muted-foreground max-w-xl leading-relaxed">
-            XIONID is your verifiable identity passport — earn badges, unlock rewards, and prove who you are across every app you love.
+            Build a polished profile, collect verified badges, and unlock more relevant offers — with full control over what you show.
           </p>
 
           <div className="mt-9 flex flex-col sm:flex-row gap-3">
