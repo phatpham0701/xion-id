@@ -1,3 +1,5 @@
+import { BrandLogo } from "@/components/BrandLogo";
+import { Wordmark } from "@/components/Wordmark";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
