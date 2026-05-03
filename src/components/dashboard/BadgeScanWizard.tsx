@@ -202,12 +202,20 @@ export const BadgeScanWizard = ({ open, onOpenChange, initialSignal, onIssued }:
             <div className="grid grid-cols-2 gap-2">
               <Button
                 variant="outline"
-                onClick={() => onOpenChange(false)}
+                onClick={() => {
+                  setBadgeFeatured(issued.id, false);
+                  toast.success("Kept private", { description: "Only you can see this badge." });
+                  onOpenChange(false);
+                }}
               >
                 Keep private
               </Button>
               <Button
-                onClick={() => onOpenChange(false)}
+                onClick={() => {
+                  setBadgeFeatured(issued.id, true);
+                  toast.success("Now on your profile", { description: `${issued.label} is visible to visitors.` });
+                  onOpenChange(false);
+                }}
                 className="bg-gradient-primary"
               >
                 <Sparkles className="h-4 w-4" /> Show on profile
