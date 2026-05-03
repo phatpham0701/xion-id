@@ -57,15 +57,11 @@ export const PublicProfilePreview = ({ username, displayName, avatarUrl, bio, is
 
         {featured.length > 0 && (
           <div className="mt-3 pt-3 border-t border-border/40">
-            <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">Featured badges</div>
-            <div className="flex flex-wrap gap-1.5">
+            <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mb-2">Featured proof</div>
+            <div className="flex flex-wrap gap-2">
               {featured.map((b) => (
-                <div
-                  key={b.id}
-                  title={`${b.label} · ${BADGE_TIER_META[b.tierName].label}`}
-                  className={`h-8 w-8 rounded-xl grid place-items-center text-base bg-gradient-to-br ${BADGE_TIER_META[b.tierName].ring}`}
-                >
-                  {b.emoji}
+                <div key={b.id} title={b.label}>
+                  <ProofSeal emoji={b.emoji} tier={b.tierName} size="sm" />
                 </div>
               ))}
             </div>
