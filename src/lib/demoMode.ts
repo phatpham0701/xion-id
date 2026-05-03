@@ -272,7 +272,18 @@ export const claimDemoIdentity = (): DemoState =>
 export const claimDemoReward = (rewardId: string): DemoState =>
   updateDemoState((s) => {
     const r = s.rewards.find((x) => x.id === rewardId);
-    if (r) r.claimed = true;
+    if (r) {
+      r.claimed = true;
+      r.status = "claimed";
+      r.claimedAt = new Date().toISOString();
+      s.activity.unshift({
+        id: `a-claim-${Date.now()}`,
+        kind: "reward",
+        title: `Claimed: ${r.title}`,
+        detail: r.brand,
+        at: r.claimedAt,
+      });
+    }
   });
 
 export const joinDemoCampaign = (campaignId: string): DemoState =>
