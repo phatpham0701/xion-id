@@ -237,21 +237,15 @@ const PublicProfile = () => {
           )}
         </section>
 
-        <footer className="mt-14 text-center">
+        <footer className="mt-14 mb-2 text-center">
           <Link
             to="/"
-            className="inline-flex items-center gap-1.5 rounded-full glass px-4 py-2 text-xs text-muted-foreground transition-colors hover:text-foreground"
+            className="inline-flex items-center gap-1.5 rounded-full border border-glass-border bg-background/30 px-3 py-1.5 text-[11px] text-muted-foreground hover:text-foreground transition-colors"
           >
-            <Sparkles className="h-3 w-3 text-primary" />
+            <Sparkles className="h-3 w-3 text-accent" />
             Made with{" "}
-            <span className="font-semibold">
-              XION<span className="text-gradient">ID</span>
-            </span>
+            <span className="font-semibold text-foreground">XION<span className="text-gradient-brand">ID</span></span>
           </Link>
-
-          <p className="mt-3 text-[11px] text-muted-foreground/70">
-            Free creator profile, XION identity, and support page for XIONers.
-          </p>
         </footer>
       </main>
     </div>
