@@ -10,10 +10,12 @@ import {
   BADGE_CATEGORY_META,
   BADGE_TIER_META,
   issueDemoBadge,
+  setBadgeFeatured,
   type ScanSignalKey,
   type ScanSourceKey,
   type DemoBadge,
 } from "@/lib/demoMode";
+import { toast } from "sonner";
 
 type Step = 1 | 2 | 3 | 4;
 
