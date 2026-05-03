@@ -37,7 +37,7 @@
     --accent-glow: 165 80% 78%;
 
     --muted: 219 35% 20%;
-    --muted-foreground: 220 18% 72%;
+    --muted-foreground: 220 22% 78%;       /* AA contrast on deep navy */
 
     --destructive: 0 84% 65%;
     --destructive-foreground: 0 0% 100%;
@@ -85,9 +85,27 @@
     --sidebar-ring: 246 89% 67%;
   }
 
+  /* Dark mode mirrors :root — XIONID is a dark-first brand. Kept explicit so all
+     `dark:` utilities resolve to the same brand tokens. */
   .dark {
     --background: 217 71% 9%;
+    --background-deep: 220 60% 6%;
     --foreground: 220 27% 95%;
+    --card: 219 50% 13%;
+    --card-foreground: 220 27% 95%;
+    --popover: 219 50% 12%;
+    --popover-foreground: 220 27% 95%;
+    --primary: 246 89% 67%;
+    --primary-foreground: 220 27% 98%;
+    --secondary: 213 100% 71%;
+    --secondary-foreground: 217 71% 9%;
+    --accent: 165 71% 67%;
+    --accent-foreground: 217 71% 9%;
+    --muted: 219 35% 20%;
+    --muted-foreground: 220 22% 78%; /* +6% lightness for AA contrast on navy */
+    --border: 219 35% 26%;
+    --input: 219 40% 18%;
+    --ring: 246 89% 67%;
   }
 }
 
