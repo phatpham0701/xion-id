@@ -205,8 +205,8 @@ const PublicCampaign = () => {
                   variant="outline"
                   className="w-full"
                   onClick={async () => {
-                    if (typeof navigator !== "undefined" && "share" in navigator) {
-                      try { await navigator.share({ title: c.title, url: window.location.href }); } catch { /* */ }
+                    if (typeof navigator !== "undefined" && typeof (navigator as Navigator).share === "function") {
+                      try { await (navigator as Navigator).share({ title: c.title, url: window.location.href }); } catch { /* */ }
                     } else {
                       navigator.clipboard.writeText(window.location.href);
                       toast.success("Link copied");
