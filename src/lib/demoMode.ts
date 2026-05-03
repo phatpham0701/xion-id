@@ -84,14 +84,49 @@ export type DemoProfile = {
   passportLevel: 1 | 2 | 3;
 };
 
+export type DemoOffer = {
+  id: string;
+  brand: string;
+  title: string;
+  blurb: string;
+  category: "shopping" | "events" | "food" | "travel" | "creator";
+  unlocked: boolean;
+  emoji: string;
+};
+
+export type DemoActivity = {
+  id: string;
+  kind: "badge" | "reward" | "offer" | "scan" | "support" | "campaign" | "profile";
+  title: string;
+  detail?: string;
+  at: string;
+};
+
+export type DemoGoalKey = "offers" | "page" | "badges" | "campaign";
+export type DemoStarterKey =
+  | "essential"
+  | "minimal"
+  | "badgeFirst"
+  | "quickSupport"
+  | "creatorHub"
+  | "athlete"
+  | "shopper"
+  | "community"
+  | "fundraise";
+
 export type DemoState = {
   version: 1;
+  onboarded: boolean;
+  selectedGoal?: DemoGoalKey;
+  selectedStarter?: DemoStarterKey;
   profile: DemoProfile;
   badges: DemoBadge[];
   rewards: DemoReward[];
+  offers: DemoOffer[];
   campaigns: DemoCampaign[];
   qrItems: DemoQrItem[];
   support: DemoSupportEntry[];
+  activity: DemoActivity[];
 };
 
 // ─────────────────────────────────────────────────────────────
@@ -100,6 +135,7 @@ export type DemoState = {
 
 const SEED: DemoState = {
   version: 1,
+  onboarded: false,
   profile: {
     username: "alex",
     displayName: "Alex Rivera",
@@ -118,6 +154,12 @@ const SEED: DemoState = {
     { id: "r2", title: "Backstage AMA invite", description: "Private session with the creator.", cost: 200, claimed: false },
     { id: "r3", title: "Signed digital print", description: "Numbered, 1 of 100.", cost: 120, claimed: true },
   ],
+  offers: [
+    { id: "o1", brand: "Nimbus Coffee", title: "20% off any drink", blurb: "For verified Explorers in your city.", category: "food", unlocked: true, emoji: "☕" },
+    { id: "o2", brand: "Lumen Apparel", title: "Early access drop", blurb: "Pre-launch window for Collectors.", category: "shopping", unlocked: true, emoji: "🧥" },
+    { id: "o3", brand: "Sound District", title: "Free concert ticket", blurb: "OG members only · Sat night.", category: "events", unlocked: false, emoji: "🎟️" },
+    { id: "o4", brand: "Atlas Stays", title: "Late checkout, free", blurb: "Available at 200+ partner hotels.", category: "travel", unlocked: false, emoji: "🏨" },
+  ],
   campaigns: [
     { id: "c1", title: "Spring identity drop", blurb: "Claim your free passport upgrade.", endsAt: "2026-06-30T00:00:00Z", participants: 1284, joined: false },
     { id: "c2", title: "Weekend scan-to-win", blurb: "Scan a partner code to enter.", endsAt: "2026-05-10T00:00:00Z", participants: 412, joined: false },
@@ -131,6 +173,12 @@ const SEED: DemoState = {
     { id: "s1", fromName: "Jess", amount: 5, message: "Love what you're building!", createdAt: "2026-04-28T12:00:00Z" },
     { id: "s2", fromName: "Marco", amount: 12, createdAt: "2026-04-30T09:30:00Z" },
     { id: "s3", fromName: "Anonymous", amount: 1, message: "gm ✨", createdAt: "2026-05-02T08:15:00Z" },
+  ],
+  activity: [
+    { id: "a1", kind: "badge", title: "Explorer badge verified", detail: "5 partner apps in 30 days", at: "2026-05-01T18:22:00Z" },
+    { id: "a2", kind: "offer", title: "Unlocked: 20% off Nimbus Coffee", detail: "Local · in-store", at: "2026-04-30T11:04:00Z" },
+    { id: "a3", kind: "support", title: "Marco supported you", detail: "Thanks for the post.", at: "2026-04-30T09:30:00Z" },
+    { id: "a4", kind: "scan", title: "Checked in at partner café", at: "2026-04-28T08:14:00Z" },
   ],
 };
 
@@ -212,3 +260,58 @@ export const scanDemoQr = (code: string): DemoState =>
     const q = s.qrItems.find((x) => x.code === code);
     if (q) q.scanned = true;
   });
+
+// ─────────────────────────────────────────────────────────────
+// Onboarding catalogs (Phase 1)
+// ─────────────────────────────────────────────────────────────
+
+export const DEMO_GOALS: { key: DemoGoalKey; title: string; blurb: string; emoji: string }[] = [
+  { key: "offers",   title: "Get more relevant offers", blurb: "Unlock perks tailored to what you actually do.", emoji: "🎁" },
+  { key: "page",     title: "Build my public page",     blurb: "A polished page you can share with one tap.",   emoji: "✨" },
+  { key: "badges",   title: "Collect badges",           blurb: "Earn proof for the things you're part of.",     emoji: "🏅" },
+  { key: "campaign", title: "Launch a support campaign",blurb: "Let people back what you're working on.",       emoji: "📣" },
+];
+
+export const DEMO_STARTERS: {
+  key: DemoStarterKey;
+  title: string;
+  blurb: string;
+  goalFit: DemoGoalKey[];
+  emoji: string;
+}[] = [
+  { key: "essential",    title: "Essential Rewards Passport", blurb: "Best all-rounder. Profile + rewards + offers.",     goalFit: ["offers","page"],          emoji: "🎫" },
+  { key: "minimal",      title: "Minimal Public Card",        blurb: "Just the essentials, beautifully laid out.",         goalFit: ["page"],                   emoji: "🪪" },
+  { key: "badgeFirst",   title: "Badge-First Passport",       blurb: "Lead with verified proof and badges.",                goalFit: ["badges","page"],          emoji: "🏅" },
+  { key: "quickSupport", title: "Quick Support Page",         blurb: "Accept support in under a minute.",                   goalFit: ["campaign"],               emoji: "💝" },
+  { key: "creatorHub",   title: "Creator Support Hub",        blurb: "Posts, perks, and supporters in one place.",          goalFit: ["campaign","page"],        emoji: "🎨" },
+  { key: "athlete",      title: "Athlete Passport",           blurb: "Stats, sponsors, and event check-ins.",               goalFit: ["badges","offers"],        emoji: "🏃" },
+  { key: "shopper",      title: "Shopper Perks Passport",     blurb: "Personal offers from brands you like.",               goalFit: ["offers"],                 emoji: "🛍️" },
+  { key: "community",    title: "Community Leader Page",      blurb: "Member directory + event reminders.",                 goalFit: ["page","campaign"],        emoji: "🤝" },
+  { key: "fundraise",    title: "Fundraise Campaign Starter", blurb: "Goal, supporters, and progress in one view.",         goalFit: ["campaign"],               emoji: "🚀" },
+];
+
+export const completeDemoOnboarding = (goal: DemoGoalKey, starter: DemoStarterKey): DemoState =>
+  updateDemoState((s) => {
+    s.onboarded = true;
+    s.selectedGoal = goal;
+    s.selectedStarter = starter;
+    s.activity.unshift({
+      id: `a-onboard-${Date.now()}`,
+      kind: "profile",
+      title: `Started with ${DEMO_STARTERS.find((x) => x.key === starter)?.title ?? "a starter"}`,
+      at: new Date().toISOString(),
+    });
+  });
+
+// Profile completeness 0–100 derived from demo state.
+export const getProfileCompleteness = (s: DemoState = getDemoState()): number => {
+  let score = 20;
+  if (s.profile.identityClaimed) score += 20;
+  if (s.profile.bio) score += 10;
+  if (s.profile.avatarEmoji) score += 5;
+  if (s.badges.length >= 3) score += 15;
+  if (s.support.length > 0) score += 10;
+  if (s.qrItems.some((q) => q.scanned)) score += 10;
+  if (s.onboarded) score += 10;
+  return Math.min(100, score);
+};

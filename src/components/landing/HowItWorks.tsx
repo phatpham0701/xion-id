@@ -1,23 +1,23 @@
-import { Fingerprint, Blocks, Share2 } from "lucide-react";
+import { Sparkles, BadgeCheck, Gift } from "lucide-react";
 
 const steps = [
   {
-    icon: Fingerprint,
+    icon: Sparkles,
     n: "01",
-    title: "Sign in, get a wallet",
-    desc: "Tap Google, email, or Apple. XION's Meta Account spins up a self-custodial wallet behind the scenes — no seed phrases.",
+    title: "Choose a starting point",
+    desc: "Pick the passport that matches your goal — collector, creator, supporter, or just a polished public page.",
   },
   {
-    icon: Blocks,
+    icon: BadgeCheck,
     n: "02",
-    title: "Drag, drop, decorate",
-    desc: "Pick blocks from the library, drop them on your canvas, and tweak the theme until it feels like home.",
+    title: "Collect your proof",
+    desc: "Earn badges for the things you do — events, places, drops, communities. You decide what's visible.",
   },
   {
-    icon: Share2,
+    icon: Gift,
     n: "03",
-    title: "Share xionid.app/you",
-    desc: "Your profile lives at a clean handle URL. Share once, update forever. Free, gasless, on XION.",
+    title: "Unlock what fits you",
+    desc: "Get offers and rewards that actually match you — and skip everything that doesn't.",
   },
 ];
 
@@ -30,7 +30,8 @@ const HowItWorks = () => {
             How it works
           </div>
           <h2 className="font-display text-4xl md:text-5xl font-bold tracking-tight">
-            From zero to <span className="text-gradient">on-chain</span> in three taps.
+            From zero to a real{" "}
+            <span className="text-gradient">passport</span>, in a minute.
           </h2>
         </div>
 
