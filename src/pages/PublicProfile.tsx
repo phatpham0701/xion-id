@@ -19,6 +19,7 @@ type PublicProfile = {
   is_published: boolean;
   theme: unknown;
   xion_address: string | null;
+  settings: unknown;
 };
 
 const hasTipJar = (blocks: Block[]) => blocks.some((block) => block.type === "tip_jar");
@@ -38,7 +39,7 @@ const PublicProfile = () => {
     (async () => {
       const { data: p, error: profileError } = await supabase
         .from("profiles")
-        .select("id, username, display_name, bio, avatar_url, is_published, theme, xion_address")
+        .select("id, username, display_name, bio, avatar_url, is_published, theme, xion_address, settings")
         .eq("username", username)
         .maybeSingle();
 
