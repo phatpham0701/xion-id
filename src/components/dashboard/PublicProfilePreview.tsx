@@ -54,6 +54,23 @@ export const PublicProfilePreview = ({ username, displayName, avatarUrl, bio, is
           </div>
         </div>
         {bio && <p className="text-sm text-foreground/80 mt-3 leading-relaxed line-clamp-3">{bio}</p>}
+
+        {featured.length > 0 && (
+          <div className="mt-3 pt-3 border-t border-border/40">
+            <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">Featured badges</div>
+            <div className="flex flex-wrap gap-1.5">
+              {featured.map((b) => (
+                <div
+                  key={b.id}
+                  title={`${b.label} · ${BADGE_TIER_META[b.tierName].label}`}
+                  className={`h-8 w-8 rounded-xl grid place-items-center text-base bg-gradient-to-br ${BADGE_TIER_META[b.tierName].ring}`}
+                >
+                  {b.emoji}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="mt-3 glass rounded-2xl px-3 py-2 flex items-center gap-2">
