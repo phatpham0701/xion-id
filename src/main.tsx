@@ -5,6 +5,10 @@ import "./index.css";
 import "@burnt-labs/ui/dist/index.css";
 import { XION_CONFIG } from "@/lib/xion";
 
+// XIONID is dark-mode by default — ensure `dark:` utilities apply consistently across the app.
+document.documentElement.classList.add("dark");
+document.documentElement.style.colorScheme = "dark";
+
 const abstraxionConfig = {
   chainId: XION_CONFIG.chainId,
   treasury: XION_CONFIG.treasury,
