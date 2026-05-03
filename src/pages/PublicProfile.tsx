@@ -6,6 +6,8 @@ import { BlockRenderer } from "@/components/editor/BlockRenderer";
 import { themeFromJson, themeStyleVars } from "@/lib/theme";
 import { trackEvent } from "@/lib/analytics";
 import { PublicBadgesStrip } from "@/components/blocks/PublicBadgesBlock";
+import { ProofSeal } from "@/components/badges/ProofSeal";
+import { getPublicBadgesFromSettings, type PublicProfileBadge } from "@/lib/publicBadges";
 import type { Block } from "@/lib/blocks";
 
 type PublicProfile = {
