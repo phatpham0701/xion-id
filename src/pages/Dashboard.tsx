@@ -141,11 +141,6 @@ const Dashboard = () => {
             <FeaturedBadges onScan={() => setScanOpen(true)} />
             <MatchedRewards onScan={() => setScanOpen(true)} />
             <DemoActivity />
-            <DemoActivity />
-            <DemoActivity />
-            <DemoActivity />
-            <DemoActivity />
-            <DemoActivity />
           </div>
           <div className="space-y-5 min-w-0">
             <PublicProfilePreview
