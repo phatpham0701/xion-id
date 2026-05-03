@@ -105,9 +105,10 @@ export const TemplateGallery = ({
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [applying, setApplying] = useState(false);
 
-  const filtered = category === "all"
-    ? TEMPLATES
-    : TEMPLATES.filter((t) => t.category === category);
+  // Pitch-aligned curated set only — generic templates are still reachable via
+  // direct URL but the gallery is intentionally focused.
+  const featured = TEMPLATES.filter((t) => FEATURED_TEMPLATE_IDS.has(t.id));
+  const filtered = category === "all" ? featured : featured.filter((t) => t.category === category);
 
   const apply = async () => {
     const tpl = TEMPLATES.find((t) => t.id === selectedId);
@@ -176,7 +177,7 @@ export const TemplateGallery = ({
             <span className="text-[11px] text-muted-foreground">Based on your starter</span>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {TEMPLATES.filter((t) => ["essential-rewards", "creator-hub", "badge-first"].includes(t.id)).map((tpl) => (
+            {featured.filter((t) => ["essential-rewards", "creator-hub", "athlete-passport"].includes(t.id)).map((tpl) => (
               <TemplateCard
                 key={`rec-${tpl.id}`}
                 tpl={tpl}
