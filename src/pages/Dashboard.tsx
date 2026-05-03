@@ -3,7 +3,7 @@ import { Wordmark } from "@/components/Wordmark";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { Sparkles, LogOut, LayoutTemplate } from "lucide-react";
+import { LogOut, LayoutTemplate } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
