@@ -426,9 +426,7 @@ const Editor = () => {
             </Button>
 
             <div className="hidden md:flex items-center gap-3 min-w-0 border-l border-border/50 pl-4">
-              <div className="h-9 w-9 rounded-xl bg-gradient-primary grid place-items-center shrink-0 shadow-glow">
-                <Sparkles className="h-4 w-4 text-primary-foreground" strokeWidth={2.5} />
-              </div>
+              <BrandLogo size={36} className="shrink-0" />
 
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
