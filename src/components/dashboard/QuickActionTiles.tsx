@@ -1,8 +1,8 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Pencil, ScanLine, Gift, QrCode, Megaphone, BadgeCheck } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { toast } from "sonner";
-import { claimDemoIdentity } from "@/lib/demoMode";
+import { ClaimIdDialog } from "@/components/identity/ClaimIdDialog";
 
 type Tile = {
   label: string;
@@ -16,52 +16,18 @@ type Tile = {
 type Props = {
   onScan?: () => void;
   onClaimRewards?: () => void;
-  onCreateQr?: () => void;
-  onStartCampaign?: () => void;
 };
 
-export const QuickActionTiles = ({ onScan, onClaimRewards, onCreateQr, onStartCampaign }: Props) => {
-  const demoToast = (label: string) =>
-    toast.success(`${label} — demo`, {
-      description: "This is a preview action in the demo passport.",
-    });
+export const QuickActionTiles = ({ onScan, onClaimRewards }: Props) => {
+  const [claimOpen, setClaimOpen] = useState(false);
 
   const tiles: Tile[] = [
-    { label: "Edit profile", icon: Pencil, to: "/editor", hint: "Open the studio" },
-    {
-      label: "Scan for badges",
-      icon: ScanLine,
-      onClick: () => (onScan ? onScan() : demoToast("Scanned for new badges")),
-      hint: "Find new proof",
-    },
-    {
-      label: "Claim rewards",
-      icon: Gift,
-      onClick: () => (onClaimRewards ? onClaimRewards() : demoToast("Opened reward locker")),
-      hint: "See what's unlocked",
-    },
-    {
-      label: "Create QR",
-      icon: QrCode,
-      onClick: () => (onCreateQr ? onCreateQr() : demoToast("New QR ready")),
-      hint: "Share or check in",
-    },
-    {
-      label: "Start campaign",
-      icon: Megaphone,
-      onClick: () => (onStartCampaign ? onStartCampaign() : demoToast("Campaign draft created")),
-      hint: "Get support",
-    },
-    {
-      label: "Claim your ID",
-      icon: BadgeCheck,
-      accent: true,
-      onClick: () => {
-        claimDemoIdentity();
-        toast.success("Identity claimed", { description: "Your passport is now verified." });
-      },
-      hint: "Verify identity",
-    },
+    { label: "Edit profile",     icon: Pencil,     to: "/editor",     hint: "Open the studio" },
+    { label: "Scan for badges",  icon: ScanLine,   onClick: onScan,   hint: "Find new proof" },
+    { label: "Claim rewards",    icon: Gift,       onClick: onClaimRewards, hint: "See what's unlocked" },
+    { label: "QR Center",        icon: QrCode,     to: "/qr",         hint: "All your scannable links" },
+    { label: "Campaigns",        icon: Megaphone,  to: "/campaigns",  hint: "Get support" },
+    { label: "Claim your ID",    icon: BadgeCheck, accent: true,      onClick: () => setClaimOpen(true), hint: "Reserve your name" },
   ];
 
   return (
@@ -105,6 +71,9 @@ export const QuickActionTiles = ({ onScan, onClaimRewards, onCreateQr, onStartCa
           );
         })}
       </div>
+
+      <ClaimIdDialog open={claimOpen} onOpenChange={setClaimOpen} />
     </div>
   );
 };
+

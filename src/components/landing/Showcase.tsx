@@ -3,27 +3,27 @@ import { Github, Twitter, Globe, Music } from "lucide-react";
 type DemoBlock =
   | { kind: "link"; label: string; sub?: string }
   | { kind: "social" }
-  | { kind: "nft" };
+  | { kind: "gallery" };
 
 const demos: { handle: string; bio: string; accent: string; blocks: DemoBlock[] }[] = [
   {
-    handle: "@nova.xion",
-    bio: "Generative artist · XION early builder",
+    handle: "@nova",
+    bio: "Generative artist · early member",
     accent: "from-primary/30 to-secondary/30",
     blocks: [
-      { kind: "link", label: "My latest drop", sub: "stargate.xion" },
+      { kind: "link", label: "My latest drop", sub: "Limited edition" },
       { kind: "link", label: "Commission me" },
-      { kind: "nft" },
+      { kind: "gallery" },
       { kind: "social" },
     ],
   },
   {
-    handle: "@dao.builder",
-    bio: "Shipping public goods on XION",
+    handle: "@maya",
+    bio: "Wellness coach · verified Athlete",
     accent: "from-secondary/30 to-primary/30",
     blocks: [
-      { kind: "link", label: "Read the whitepaper" },
-      { kind: "link", label: "Tip me on XION", sub: "0xion…a9f2" },
+      { kind: "link", label: "Book a session" },
+      { kind: "link", label: "Support my work", sub: "From $1" },
       { kind: "social" },
     ],
   },
@@ -34,7 +34,7 @@ const demos: { handle: string; bio: string; accent: string; blocks: DemoBlock[] 
     blocks: [
       { kind: "link", label: "Listen on Spotify" },
       { kind: "link", label: "GitHub" },
-      { kind: "nft" },
+      { kind: "gallery" },
     ],
   },
 ];

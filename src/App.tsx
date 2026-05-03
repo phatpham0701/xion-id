@@ -13,6 +13,9 @@ import Dashboard from "./pages/Dashboard.tsx";
 import Editor from "./pages/Editor.tsx";
 import Templates from "./pages/Templates.tsx";
 import TemplatePreview from "./pages/TemplatePreview.tsx";
+import Campaigns from "./pages/Campaigns.tsx";
+import PublicCampaign from "./pages/PublicCampaign.tsx";
+import QrCenter from "./pages/QrCenter.tsx";
 import PublicProfile from "./pages/PublicProfile.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
@@ -73,6 +76,16 @@ function App() {
                 </RequireAuth>
               }
             />
+            <Route
+              path="/campaigns"
+              element={<RequireAuth><Campaigns /></RequireAuth>}
+            />
+            <Route
+              path="/qr"
+              element={<RequireAuth><QrCenter /></RequireAuth>}
+            />
+            {/* Public campaign page — open route */}
+            <Route path="/c/:id" element={<PublicCampaign />} />
             {/* Public template preview — open route, no auth required */}
             <Route path="/preview/template/:id" element={<TemplatePreview />} />
             {/* Public profile — must be last named route before catch-all */}

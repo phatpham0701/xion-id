@@ -78,13 +78,49 @@ export type DemoReward = {
   claimedAt?: string;
 };
 
+export type CampaignCategory = "creator" | "community" | "education" | "event" | "wellness";
+
+export type CampaignTierKey = "supporter" | "super" | "founding";
+
+export type CampaignTier = {
+  key: CampaignTierKey;
+  label: string;
+  amount: number; // demo currency units
+  perks: string;
+};
+
+export type CampaignSupporter = {
+  id: string;
+  name: string;
+  tier: CampaignTierKey;
+  amount: number;
+  message?: string;
+  at: string;
+};
+
+export type CampaignMilestone = {
+  label: string;
+  at: string;
+  reached: boolean;
+};
+
 export type DemoCampaign = {
   id: string;
   title: string;
   blurb: string;
+  story?: string;
+  category?: CampaignCategory;
+  coverEmoji?: string;
+  visibility?: "public" | "private";
+  goalAmount?: number;
+  raised?: number;
+  tiers?: CampaignTier[];
+  supporters?: CampaignSupporter[];
+  milestones?: CampaignMilestone[];
   endsAt: string;
   participants: number;
   joined: boolean;
+  ownerHandle?: string;
 };
 
 export type DemoQrItem = {
@@ -190,8 +226,50 @@ const SEED: DemoState = {
     { id: "o4", brand: "Atlas Stays", title: "Late checkout, free", blurb: "Available at 200+ partner hotels.", category: "travel", unlocked: false, emoji: "🏨" },
   ],
   campaigns: [
-    { id: "c1", title: "Spring identity drop", blurb: "Claim your free passport upgrade.", endsAt: "2026-06-30T00:00:00Z", participants: 1284, joined: false },
-    { id: "c2", title: "Weekend scan-to-win", blurb: "Scan a partner code to enter.", endsAt: "2026-05-10T00:00:00Z", participants: 412, joined: false },
+    {
+      id: "c1",
+      title: "Help me ship Volume II",
+      blurb: "An illustrated zine, 80 pages, hand-bound.",
+      story: "I've been working on this zine for 9 months. Volume II will fund printing for 500 copies and a release event in June. Every supporter gets a signed copy.",
+      category: "creator",
+      coverEmoji: "📖",
+      visibility: "public",
+      goalAmount: 4000,
+      raised: 2840,
+      tiers: [
+        { key: "supporter", label: "Supporter",       amount: 5,   perks: "Behind-the-scenes updates" },
+        { key: "super",     label: "Super Supporter", amount: 25,  perks: "Signed digital copy + name in book" },
+        { key: "founding",  label: "Founding Backer", amount: 100, perks: "Numbered print + private launch invite" },
+      ],
+      supporters: [
+        { id: "sup1", name: "Maya",   tier: "super",     amount: 25,  message: "Can't wait!", at: "2026-05-01T10:00:00Z" },
+        { id: "sup2", name: "Jordan", tier: "founding",  amount: 100, at: "2026-04-30T14:00:00Z" },
+        { id: "sup3", name: "Sam",    tier: "supporter", amount: 5,   message: "💛", at: "2026-04-29T09:00:00Z" },
+      ],
+      milestones: [
+        { label: "Cover art unlocked",  at: "2026-04-15T00:00:00Z", reached: true },
+        { label: "First print run",     at: "2026-05-15T00:00:00Z", reached: true },
+        { label: "Release event",       at: "2026-06-20T00:00:00Z", reached: false },
+      ],
+      endsAt: "2026-06-30T00:00:00Z",
+      participants: 142,
+      joined: false,
+      ownerHandle: "alex",
+    },
+    {
+      id: "c2",
+      title: "30-day wellness challenge",
+      blurb: "Move every day. Earn the badge.",
+      category: "wellness",
+      coverEmoji: "🏃",
+      visibility: "public",
+      goalAmount: 1000,
+      raised: 412,
+      endsAt: "2026-05-30T00:00:00Z",
+      participants: 412,
+      joined: false,
+      ownerHandle: "alex",
+    },
   ],
   qrItems: [
     { id: "q1", code: "DEMO-CAFE-01", label: "Partner café check-in", scanned: false, rewardId: "r1" },
@@ -492,6 +570,138 @@ export const setBadgeHidden = (badgeId: string, hidden: boolean): DemoState =>
 /** Get badges marked featured (for public profile preview). */
 export const getFeaturedBadges = (s: DemoState = getDemoState()): DemoBadge[] =>
   s.badges.filter((b) => b.featured && !b.hidden).slice(0, 6);
+
+// ─────────────────────────────────────────────────────────────
+// Phase 4 — Campaigns + Claim Your ID
+// ─────────────────────────────────────────────────────────────
+
+export const CAMPAIGN_CATEGORIES: { key: CampaignCategory; label: string; emoji: string; blurb: string }[] = [
+  { key: "creator",   label: "Creator support",     emoji: "🎨", blurb: "Back the work you love." },
+  { key: "community", label: "Community",           emoji: "🤝", blurb: "Rally a group around a goal." },
+  { key: "education", label: "Education credential",emoji: "🎓", blurb: "Fund a course or scholarship." },
+  { key: "event",     label: "Event & travel",      emoji: "🎟️", blurb: "Make a milestone trip happen." },
+  { key: "wellness",  label: "Wellness challenge",  emoji: "🏃", blurb: "Habit goals, with backers." },
+];
+
+export const DEFAULT_CAMPAIGN_TIERS: CampaignTier[] = [
+  { key: "supporter", label: "Supporter",       amount: 5,   perks: "Behind-the-scenes updates" },
+  { key: "super",     label: "Super Supporter", amount: 25,  perks: "Personal thanks + early access" },
+  { key: "founding",  label: "Founding Backer", amount: 100, perks: "Limited drop + private invite" },
+];
+
+const TIER_TO_BADGE: Record<CampaignTierKey, string> = {
+  supporter: "supporter",
+  super:     "super_supporter",
+  founding:  "founding_backer",
+};
+
+export const createDemoCampaign = (input: Omit<DemoCampaign, "id" | "participants" | "joined" | "supporters" | "raised"> & Partial<DemoCampaign>): { state: DemoState; campaign: DemoCampaign } => {
+  const id = `c-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`;
+  const campaign: DemoCampaign = {
+    id,
+    title: input.title,
+    blurb: input.blurb,
+    story: input.story,
+    category: input.category ?? "creator",
+    coverEmoji: input.coverEmoji ?? "✨",
+    visibility: input.visibility ?? "public",
+    goalAmount: input.goalAmount ?? 1000,
+    raised: input.raised ?? 0,
+    tiers: input.tiers ?? DEFAULT_CAMPAIGN_TIERS,
+    supporters: [],
+    milestones: input.milestones,
+    endsAt: input.endsAt ?? new Date(Date.now() + 30 * 86400000).toISOString(),
+    participants: 0,
+    joined: false,
+    ownerHandle: input.ownerHandle,
+  };
+  const state = updateDemoState((s) => {
+    s.campaigns.unshift(campaign);
+    s.activity.unshift({
+      id: `a-camp-${id}`,
+      kind: "campaign",
+      title: `Launched campaign: ${campaign.title}`,
+      detail: CAMPAIGN_CATEGORIES.find((c) => c.key === campaign.category)?.label,
+      at: new Date().toISOString(),
+    });
+  });
+  return { state, campaign };
+};
+
+export const supportDemoCampaign = (campaignId: string, tierKey: CampaignTierKey, name = "You"): { state: DemoState; badgeIssued?: DemoBadge } => {
+  let badgeIssued: DemoBadge | undefined;
+  const state = updateDemoState((s) => {
+    const c = s.campaigns.find((x) => x.id === campaignId);
+    if (!c) return;
+    const tier = (c.tiers ?? DEFAULT_CAMPAIGN_TIERS).find((t) => t.key === tierKey)!;
+    c.raised = (c.raised ?? 0) + tier.amount;
+    c.participants += 1;
+    c.joined = true;
+    c.supporters = [
+      { id: `sup-${Date.now()}`, name, tier: tierKey, amount: tier.amount, at: new Date().toISOString() },
+      ...(c.supporters ?? []),
+    ].slice(0, 20);
+    s.activity.unshift({
+      id: `a-sup-${Date.now()}`,
+      kind: "campaign",
+      title: `Supported "${c.title}"`,
+      detail: `${tier.label} · $${tier.amount}`,
+      at: new Date().toISOString(),
+    });
+  });
+  // Issue matching badge.
+  const badgeKind = TIER_TO_BADGE[tierKey];
+  if (badgeKind) {
+    const result = issueDemoBadge(badgeKind, { featured: false });
+    badgeIssued = result.badge;
+  }
+  return { state, badgeIssued };
+};
+
+// ── Claim Your ID ───────────────────────────────────────────
+
+const RESERVED_NAMES = new Set([
+  "admin","root","xion","xionid","support","help","login","auth","dashboard",
+  "editor","templates","preview","official","staff","team","api",
+  "alex","maya","jordan","sam","nova","lofi",
+]);
+
+export type IdAvailability = { handle: string; available: boolean; reason?: string };
+
+export const checkIdAvailability = (raw: string): IdAvailability => {
+  const handle = raw.trim().toLowerCase().replace(/[^a-z0-9_]/g, "");
+  if (!handle) return { handle, available: false, reason: "Pick a name" };
+  if (handle.length < 3) return { handle, available: false, reason: "At least 3 characters" };
+  if (handle.length > 24) return { handle, available: false, reason: "Up to 24 characters" };
+  if (RESERVED_NAMES.has(handle)) return { handle, available: false, reason: "Already taken" };
+  return { handle, available: true };
+};
+
+export const suggestIds = (base: string): string[] => {
+  const clean = base.trim().toLowerCase().replace(/[^a-z0-9_]/g, "") || "you";
+  return [
+    `${clean}.io`.replace(/\W/g, ""),
+    `${clean}_`,
+    `${clean}${new Date().getFullYear() % 100}`,
+    `the${clean}`,
+    `${clean}hq`,
+  ].map((s) => s.slice(0, 24));
+};
+
+export const reserveDemoId = (handle: string): DemoState =>
+  updateDemoState((s) => {
+    s.profile.username = handle;
+    s.profile.identityClaimed = true;
+    s.profile.identityClaimedAt = new Date().toISOString();
+    s.activity.unshift({
+      id: `a-claim-id-${Date.now()}`,
+      kind: "profile",
+      title: `Reserved @${handle}`,
+      detail: "Public ID is yours.",
+      at: new Date().toISOString(),
+    });
+  });
+
 
 
 // ─────────────────────────────────────────────────────────────
