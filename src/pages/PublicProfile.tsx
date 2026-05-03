@@ -86,6 +86,26 @@ const PublicProfile = () => {
   const styleVars = useMemo(() => themeStyleVars(theme), [theme]);
   const tipJarEnabled = useMemo(() => hasTipJar(blocks), [blocks]);
 
+  // Filter out empty/placeholder blocks so demo profiles never expose stub copy
+  // like "Your name", "@you", or empty link buttons.
+  const visibleBlocks = useMemo(() => {
+    const isPlaceholder = (b: Block): boolean => {
+      const c = (b.config ?? {}) as Record<string, unknown>;
+      const txt = String(c.text ?? c.title ?? c.name ?? "").trim().toLowerCase();
+      const url = String(c.url ?? "").trim();
+      if (b.type === "link" && (!url || url === "https://" || url === "http://")) return true;
+      if (b.type === "text" || b.type === "heading") {
+        if (!txt) return true;
+        if (["your name", "your bio", "your title", "@you", "your username"].includes(txt)) return true;
+      }
+      if (b.type === "avatar") {
+        if (txt === "your name" || txt === "@you") return true;
+      }
+      return false;
+    };
+    return blocks.filter((b) => !isPlaceholder(b));
+  }, [blocks]);
+
   if (status === "loading") {
     return (
       <div className="min-h-screen grid place-items-center bg-background">
@@ -188,18 +208,13 @@ const PublicProfile = () => {
 
           <div className="mt-4 flex flex-wrap justify-center gap-2">
             {profile.xion_address ? (
-              <a
-                href={XION_CONFIG.explorerAddr(profile.xion_address)}
-                target="_blank"
-                rel="noreferrer"
-                onClick={() => trackEvent(profile.id, "block_click", "wallet_address")}
-                className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1.5 text-[11px] font-medium text-primary transition-transform hover:scale-105"
-                title="Connected XION wallet"
+              <span
+                className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1.5 text-[11px] font-medium text-primary"
+                title="Identity verified on XION"
               >
                 <BadgeCheck className="h-3.5 w-3.5" />
-                <span className="font-mono">{truncateAddress(profile.xion_address, 8, 6)}</span>
-                <ExternalLink className="h-2.5 w-2.5 opacity-60" />
-              </a>
+                Identity verified
+              </span>
             ) : (
               <span className="inline-flex items-center gap-1.5 rounded-full border border-border/50 bg-background/40 px-3 py-1.5 text-[11px] font-medium text-muted-foreground">
                 <ShieldCheck className="h-3.5 w-3.5" />
@@ -219,12 +234,12 @@ const PublicProfile = () => {
         <PublicBadgesStrip profileId={profile.id} />
 
         <section className="space-y-3">
-          {blocks.length === 0 ? (
+          {visibleBlocks.length === 0 ? (
             <div className="glass rounded-2xl px-4 py-8 text-center text-sm text-muted-foreground">
               This profile hasn&apos;t added any public blocks yet.
             </div>
           ) : (
-            blocks.map((block) => (
+            visibleBlocks.map((block) => (
               <BlockRenderer
                 key={block.id}
                 block={block}
