@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
-  TEMPLATES, TEMPLATE_CATEGORIES, type ProfileTemplate,
+  TEMPLATES, TEMPLATE_CATEGORIES, FEATURED_TEMPLATES, FEATURED_TEMPLATE_IDS, type ProfileTemplate,
 } from "@/lib/templates";
 import { TemplatePreview } from "./TemplatePreview";
 
