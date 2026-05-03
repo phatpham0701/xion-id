@@ -37,7 +37,7 @@
     --accent-glow: 165 80% 78%;
 
     --muted: 219 35% 20%;
-    --muted-foreground: 220 18% 72%;
+    --muted-foreground: 220 22% 78%;       /* AA contrast on deep navy */
 
     --destructive: 0 84% 65%;
     --destructive-foreground: 0 0% 100%;
