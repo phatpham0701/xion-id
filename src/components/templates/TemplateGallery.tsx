@@ -49,39 +49,55 @@ const PERSONAS: Record<string, { persona: string; outcome: string }> = {
 const TemplateCard = ({
   tpl, active, onSelect,
 }: { tpl: ProfileTemplate; active: boolean; onSelect: () => void }) => {
-  const summary = useMemo(() => blockSummary(tpl), [tpl]);
+  const modules = useMemo(() => blockSummary(tpl), [tpl]);
+  const meta = PERSONAS[tpl.id];
   return (
     <div
       className={cn(
-        "group relative rounded-2xl overflow-hidden border transition-all hover:scale-[1.015]",
-        active ? "border-primary ring-2 ring-primary/40" : "border-border/40 hover:border-primary/40",
+        "group relative rounded-3xl overflow-hidden border bg-background/40 transition-all hover:-translate-y-0.5",
+        active ? "border-primary ring-2 ring-primary/40 shadow-glow-primary" : "border-glass-border hover:border-primary/40",
       )}
     >
       <button onClick={onSelect} className="block w-full text-left">
-        <TemplatePreview template={tpl} />
-        {active && (
-          <div className="absolute top-2 right-2 h-6 w-6 rounded-full bg-primary text-primary-foreground grid place-items-center shadow-glow-primary z-10">
-            <Check className="h-3.5 w-3.5" strokeWidth={3} />
-          </div>
-        )}
+        <div className="relative">
+          <TemplatePreview template={tpl} />
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-brand opacity-90" />
+          {active && (
+            <div className="absolute top-3 right-3 h-7 w-7 rounded-full bg-primary text-primary-foreground grid place-items-center shadow-glow-primary z-10">
+              <Check className="h-4 w-4" strokeWidth={3} />
+            </div>
+          )}
+        </div>
       </button>
-      <div className="p-3 bg-card/80 backdrop-blur-md">
-        <div className="flex items-center gap-1.5 mb-0.5">
-          <span className="text-base">{tpl.emoji}</span>
-          <button onClick={onSelect} className="text-sm font-semibold truncate text-left hover:text-primary transition-colors">
-            {tpl.name}
+      <div className="p-4 bg-card/60 backdrop-blur-md space-y-2.5">
+        <div className="min-w-0">
+          <div className="flex items-center gap-1.5">
+            <span className="text-base">{tpl.emoji}</span>
+            <button onClick={onSelect} className="text-sm font-display font-semibold truncate text-left hover:text-primary transition-colors">
+              {tpl.name}
+            </button>
+          </div>
+          {meta && <div className="text-[10px] uppercase tracking-[0.18em] text-accent mt-1">{meta.persona}</div>}
+        </div>
+        <p className="text-[12px] text-muted-foreground leading-snug line-clamp-2">
+          {meta?.outcome ?? tpl.tagline}
+        </p>
+        <div className="flex flex-wrap gap-1">
+          {modules.map((m) => (
+            <span key={m} className="text-[10px] rounded-full border border-glass-border bg-background/40 px-1.5 py-0.5 text-muted-foreground">
+              {m}
+            </span>
+          ))}
+        </div>
+        <div className="flex items-center justify-between gap-2 pt-1">
+          <button onClick={onSelect} className="text-xs font-medium text-primary hover:underline">
+            {active ? "Selected" : "Use this template"}
           </button>
-        </div>
-        <div className="text-[11px] text-muted-foreground line-clamp-2 leading-snug mb-2">
-          {tpl.tagline}
-        </div>
-        <div className="flex items-center justify-between gap-2">
-          <span className="text-[10px] text-muted-foreground/80 truncate">{summary}</span>
           <Link
             to={`/preview/template/${tpl.id}`}
             target="_blank"
             rel="noreferrer"
-            className="text-[10px] text-primary hover:underline inline-flex items-center gap-0.5 shrink-0"
+            className="text-[11px] text-muted-foreground hover:text-foreground inline-flex items-center gap-0.5"
             onClick={(e) => e.stopPropagation()}
           >
             Live demo <ExternalLink className="h-2.5 w-2.5" />
