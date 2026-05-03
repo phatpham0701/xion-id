@@ -15,6 +15,7 @@ import {
   type ScanSourceKey,
   type DemoBadge,
 } from "@/lib/demoMode";
+import { persistBadgeToPublicProfile, persistBadgeVisibility } from "@/lib/publicBadges";
 import { toast } from "sonner";
 
 type Step = 1 | 2 | 3 | 4;
@@ -202,8 +203,14 @@ export const BadgeScanWizard = ({ open, onOpenChange, initialSignal, onIssued }:
             <div className="grid grid-cols-2 gap-2">
               <Button
                 variant="outline"
-                onClick={() => {
+                onClick={async () => {
                   setBadgeFeatured(issued.id, false);
+                  try {
+                    await persistBadgeVisibility(issued, { featured: false, hidden: true });
+                  } catch {
+                    toast.error("Could not update public profile. Please try again.");
+                    return;
+                  }
                   toast.success("Kept private", { description: "Only you can see this badge." });
                   onOpenChange(false);
                 }}
@@ -211,9 +218,15 @@ export const BadgeScanWizard = ({ open, onOpenChange, initialSignal, onIssued }:
                 Keep private
               </Button>
               <Button
-                onClick={() => {
+                onClick={async () => {
                   setBadgeFeatured(issued.id, true);
-                  toast.success("Now on your profile", { description: `${issued.label} is visible to visitors.` });
+                  try {
+                    await persistBadgeToPublicProfile(issued, { featured: true, hidden: false });
+                  } catch {
+                    toast.error("Could not update public profile. Please try again.");
+                    return;
+                  }
+                  toast.success("Badge added to public profile", { description: `${issued.label} is visible to visitors.` });
                   onOpenChange(false);
                 }}
                 className="bg-gradient-primary"

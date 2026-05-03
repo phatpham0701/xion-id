@@ -13,6 +13,7 @@ import {
   type BadgeCategory,
   type BadgeTier,
 } from "@/lib/demoMode";
+import { persistBadgeToPublicProfile, persistBadgeVisibility, removeBadgeFromPublicProfile } from "@/lib/publicBadges";
 import { toast } from "sonner";
 
 type Props = {
@@ -153,10 +154,17 @@ export const BadgesPanel = ({ onScan }: Props) => {
               <div className="grid grid-cols-2 gap-2 pt-1">
                 <Button
                   variant={open.featured ? "default" : "outline"}
-                  onClick={() => {
+                  onClick={async () => {
                     const next = !open.featured;
                     setBadgeFeatured(open.id, next);
-                    toast.success(next ? "Featured on profile" : "Removed from profile");
+                    try {
+                      if (next) await persistBadgeToPublicProfile(open, { featured: true, hidden: false });
+                      else await persistBadgeVisibility(open, { featured: false });
+                    } catch {
+                      toast.error("Could not update public profile. Please try again.");
+                      return;
+                    }
+                    toast.success(next ? "Badge added to public profile" : "Removed from public profile");
                   }}
                   className={open.featured ? "bg-gradient-primary" : ""}
                 >
@@ -165,10 +173,17 @@ export const BadgesPanel = ({ onScan }: Props) => {
                 </Button>
                 <Button
                   variant="outline"
-                  onClick={() => {
+                  onClick={async () => {
                     const next = !open.hidden;
                     setBadgeHidden(open.id, next);
-                    toast.success(next ? "Badge hidden" : "Badge visible");
+                    try {
+                      if (next) await removeBadgeFromPublicProfile(open.id);
+                      else await persistBadgeToPublicProfile(open, { featured: open.featured ?? false, hidden: false });
+                    } catch {
+                      toast.error("Could not update public profile. Please try again.");
+                      return;
+                    }
+                    toast.success(next ? "Badge hidden from public profile" : "Badge visible");
                   }}
                 >
                   {open.hidden ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
