@@ -88,6 +88,12 @@ const PublicProfile = () => {
   const styleVars = useMemo(() => themeStyleVars(theme), [theme]);
   const tipJarEnabled = useMemo(() => hasTipJar(blocks), [blocks]);
 
+  const publicBadges: PublicProfileBadge[] = useMemo(() => {
+    const s = getPublicBadgesFromSettings(profile?.settings as Record<string, unknown> | null);
+    if (!s.enabled) return [];
+    return s.badges.filter((b) => b.featured && !b.hidden);
+  }, [profile]);
+
   // Filter out empty/placeholder blocks so demo profiles never expose stub copy
   // like "Your name", "@you", or empty link buttons.
   const visibleBlocks = useMemo(() => {
