@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { useDemo } from "./QuickStats";
-import { claimDemoReward, findCatalogByKind, type DemoReward } from "@/lib/demoMode";
+import { upsertAndClaimReward, findCatalogByKind, type DemoReward } from "@/lib/demoMode";
 import { toast } from "sonner";
 
 const SAMPLE_PARTNER_REWARDS: DemoReward[] = [
