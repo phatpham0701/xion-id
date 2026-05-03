@@ -12,7 +12,7 @@ export type ProfileTemplate = {
   name: string;
   tagline: string;
   emoji: string;
-  category: "creator" | "web3" | "professional" | "personal" | "business";
+  category: "starter" | "creator" | "web3" | "professional" | "personal" | "business";
   theme: ProfileTheme;
   blocks: TemplateBlock[];
 };
@@ -347,11 +347,12 @@ export const TEMPLATES: ProfileTemplate[] = [
 
 export const TEMPLATE_CATEGORIES: { id: ProfileTemplate["category"] | "all"; label: string }[] = [
   { id: "all", label: "All" },
+  { id: "starter", label: "Starters" },
   { id: "creator", label: "Creators" },
-  { id: "web3", label: "Web3" },
   { id: "professional", label: "Professional" },
   { id: "business", label: "Business" },
   { id: "personal", label: "Personal" },
+  { id: "web3", label: "Builders" },
 ];
 
 export const getTemplate = (id: string) => TEMPLATES.find((t) => t.id === id);
