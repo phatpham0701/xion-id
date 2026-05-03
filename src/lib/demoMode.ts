@@ -174,14 +174,14 @@ const SEED: DemoState = {
     passportLevel: 1,
   },
   badges: [
-    { id: "b1", kind: "og_2024", label: "OG 2024", emoji: "🏅", description: "Joined in the first wave.", tier: 2, verifiedAt: "2024-03-12T10:00:00Z" },
-    { id: "b2", kind: "collector", label: "Collector", emoji: "🎴", description: "Owns 3+ verified collectibles.", tier: 1, verifiedAt: "2024-08-01T10:00:00Z" },
-    { id: "b3", kind: "explorer", label: "Explorer", emoji: "🧭", description: "Tried 5+ verified apps.", tier: 1, verifiedAt: "2024-10-22T10:00:00Z" },
+    { id: "b1", kind: "og_2024", label: "OG 2024", emoji: "🏅", description: "Joined in the first wave.", tier: 2, tierName: "gold", category: "identity", verifiedAt: "2024-03-12T10:00:00Z", featured: true, privacyNote: "Visible on your public profile." },
+    { id: "b2", kind: "collector", label: "Reward Collector", emoji: "🎴", description: "Claimed 3+ verified rewards.", tier: 1, tierName: "silver", category: "rewards", verifiedAt: "2024-08-01T10:00:00Z", featured: true },
+    { id: "b3", kind: "explorer", label: "Offer Explorer", emoji: "🧭", description: "Engaged with 5+ partner offers.", tier: 1, tierName: "silver", category: "rewards", verifiedAt: "2024-10-22T10:00:00Z" },
   ],
   rewards: [
-    { id: "r1", title: "Early supporter sticker pack", description: "A limited drop for first 500 fans.", cost: 50, claimed: false },
-    { id: "r2", title: "Backstage AMA invite", description: "Private session with the creator.", cost: 200, claimed: false },
-    { id: "r3", title: "Signed digital print", description: "Numbered, 1 of 100.", cost: 120, claimed: true },
+    { id: "r1", title: "Early supporter sticker pack", description: "A limited drop for first 500 fans.", brand: "XIONID", benefit: "Limited drop", cost: 50, claimed: false, status: "available", requiredBadgeKind: "verified_member" },
+    { id: "r2", title: "Backstage AMA invite", description: "Private session with the creator.", brand: "Creator Partner", benefit: "Supporter-only access", cost: 200, claimed: false, status: "expiring", expiresAt: "2026-05-20T00:00:00Z", requiredBadgeKind: "supporter" },
+    { id: "r3", title: "Signed digital print", description: "Numbered, 1 of 100.", brand: "Lumen Apparel", benefit: "Collectible", cost: 120, claimed: true, status: "claimed", claimedAt: "2026-04-12T10:00:00Z" },
   ],
   offers: [
     { id: "o1", brand: "Nimbus Coffee", title: "20% off any drink", blurb: "For verified Explorers in your city.", category: "food", unlocked: true, emoji: "☕" },
