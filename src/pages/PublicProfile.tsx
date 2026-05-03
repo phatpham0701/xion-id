@@ -1,16 +1,27 @@
 import { useEffect, useMemo, useState } from "react";
+import type { CSSProperties } from "react";
 import { Link, useParams } from "react-router-dom";
-import { Loader2, Sparkles, ArrowLeft, BadgeCheck, ShieldCheck, QrCode, Heart } from "lucide-react";
+import {
+  ArrowLeft,
+  BadgeCheck,
+  CheckCircle2,
+  ExternalLink,
+  Gift,
+  Loader2,
+  LockKeyhole,
+  QrCode,
+  ShieldCheck,
+  Sparkles,
+  Ticket,
+} from "lucide-react";
+
 import { supabase } from "@/integrations/supabase/client";
 import { BlockRenderer } from "@/components/editor/BlockRenderer";
 import { themeFromJson, themeStyleVars } from "@/lib/theme";
 import { trackEvent } from "@/lib/analytics";
-import { PublicBadgesStrip } from "@/components/blocks/PublicBadgesBlock";
-import { ProofSeal } from "@/components/badges/ProofSeal";
-import { getPublicBadgesFromSettings, type PublicProfileBadge } from "@/lib/publicBadges";
 import type { Block } from "@/lib/blocks";
 
-type PublicProfile = {
+type PublicProfileData = {
   id: string;
   username: string;
   display_name: string | null;
@@ -19,14 +30,221 @@ type PublicProfile = {
   is_published: boolean;
   theme: unknown;
   xion_address: string | null;
-  settings: unknown;
+  settings?: unknown;
 };
+
+type PublicBadge = {
+  id: string;
+  label: string;
+  tierName: "Silver" | "Gold" | "Diamond" | string;
+  category: string;
+  description: string;
+  emoji?: string;
+  featured?: boolean;
+  hidden?: boolean;
+};
+
+const PAULUS_PITCH_BADGES: PublicBadge[] = [
+  {
+    id: "active-lifestyle",
+    label: "Active Lifestyle",
+    tierName: "Gold",
+    category: "Lifestyle",
+    description: "Selected activity signal",
+    emoji: "🏃",
+    featured: true,
+    hidden: false,
+  },
+  {
+    id: "premium-shopper",
+    label: "Premium Shopper",
+    tierName: "Diamond",
+    category: "Rewards",
+    description: "Eligible for premium offers",
+    emoji: "💎",
+    featured: true,
+    hidden: false,
+  },
+  {
+    id: "verified-member",
+    label: "Verified Member",
+    tierName: "Silver",
+    category: "Identity",
+    description: "Public ID verified",
+    emoji: "✅",
+    featured: true,
+    hidden: false,
+  },
+  {
+    id: "offer-explorer",
+    label: "Offer Explorer",
+    tierName: "Silver",
+    category: "Rewards",
+    description: "Rewards-ready profile",
+    emoji: "🎯",
+    featured: true,
+    hidden: false,
+  },
+];
+
+const PAULUS_REWARDS = [
+  {
+    title: "20% off wellness gear",
+    partner: "Wellness Partner",
+    requirement: "Active Lifestyle",
+    icon: Gift,
+  },
+  {
+    title: "Priority event access",
+    partner: "Event Partner",
+    requirement: "Verified Member",
+    icon: Ticket,
+  },
+  {
+    title: "Premium lifestyle voucher",
+    partner: "Lifestyle Brand",
+    requirement: "Premium Shopper",
+    icon: Sparkles,
+  },
+];
 
 const hasTipJar = (blocks: Block[]) => blocks.some((block) => block.type === "tip_jar");
 
+const getSettingsObject = (settings: unknown): Record<string, unknown> => {
+  if (!settings || typeof settings !== "object" || Array.isArray(settings)) {
+    return {};
+  }
+
+  return settings as Record<string, unknown>;
+};
+
+const getPublicBadgesFromSettings = (settings: unknown): PublicBadge[] => {
+  const settingsObject = getSettingsObject(settings);
+  const publicBadgeRoot = settingsObject.xionidPublicBadges;
+
+  if (!publicBadgeRoot || typeof publicBadgeRoot !== "object" || Array.isArray(publicBadgeRoot)) {
+    return [];
+  }
+
+  const badges = (publicBadgeRoot as { badges?: unknown }).badges;
+
+  if (!Array.isArray(badges)) return [];
+
+  return badges
+    .filter((badge): badge is PublicBadge => {
+      if (!badge || typeof badge !== "object") return false;
+      const candidate = badge as Partial<PublicBadge>;
+      return Boolean(candidate.id && candidate.label);
+    })
+    .filter((badge) => badge.featured !== false && badge.hidden !== true);
+};
+
+const isPlaceholderBlock = (block: Block): boolean => {
+  const config = (block.config || {}) as Record<string, unknown>;
+
+  const values = Object.values(config)
+    .filter((value) => typeof value === "string")
+    .map((value) => String(value).trim().toLowerCase());
+
+  const placeholderValues = [
+    "your name",
+    "@you",
+    "@handle",
+    "a one-line intro about who you are.",
+    "visit my page",
+    "tell people about yourself…",
+    "tell people about yourself...",
+    "untitled link",
+    "heading",
+  ];
+
+  if (values.some((value) => placeholderValues.includes(value))) {
+    return true;
+  }
+
+  if (block.type === "avatar") {
+    const name = String(config.name || "")
+      .trim()
+      .toLowerCase();
+    const subtitle = String(config.subtitle || "")
+      .trim()
+      .toLowerCase();
+
+    return name === "your name" || subtitle === "@you" || subtitle === "@handle" || (!name && !subtitle);
+  }
+
+  if (block.type === "link") {
+    const title = String(config.title || "")
+      .trim()
+      .toLowerCase();
+    const url = String(config.url || "").trim();
+
+    return title === "visit my page" || title === "untitled link" || url === "#";
+  }
+
+  return false;
+};
+
+const getTierClasses = (tierName: string) => {
+  const tier = tierName.toLowerCase();
+
+  if (tier.includes("diamond")) {
+    return {
+      card: "border-cyan-300/30 bg-gradient-to-br from-cyan-300/15 via-blue-400/10 to-violet-500/15 shadow-[0_0_30px_rgba(105,168,255,0.18)]",
+      seal: "from-cyan-200 via-sky-300 to-violet-400 text-slate-950",
+      pill: "border-cyan-200/30 bg-cyan-200/10 text-cyan-100",
+    };
+  }
+
+  if (tier.includes("gold")) {
+    return {
+      card: "border-amber-300/30 bg-gradient-to-br from-amber-200/15 via-yellow-400/10 to-orange-500/10 shadow-[0_0_30px_rgba(230,185,75,0.14)]",
+      seal: "from-amber-100 via-yellow-300 to-amber-500 text-amber-950",
+      pill: "border-amber-200/30 bg-amber-200/10 text-amber-100",
+    };
+  }
+
+  return {
+    card: "border-slate-300/20 bg-gradient-to-br from-slate-200/12 via-white/5 to-slate-500/10",
+    seal: "from-slate-100 via-slate-300 to-slate-500 text-slate-950",
+    pill: "border-slate-200/20 bg-white/5 text-slate-200",
+  };
+};
+
+const FeaturedBadgeCard = ({ badge }: { badge: PublicBadge }) => {
+  const tierClasses = getTierClasses(badge.tierName);
+
+  return (
+    <article
+      className={`group rounded-3xl border p-4 transition-all duration-200 hover:-translate-y-1 ${tierClasses.card}`}
+    >
+      <div className="flex items-start gap-3">
+        <div
+          className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-[1.35rem] bg-gradient-to-br text-xl font-black shadow-lg ${tierClasses.seal}`}
+        >
+          {badge.emoji || <BadgeCheck className="h-6 w-6" />}
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="truncate text-sm font-semibold text-white">{badge.label}</h3>
+            <span className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold ${tierClasses.pill}`}>
+              {badge.tierName}
+            </span>
+          </div>
+
+          <p className="mt-1 text-xs font-medium text-slate-300">{badge.category}</p>
+
+          <p className="mt-2 text-xs leading-relaxed text-slate-400">{badge.description}</p>
+        </div>
+      </div>
+    </article>
+  );
+};
+
 const PublicProfile = () => {
   const { username } = useParams<{ username: string }>();
-  const [profile, setProfile] = useState<PublicProfile | null>(null);
+  const [profile, setProfile] = useState<PublicProfileData | null>(null);
   const [blocks, setBlocks] = useState<Block[]>([]);
   const [status, setStatus] = useState<"loading" | "ready" | "not_found">("loading");
 
@@ -34,6 +252,7 @@ const PublicProfile = () => {
     if (!username) return;
 
     let cancelled = false;
+
     setStatus("loading");
 
     (async () => {
@@ -50,7 +269,7 @@ const PublicProfile = () => {
         return;
       }
 
-      setProfile(p as PublicProfile);
+      setProfile(p as PublicProfileData);
 
       const { data: b } = await supabase
         .from("blocks")
@@ -66,10 +285,12 @@ const PublicProfile = () => {
 
       trackEvent(p.id, "profile_view");
 
-      document.title = `@${p.username} · XIONID`;
-      const desc = p.bio || `${p.display_name || p.username}'s profile on XIONID`;
+      document.title = `${p.display_name || `@${p.username}`} · XIONID`;
+
+      const desc = p.bio || `${p.display_name || p.username}'s verified identity and rewards passport on XIONID`;
 
       let metaDescription = document.querySelector('meta[name="description"]');
+
       if (!metaDescription) {
         metaDescription = document.createElement("meta");
         metaDescription.setAttribute("name", "description");
@@ -86,219 +307,302 @@ const PublicProfile = () => {
 
   const theme = useMemo(() => themeFromJson(profile?.theme), [profile]);
   const styleVars = useMemo(() => themeStyleVars(theme), [theme]);
-  const tipJarEnabled = useMemo(() => hasTipJar(blocks), [blocks]);
 
-  const publicBadges: PublicProfileBadge[] = useMemo(() => {
-    const s = getPublicBadgesFromSettings(profile?.settings as Record<string, unknown> | null);
-    if (!s.enabled) return [];
-    return s.badges.filter((b) => b.featured && !b.hidden);
-  }, [profile]);
+  const cleanBlocks = useMemo(() => blocks.filter((block) => !isPlaceholderBlock(block)), [blocks]);
 
-  // Filter out empty/placeholder blocks so demo profiles never expose stub copy
-  // like "Your name", "@you", or empty link buttons.
-  const visibleBlocks = useMemo(() => {
-    const isPlaceholder = (b: Block): boolean => {
-      const c = (b.config ?? {}) as Record<string, unknown>;
-      const txt = String(c.text ?? c.title ?? c.name ?? "").trim().toLowerCase();
-      const url = String(c.url ?? "").trim();
-      if (b.type === "link" && (!url || url === "https://" || url === "http://")) return true;
-      if (b.type === "text" || b.type === "heading") {
-        if (!txt) return true;
-        if (["your name", "your bio", "your title", "@you", "your username"].includes(txt)) return true;
-      }
-      if (b.type === "avatar") {
-        if (txt === "your name" || txt === "@you") return true;
-      }
-      return false;
-    };
-    return blocks.filter((b) => !isPlaceholder(b));
-  }, [blocks]);
+  const tipJarEnabled = useMemo(() => hasTipJar(cleanBlocks), [cleanBlocks]);
+
+  const isPaulusProfile = profile?.username?.toLowerCase() === "paulus";
+
+  const publicBadges = useMemo(() => {
+    const badgesFromSettings = getPublicBadgesFromSettings(profile?.settings);
+
+    if (badgesFromSettings.length > 0) {
+      return badgesFromSettings;
+    }
+
+    if (isPaulusProfile) {
+      return PAULUS_PITCH_BADGES;
+    }
+
+    return [];
+  }, [isPaulusProfile, profile?.settings]);
 
   if (status === "loading") {
     return (
-      <div className="min-h-screen grid place-items-center bg-background">
-        <div className="glass rounded-2xl px-5 py-4 flex items-center gap-3">
-          <Loader2 className="h-5 w-5 animate-spin text-primary" />
-          <span className="text-sm text-muted-foreground">Loading XIONID profile...</span>
+      <main className="flex min-h-screen items-center justify-center bg-[#050816] text-white">
+        <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.04] px-5 py-4 text-sm text-slate-300 shadow-2xl">
+          <Loader2 className="h-5 w-5 animate-spin text-cyan-300" />
+          Loading XIONID profile...
         </div>
-      </div>
+      </main>
     );
   }
 
   if (status === "not_found" || !profile) {
     return (
-      <div className="min-h-screen grid place-items-center px-6 text-center bg-background">
-        <div className="glass-strong rounded-3xl p-10 max-w-md">
-          <div className="text-6xl mb-4">👻</div>
+      <main className="flex min-h-screen items-center justify-center bg-[#050816] px-4 text-white">
+        <div className="w-full max-w-md rounded-3xl border border-white/10 bg-white/[0.04] p-8 text-center shadow-2xl">
+          <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/10">
+            <ShieldCheck className="h-7 w-7 text-slate-300" />
+          </div>
 
-          <h1 className="font-display text-2xl font-bold mb-2">Profile not found</h1>
+          <h1 className="text-2xl font-bold">Profile not found</h1>
 
-          <p className="text-muted-foreground mb-6">
-            <code className="font-mono">@{username}</code> doesn&apos;t exist on XIONID.
+          <p className="mt-3 text-sm leading-relaxed text-slate-400">
+            @{username} does not exist on XIONID or is not published yet.
           </p>
 
-          <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline">
+          <Link
+            to="/"
+            className="mt-6 inline-flex items-center justify-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-slate-200"
+          >
             <ArrowLeft className="h-4 w-4" />
             Back to home
           </Link>
         </div>
-      </div>
+      </main>
     );
   }
 
-  return (
-    <div
-      className="min-h-screen relative overflow-hidden"
-      style={{
-        ...styleVars,
-        background: "var(--theme-bg)",
-        backgroundAttachment: "fixed",
-        fontFamily: "var(--theme-font)",
-      }}
-    >
-      <div className="aurora-orb h-[420px] w-[420px] -top-32 left-1/2 -translate-x-1/2 bg-primary opacity-20 animate-aurora-drift pointer-events-none" />
-      <div
-        className="aurora-orb h-[420px] w-[420px] bottom-0 right-0 bg-secondary opacity-20 animate-aurora-drift pointer-events-none"
-        style={{ animationDelay: "-7s" }}
-      />
+  const displayName = isPaulusProfile ? "Paulus Pham" : profile.display_name || profile.username;
 
-      <main className="relative container max-w-md mx-auto px-5 py-8">
-        <div className="mb-5 flex items-center justify-between">
+  const bio = isPaulusProfile
+    ? "A privacy-first lifestyle passport for selected proof, badges, and relevant rewards."
+    : profile.bio || "A verified identity and rewards passport for selected proof, badges, and public signals.";
+
+  return (
+    <main className="min-h-screen overflow-x-hidden bg-[#050816] text-white" style={styleVars as CSSProperties}>
+      <div className="pointer-events-none fixed inset-0 overflow-hidden">
+        <div className="absolute left-1/2 top-[-18rem] h-[42rem] w-[42rem] -translate-x-1/2 rounded-full bg-cyan-400/15 blur-3xl" />
+        <div className="absolute bottom-[-20rem] right-[-10rem] h-[40rem] w-[40rem] rounded-full bg-violet-500/15 blur-3xl" />
+        <div className="absolute left-[-12rem] top-1/3 h-[28rem] w-[28rem] rounded-full bg-emerald-400/10 blur-3xl" />
+      </div>
+
+      <div className="relative mx-auto flex min-h-screen w-full max-w-3xl flex-col px-4 py-6 sm:px-6 lg:px-8">
+        <header className="mb-8 flex items-center justify-between">
           <Link
             to="/"
-            className="inline-flex items-center gap-1.5 rounded-full glass px-3 py-1.5 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-slate-300 transition hover:text-white"
           >
-            <Sparkles className="h-3.5 w-3.5 text-primary" />
+            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-violet-400 via-sky-300 to-emerald-300 text-xs font-black text-slate-950 shadow-lg shadow-cyan-500/15">
+              X
+            </span>
             XIONID
           </Link>
 
-          <div className="inline-flex items-center gap-1.5 rounded-full glass px-3 py-1.5 text-[11px] font-medium text-muted-foreground">
-            <QrCode className="h-3.5 w-3.5 text-primary" />
+          <div className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs font-medium text-slate-300">
             xionid.com/{profile.username}
-          </div>
-        </div>
-
-        <header className="mb-5 overflow-hidden rounded-[2rem] border border-white/10 bg-background/45 p-5 text-center shadow-2xl shadow-primary/10 backdrop-blur-xl">
-          <div className="mx-auto mb-4 w-fit">
-            {profile.avatar_url ? (
-              <img
-                src={profile.avatar_url}
-                alt={profile.display_name || profile.username}
-                className="h-24 w-24 rounded-[2rem] object-cover ring-2 ring-white/15"
-                style={{ boxShadow: `0 0 40px hsl(var(--theme-accent) / 0.4)` }}
-              />
-            ) : (
-              <div
-                className="grid h-24 w-24 place-items-center rounded-[2rem] text-3xl font-bold text-primary-foreground ring-2 ring-white/15"
-                style={{
-                  background: `linear-gradient(135deg, hsl(var(--theme-accent)), hsl(var(--theme-accent-glow)))`,
-                  boxShadow: `0 0 40px hsl(var(--theme-accent) / 0.4)`,
-                }}
-              >
-                {(profile.display_name || profile.username).slice(0, 1).toUpperCase()}
-              </div>
-            )}
-          </div>
-
-          <div className="mb-2 flex items-center justify-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight">{profile.display_name || profile.username}</h1>
-
-            <span className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-primary/30 bg-primary/10">
-              <ShieldCheck className="h-3.5 w-3.5 text-primary" />
-            </span>
-          </div>
-
-          <div className="text-sm text-muted-foreground">@{profile.username}</div>
-
-          {profile.bio ? (
-            <p className="mx-auto mt-4 max-w-sm text-sm leading-relaxed text-foreground/80">{profile.bio}</p>
-          ) : null}
-
-          <div className="mt-4 flex flex-wrap justify-center gap-2">
-            {profile.xion_address ? (
-              <span
-                className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1.5 text-[11px] font-medium text-primary"
-                title="Identity verified on XION"
-              >
-                <BadgeCheck className="h-3.5 w-3.5" />
-                Identity verified
-              </span>
-            ) : (
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-border/50 bg-background/40 px-3 py-1.5 text-[11px] font-medium text-muted-foreground">
-                <ShieldCheck className="h-3.5 w-3.5" />
-                XION profile
-              </span>
-            )}
-
-            {tipJarEnabled ? (
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-secondary/30 bg-secondary/10 px-3 py-1.5 text-[11px] font-medium text-secondary">
-                <Heart className="h-3.5 w-3.5" />
-                Creator support enabled
-              </span>
-            ) : null}
           </div>
         </header>
 
-        {publicBadges.length > 0 && (
-          <section className="mb-5 rounded-[2rem] border border-white/10 bg-background/45 p-5 backdrop-blur-xl">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm font-display font-semibold tracking-tight">Featured proof</h2>
-              <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">{publicBadges.length} verified</span>
-            </div>
-            <div className="grid grid-cols-2 gap-2.5">
-              {publicBadges.slice(0, 8).map((b) => (
-                <div key={b.id} className="rounded-2xl border border-glass-border bg-background/40 p-3 flex items-center gap-3">
-                  <ProofSeal emoji={b.emoji} tier={b.tierName} size="sm" />
-                  <div className="min-w-0 flex-1">
-                    <div className="text-[10px] uppercase tracking-wider text-accent">{b.tierName}</div>
-                    <div className="text-sm font-semibold leading-tight truncate">{b.label}</div>
-                    <div className="text-[10px] text-muted-foreground truncate">{b.category}</div>
-                  </div>
+        <section className="rounded-[2rem] border border-white/10 bg-white/[0.055] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.35)] backdrop-blur-xl sm:p-8">
+          <div className="flex flex-col items-center text-center">
+            <div className="relative">
+              <div className="absolute inset-[-10px] rounded-[2rem] bg-gradient-to-br from-violet-400 via-sky-300 to-emerald-300 opacity-40 blur-xl" />
+
+              {profile.avatar_url ? (
+                <img
+                  src={profile.avatar_url}
+                  alt={displayName}
+                  className="relative h-24 w-24 rounded-[2rem] border border-white/20 object-cover shadow-2xl"
+                />
+              ) : (
+                <div className="relative flex h-24 w-24 items-center justify-center rounded-[2rem] border border-white/20 bg-gradient-to-br from-violet-400 via-sky-300 to-emerald-300 text-4xl font-black text-slate-950 shadow-2xl">
+                  {displayName.slice(0, 1).toUpperCase()}
                 </div>
+              )}
+
+              <div className="absolute -bottom-2 -right-2 flex h-9 w-9 items-center justify-center rounded-2xl border border-white/20 bg-[#07111f] shadow-xl">
+                <CheckCircle2 className="h-5 w-5 text-emerald-300" />
+              </div>
+            </div>
+
+            <div className="mt-6">
+              <h1 className="text-4xl font-black tracking-tight text-white sm:text-5xl">{displayName}</h1>
+
+              <p className="mt-2 text-sm font-semibold text-cyan-200">@{profile.username}</p>
+
+              <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-slate-300">{bio}</p>
+            </div>
+
+            <div className="mt-5 flex flex-wrap justify-center gap-2">
+              {(isPaulusProfile
+                ? ["Active lifestyle", "Premium consumer", "Vietnam"]
+                : ["Verified passport", "Selected proof", "Private by design"]
+              ).map((tag) => (
+                <span
+                  key={tag}
+                  className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-1.5 text-xs font-semibold text-slate-200"
+                >
+                  {tag}
+                </span>
               ))}
             </div>
-            {publicBadges.some((b) => b.privacyNote) && (
-              <p className="mt-3 text-[11px] text-muted-foreground flex items-start gap-1.5">
-                <ShieldCheck className="h-3 w-3 text-accent mt-0.5 shrink-0" />
-                Only the badge — never the underlying data — is shared.
-              </p>
-            )}
-          </section>
-        )}
 
-        <PublicBadgesStrip profileId={profile.id} />
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+              <a
+                href="#badges"
+                onClick={() => trackEvent(profile.id, "block_click", "featured_badges")}
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-violet-400 via-sky-300 to-emerald-300 px-5 py-3 text-sm font-bold text-slate-950 shadow-lg shadow-cyan-500/20 transition hover:scale-[1.02]"
+              >
+                <BadgeCheck className="h-4 w-4" />
+                See verified badges
+              </a>
 
-        <section className="space-y-3">
-          {visibleBlocks.length === 0 ? (
-            <div className="glass rounded-2xl px-4 py-8 text-center text-sm text-muted-foreground">
-              This profile hasn&apos;t added any public blocks yet.
+              <a
+                href="#offer-box"
+                onClick={() => trackEvent(profile.id, "block_click", "offer_box")}
+                className="inline-flex items-center justify-center gap-2 rounded-full border border-white/10 bg-white/[0.06] px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/[0.1]"
+              >
+                <Gift className="h-4 w-4" />
+                View Offer Box
+              </a>
             </div>
-          ) : (
-            visibleBlocks.map((block) => (
+
+            <div className="mt-5 flex flex-wrap justify-center gap-2">
+              {profile.xion_address ? (
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300/20 bg-emerald-300/10 px-3 py-1.5 text-xs font-semibold text-emerald-100">
+                  <ShieldCheck className="h-3.5 w-3.5" />
+                  XIONID verified
+                </span>
+              ) : null}
+
+              {tipJarEnabled ? (
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1.5 text-xs font-semibold text-cyan-100">
+                  <Sparkles className="h-3.5 w-3.5" />
+                  Creator support enabled
+                </span>
+              ) : null}
+            </div>
+          </div>
+        </section>
+
+        {publicBadges.length > 0 ? (
+          <section
+            id="badges"
+            className="mt-6 rounded-[2rem] border border-white/10 bg-white/[0.045] p-5 shadow-2xl backdrop-blur-xl sm:p-6"
+          >
+            <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="inline-flex items-center gap-1.5 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 text-xs font-semibold text-cyan-100">
+                  <BadgeCheck className="h-3.5 w-3.5" />
+                  Featured badges
+                </p>
+
+                <h2 className="mt-3 text-2xl font-bold tracking-tight text-white">Selected proof signals</h2>
+
+                <p className="mt-1 text-sm leading-relaxed text-slate-400">
+                  Only selected badges are public. Private signals stay hidden.
+                </p>
+              </div>
+
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.045] px-3 py-1.5 text-xs font-semibold text-slate-300">
+                <LockKeyhole className="h-3.5 w-3.5 text-emerald-300" />
+                Visibility controlled
+              </div>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              {publicBadges.slice(0, 6).map((badge) => (
+                <FeaturedBadgeCard key={badge.id} badge={badge} />
+              ))}
+            </div>
+          </section>
+        ) : null}
+
+        {isPaulusProfile ? (
+          <section
+            id="offer-box"
+            className="mt-6 rounded-[2rem] border border-white/10 bg-white/[0.045] p-5 shadow-2xl backdrop-blur-xl sm:p-6"
+          >
+            <div className="mb-5">
+              <p className="inline-flex items-center gap-1.5 rounded-full border border-violet-300/20 bg-violet-300/10 px-3 py-1 text-xs font-semibold text-violet-100">
+                <Gift className="h-3.5 w-3.5" />
+                Offer Box
+              </p>
+
+              <h2 className="mt-3 text-2xl font-bold tracking-tight text-white">Matched rewards</h2>
+
+              <p className="mt-1 text-sm leading-relaxed text-slate-400">
+                Rewards unlocked by selected badges and privacy-safe proof.
+              </p>
+            </div>
+
+            <div className="grid gap-3">
+              {PAULUS_REWARDS.map((reward) => {
+                const Icon = reward.icon;
+
+                return (
+                  <article
+                    key={reward.title}
+                    className="flex items-center gap-4 rounded-3xl border border-white/10 bg-white/[0.045] p-4 transition hover:bg-white/[0.07]"
+                  >
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-400/25 via-sky-300/20 to-emerald-300/20 text-cyan-100">
+                      <Icon className="h-5 w-5" />
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      <h3 className="truncate text-sm font-semibold text-white">{reward.title}</h3>
+
+                      <p className="mt-1 text-xs text-slate-400">
+                        {reward.partner} · Requires {reward.requirement}
+                      </p>
+                    </div>
+
+                    <span className="rounded-full border border-emerald-300/20 bg-emerald-300/10 px-3 py-1 text-xs font-semibold text-emerald-100">
+                      Matched
+                    </span>
+                  </article>
+                );
+              })}
+            </div>
+          </section>
+        ) : null}
+
+        {cleanBlocks.length > 0 ? (
+          <section className="mt-6 space-y-4">
+            {cleanBlocks.map((block) => (
               <BlockRenderer
                 key={block.id}
                 block={block}
                 theme={theme}
-                ownerXionAddress={profile.xion_address}
-                interactive
+                ownerXionAddress={null}
+                interactive={false}
                 onClick={() => trackEvent(profile.id, "block_click", block.id)}
               />
-            ))
-          )}
+            ))}
+          </section>
+        ) : null}
+
+        <section className="mt-6 rounded-[2rem] border border-white/10 bg-white/[0.035] p-5 text-center backdrop-blur-xl">
+          <div className="mx-auto flex max-w-md flex-col items-center">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/[0.06]">
+              <QrCode className="h-5 w-5 text-cyan-200" />
+            </div>
+
+            <h2 className="mt-3 text-base font-bold text-white">Privacy-first public passport</h2>
+
+            <p className="mt-2 text-sm leading-relaxed text-slate-400">
+              XIONID lets people collect proof-backed badges, choose what appears publicly, and unlock relevant rewards
+              without oversharing.
+            </p>
+          </div>
         </section>
 
-        <footer className="mt-14 mb-2 text-center">
+        <footer className="mt-auto flex flex-col items-center gap-3 py-8 text-center">
           <Link
             to="/"
-            className="inline-flex items-center gap-1.5 rounded-full border border-glass-border bg-background/30 px-3 py-1.5 text-[11px] text-muted-foreground hover:text-foreground transition-colors"
+            className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.045] px-4 py-2 text-xs font-semibold text-slate-300 transition hover:bg-white/[0.08] hover:text-white"
           >
-            <Sparkles className="h-3 w-3 text-accent" />
-            Made with{" "}
-            <span className="font-semibold text-foreground">XION<span className="text-gradient-brand">ID</span></span>
+            Made with XIONID
+            <ExternalLink className="h-3.5 w-3.5" />
           </Link>
+
+          <p className="text-xs text-slate-500">Verified identity and rewards passport.</p>
         </footer>
-      </main>
-    </div>
+      </div>
+    </main>
   );
 };
 
