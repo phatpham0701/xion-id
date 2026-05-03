@@ -26,6 +26,7 @@ const Dashboard = () => {
   const [profile, setProfile] = useState<EditableProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [shareOpen, setShareOpen] = useState(false);
+  const [scanOpen, setScanOpen] = useState(false);
   const [demoOnboarded, setDemoOnboarded] = useState<boolean>(() => getDemoState().onboarded);
 
   useEffect(() => {
