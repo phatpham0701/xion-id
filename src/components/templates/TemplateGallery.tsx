@@ -33,18 +33,8 @@ const blockSummary = (tpl: ProfileTemplate): string[] => {
   return Array.from(set).slice(0, 4);
 };
 
-const PERSONAS: Record<string, { persona: string; outcome: string }> = {
-  "essential-rewards":     { persona: "Best all-rounder",     outcome: "Profile, badges & live offers in one tap" },
-  "minimal-public":        { persona: "Minimal public card",  outcome: "Just your name, bio and one CTA" },
-  "badge-first":           { persona: "Proof-first identity", outcome: "Lead with verified signals" },
-  "quick-support":         { persona: "Accept support fast",  outcome: "Tip jar with a 1-minute setup" },
-  "creator-hub":           { persona: "Creator support hub",  outcome: "Drops, perks, and supporters in sync" },
-  "athlete-passport":      { persona: "Wellness & fitness",   outcome: "Stats, sponsors and event check-ins" },
-  "shopper-perks":         { persona: "Personal offers",      outcome: "Vouchers from brands you actually like" },
-  "community-leader":      { persona: "Community leader",     outcome: "Members, events, and supporters" },
-  "fundraise-starter":     { persona: "Campaign starter",     outcome: "Goal, supporters, progress at a glance" },
-  "local-business-rewards":{ persona: "Local business",       outcome: "Today's offers, check-in & loyalty" },
-};
+const PERSONAS: Record<string, { persona: string; outcome: string; name?: string }> =
+  Object.fromEntries(FEATURED_TEMPLATES.map((t) => [t.id, { persona: t.persona, outcome: t.outcome, name: t.name }]));
 
 const TemplateCard = ({
   tpl, active, onSelect,
