@@ -40,9 +40,10 @@ type PublicProfileData = {
 type PublicBadge = {
   id: string;
   label: string;
-  tierName: "Silver" | "Gold" | "Diamond" | string;
-  category: string;
-  description: string;
+  tierName?: "Silver" | "Gold" | "Diamond" | "silver" | "gold" | "diamond" | string;
+  tier?: "Silver" | "Gold" | "Diamond" | "silver" | "gold" | "diamond" | string;
+  category?: string;
+  description?: string;
   emoji?: string;
   featured?: boolean;
   hidden?: boolean;
@@ -153,6 +154,44 @@ const getSettingsObject = (settings: unknown): Record<string, unknown> => {
   return settings as Record<string, unknown>;
 };
 
+const getNestedObject = (object: Record<string, unknown>, key: string): Record<string, unknown> => {
+  const value = object[key];
+
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return {};
+  }
+
+  return value as Record<string, unknown>;
+};
+
+const normalizeTier = (badge: PublicBadge): string => {
+  const rawTier = badge.tierName || badge.tier || "Silver";
+  const normalized = String(rawTier).trim().toLowerCase();
+
+  if (normalized.includes("diamond")) return "Diamond";
+  if (normalized.includes("gold")) return "Gold";
+  return "Silver";
+};
+
+const normalizeBadge = (badge: PublicBadge): PublicBadge => {
+  const tierName = normalizeTier(badge);
+
+  return {
+    ...badge,
+    tierName,
+    category: badge.category || "Proof",
+    description: badge.description || "Selected proof signal",
+    proofSource: badge.proofSource || "Selected verification signal",
+    issuedBy: badge.issuedBy || "XIONID verification layer",
+    issuedAt: badge.issuedAt || "Demo profile",
+    visibility: badge.visibility || "Public — selected by profile owner",
+    unlockUse: badge.unlockUse || "Can help unlock relevant offers, rewards, and access.",
+    privacyNote:
+      badge.privacyNote ||
+      "This badge shows only selected public proof. Private source data stays hidden unless the owner chooses otherwise.",
+  };
+};
+
 const getPublicBadgesFromSettings = (settings: unknown): PublicBadge[] => {
   const settingsObject = getSettingsObject(settings);
   const publicBadgeRoot = settingsObject.xionidPublicBadges;
@@ -171,7 +210,15 @@ const getPublicBadgesFromSettings = (settings: unknown): PublicBadge[] => {
       const candidate = badge as Partial<PublicBadge>;
       return Boolean(candidate.id && candidate.label);
     })
-    .filter((badge) => badge.featured !== false && badge.hidden !== true);
+    .filter((badge) => badge.featured !== false && badge.hidden !== true)
+    .map(normalizeBadge);
+};
+
+const getShowOfferBox = (settings: unknown): boolean => {
+  const settingsObject = getSettingsObject(settings);
+  const publicProfileSettings = getNestedObject(settingsObject, "xionidPublicProfile");
+
+  return publicProfileSettings.showOfferBox !== false;
 };
 
 const isPlaceholderBlock = (block: Block): boolean => {
@@ -250,7 +297,8 @@ const getTierClasses = (tierName: string) => {
 };
 
 const FeaturedBadgeCard = ({ badge, onClick }: { badge: PublicBadge; onClick: () => void }) => {
-  const tierClasses = getTierClasses(badge.tierName);
+  const tierName = normalizeTier(badge);
+  const tierClasses = getTierClasses(tierName);
 
   return (
     <button
@@ -270,13 +318,13 @@ const FeaturedBadgeCard = ({ badge, onClick }: { badge: PublicBadge; onClick: ()
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="truncate text-sm font-semibold text-white">{badge.label}</h3>
             <span className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold ${tierClasses.pill}`}>
-              {badge.tierName}
+              {tierName}
             </span>
           </div>
 
-          <p className="mt-1 text-xs font-medium text-slate-300">{badge.category}</p>
+          <p className="mt-1 text-xs font-medium text-slate-300">{badge.category || "Proof"}</p>
 
-          <p className="mt-2 text-xs leading-relaxed text-slate-400">{badge.description}</p>
+          <p className="mt-2 text-xs leading-relaxed text-slate-400">{badge.description || "Selected proof signal"}</p>
 
           <p className="mt-3 inline-flex items-center gap-1 text-[11px] font-semibold text-cyan-200 opacity-80 transition group-hover:opacity-100">
             <Info className="h-3.5 w-3.5" />
@@ -289,13 +337,13 @@ const FeaturedBadgeCard = ({ badge, onClick }: { badge: PublicBadge; onClick: ()
 };
 
 const BadgeDetailModal = ({ badge, onClose }: { badge: PublicBadge; onClose: () => void }) => {
-  const tierClasses = getTierClasses(badge.tierName);
+  const normalizedBadge = normalizeBadge(badge);
+  const tierName = normalizeTier(normalizedBadge);
+  const tierClasses = getTierClasses(tierName);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        onClose();
-      }
+      if (event.key === "Escape") onClose();
     };
 
     window.addEventListener("keydown", onKeyDown);
@@ -308,7 +356,7 @@ const BadgeDetailModal = ({ badge, onClose }: { badge: PublicBadge; onClose: () 
       className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 px-4 py-6 backdrop-blur-md"
       role="dialog"
       aria-modal="true"
-      aria-label={`${badge.label} badge details`}
+      aria-label={`${normalizedBadge.label} badge details`}
       onClick={onClose}
     >
       <div
@@ -325,21 +373,21 @@ const BadgeDetailModal = ({ badge, onClose }: { badge: PublicBadge; onClose: () 
               <div
                 className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-[1.5rem] bg-gradient-to-br text-2xl font-black shadow-xl ${tierClasses.seal}`}
               >
-                {badge.emoji || <BadgeCheck className="h-7 w-7" />}
+                {normalizedBadge.emoji || <BadgeCheck className="h-7 w-7" />}
               </div>
 
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-200/80">Badge details</p>
 
-                <h2 className="mt-1 text-2xl font-black tracking-tight text-white">{badge.label}</h2>
+                <h2 className="mt-1 text-2xl font-black tracking-tight text-white">{normalizedBadge.label}</h2>
 
                 <div className="mt-2 flex flex-wrap items-center gap-2">
                   <span className={`rounded-full border px-2.5 py-1 text-xs font-semibold ${tierClasses.pill}`}>
-                    {badge.tierName}
+                    {tierName}
                   </span>
 
                   <span className="rounded-full border border-white/10 bg-white/[0.05] px-2.5 py-1 text-xs font-semibold text-slate-200">
-                    {badge.category}
+                    {normalizedBadge.category}
                   </span>
                 </div>
               </div>
@@ -355,7 +403,7 @@ const BadgeDetailModal = ({ badge, onClose }: { badge: PublicBadge; onClose: () 
             </button>
           </div>
 
-          <p className="mt-6 text-sm leading-relaxed text-slate-300">{badge.description}</p>
+          <p className="mt-6 text-sm leading-relaxed text-slate-300">{normalizedBadge.description}</p>
 
           <div className="mt-6 grid gap-3">
             <div className="rounded-2xl border border-white/10 bg-white/[0.045] p-4">
@@ -363,9 +411,7 @@ const BadgeDetailModal = ({ badge, onClose }: { badge: PublicBadge; onClose: () 
                 <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-emerald-300" />
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">Proof source</p>
-                  <p className="mt-1 text-sm font-medium text-white">
-                    {badge.proofSource || "Selected verification signal"}
-                  </p>
+                  <p className="mt-1 text-sm font-medium text-white">{normalizedBadge.proofSource}</p>
                 </div>
               </div>
             </div>
@@ -375,7 +421,7 @@ const BadgeDetailModal = ({ badge, onClose }: { badge: PublicBadge; onClose: () 
                 <BadgeCheck className="mt-0.5 h-5 w-5 shrink-0 text-cyan-300" />
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">Issued by</p>
-                  <p className="mt-1 text-sm font-medium text-white">{badge.issuedBy || "XIONID verification layer"}</p>
+                  <p className="mt-1 text-sm font-medium text-white">{normalizedBadge.issuedBy}</p>
                 </div>
               </div>
             </div>
@@ -385,9 +431,7 @@ const BadgeDetailModal = ({ badge, onClose }: { badge: PublicBadge; onClose: () 
                 <Eye className="mt-0.5 h-5 w-5 shrink-0 text-violet-300" />
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">Visibility</p>
-                  <p className="mt-1 text-sm font-medium text-white">
-                    {badge.visibility || "Public — selected by profile owner"}
-                  </p>
+                  <p className="mt-1 text-sm font-medium text-white">{normalizedBadge.visibility}</p>
                 </div>
               </div>
             </div>
@@ -397,9 +441,7 @@ const BadgeDetailModal = ({ badge, onClose }: { badge: PublicBadge; onClose: () 
                 <Gift className="mt-0.5 h-5 w-5 shrink-0 text-amber-300" />
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">Reward use case</p>
-                  <p className="mt-1 text-sm font-medium text-white">
-                    {badge.unlockUse || "Can help unlock relevant offers, rewards, and access."}
-                  </p>
+                  <p className="mt-1 text-sm font-medium text-white">{normalizedBadge.unlockUse}</p>
                 </div>
               </div>
             </div>
@@ -410,10 +452,7 @@ const BadgeDetailModal = ({ badge, onClose }: { badge: PublicBadge; onClose: () 
               <LockKeyhole className="mt-0.5 h-5 w-5 shrink-0 text-emerald-300" />
               <div>
                 <p className="text-sm font-semibold text-emerald-100">Privacy note</p>
-                <p className="mt-1 text-sm leading-relaxed text-emerald-50/75">
-                  {badge.privacyNote ||
-                    "This badge shows only selected public proof. Private source data stays hidden unless the owner chooses otherwise."}
-                </p>
+                <p className="mt-1 text-sm leading-relaxed text-emerald-50/75">{normalizedBadge.privacyNote}</p>
               </div>
             </div>
           </div>
@@ -421,7 +460,7 @@ const BadgeDetailModal = ({ badge, onClose }: { badge: PublicBadge; onClose: () 
           <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="inline-flex items-center gap-2 text-xs font-medium text-slate-400">
               <CalendarDays className="h-4 w-4" />
-              {badge.issuedAt || "Issued for this demo profile"}
+              {normalizedBadge.issuedAt}
             </div>
 
             <button
@@ -511,6 +550,8 @@ const PublicProfile = () => {
 
   const isPaulusProfile = profile?.username?.toLowerCase() === "paulus";
 
+  const showOfferBox = useMemo(() => getShowOfferBox(profile?.settings), [profile?.settings]);
+
   const publicBadges = useMemo(() => {
     const badgesFromSettings = getPublicBadgesFromSettings(profile?.settings);
 
@@ -526,7 +567,7 @@ const PublicProfile = () => {
   }, [isPaulusProfile, profile?.settings]);
 
   const openBadgeDetails = (badge: PublicBadge) => {
-    setSelectedBadge(badge);
+    setSelectedBadge(normalizeBadge(badge));
 
     if (profile?.id) {
       trackEvent(profile.id, "block_click", `badge:${badge.id}`);
@@ -655,14 +696,16 @@ const PublicProfile = () => {
                 See verified badges
               </a>
 
-              <a
-                href="#offer-box"
-                onClick={() => trackEvent(profile.id, "block_click", "offer_box")}
-                className="inline-flex items-center justify-center gap-2 rounded-full border border-white/10 bg-white/[0.06] px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/[0.1]"
-              >
-                <Gift className="h-4 w-4" />
-                View Offer Box
-              </a>
+              {showOfferBox ? (
+                <a
+                  href="#offer-box"
+                  onClick={() => trackEvent(profile.id, "block_click", "offer_box")}
+                  className="inline-flex items-center justify-center gap-2 rounded-full border border-white/10 bg-white/[0.06] px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/[0.1]"
+                >
+                  <Gift className="h-4 w-4" />
+                  View Offer Box
+                </a>
+              ) : null}
             </div>
 
             <div className="mt-5 flex flex-wrap justify-center gap-2">
@@ -716,7 +759,7 @@ const PublicProfile = () => {
           </section>
         ) : null}
 
-        {isPaulusProfile ? (
+        {isPaulusProfile && showOfferBox ? (
           <section
             id="offer-box"
             className="mt-6 rounded-[2rem] border border-white/10 bg-white/[0.045] p-5 shadow-2xl backdrop-blur-xl sm:p-6"
