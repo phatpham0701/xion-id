@@ -17,22 +17,33 @@ type Props = {
   ctaLabel?: string;
 };
 
-const blockSummary = (tpl: ProfileTemplate): string => {
-  const counts = new Map<string, number>();
-  tpl.blocks.forEach((b) => counts.set(b.type, (counts.get(b.type) ?? 0) + 1));
-  const labels: Record<string, string> = {
-    link: "link", social: "socials", nft: "NFT", wallet: "wallet",
-    music_embed: "music", video_embed: "video", image: "image",
-    tip_jar: "tip jar", calendar: "booking", contact_form: "form",
-    token_balance: "balance", avatar: "header", text: "bio", heading: "heading",
-  };
-  const order = ["link", "social", "image", "video_embed", "music_embed", "nft", "wallet", "token_balance", "tip_jar", "calendar", "contact_form"];
-  const parts: string[] = [];
-  order.forEach((k) => {
-    const n = counts.get(k);
-    if (n) parts.push(`${n} ${labels[k] ?? k}${n > 1 && k === "link" ? "s" : ""}`);
+const MODULE_LABELS: Record<string, string> = {
+  link: "Links", social: "Socials", nft: "Collectibles", wallet: "Identity",
+  music_embed: "Music", video_embed: "Video", image: "Media",
+  tip_jar: "Support", calendar: "Booking", contact_form: "Contact",
+  token_balance: "Balance", avatar: "Header", text: "Bio", heading: "Sections",
+};
+
+const blockSummary = (tpl: ProfileTemplate): string[] => {
+  const set = new Set<string>();
+  tpl.blocks.forEach((b) => {
+    const l = MODULE_LABELS[b.type];
+    if (l) set.add(l);
   });
-  return parts.slice(0, 3).join(" · ");
+  return Array.from(set).slice(0, 4);
+};
+
+const PERSONAS: Record<string, { persona: string; outcome: string }> = {
+  "essential-rewards":     { persona: "Best all-rounder",     outcome: "Profile, badges & live offers in one tap" },
+  "minimal-public":        { persona: "Minimal public card",  outcome: "Just your name, bio and one CTA" },
+  "badge-first":           { persona: "Proof-first identity", outcome: "Lead with verified signals" },
+  "quick-support":         { persona: "Accept support fast",  outcome: "Tip jar with a 1-minute setup" },
+  "creator-hub":           { persona: "Creator support hub",  outcome: "Drops, perks, and supporters in sync" },
+  "athlete-passport":      { persona: "Wellness & fitness",   outcome: "Stats, sponsors and event check-ins" },
+  "shopper-perks":         { persona: "Personal offers",      outcome: "Vouchers from brands you actually like" },
+  "community-leader":      { persona: "Community leader",     outcome: "Members, events, and supporters" },
+  "fundraise-starter":     { persona: "Campaign starter",     outcome: "Goal, supporters, progress at a glance" },
+  "local-business-rewards":{ persona: "Local business",       outcome: "Today's offers, check-in & loyalty" },
 };
 
 const TemplateCard = ({
