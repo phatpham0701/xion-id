@@ -3,6 +3,7 @@ import { Award, Plus, Eye, EyeOff, Star, ShieldCheck, Filter } from "lucide-reac
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { ProofSeal, ProofSealCard } from "@/components/badges/ProofSeal";
 import { useDemo } from "./QuickStats";
 import {
   BADGE_CATEGORY_META,
@@ -11,7 +12,6 @@ import {
   setBadgeHidden,
   type BadgeCategory,
   type BadgeTier,
-  type DemoBadge,
 } from "@/lib/demoMode";
 import { toast } from "sonner";
 
@@ -58,15 +58,15 @@ export const BadgesPanel = ({ onScan }: Props) => {
       {/* Recently issued */}
       {recent.length > 0 && (
         <div className="mb-4">
-          <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">Recently issued</div>
-          <div className="flex gap-2 overflow-x-auto pb-1">
+          <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mb-2">Recently issued</div>
+          <div className="flex gap-2.5 overflow-x-auto pb-1">
             {recent.map((b) => (
               <button
                 key={b.id}
                 onClick={() => setOpenId(b.id)}
-                className="shrink-0 rounded-2xl border border-glass-border bg-background/40 hover:border-primary/40 transition-all px-3 py-2 flex items-center gap-2 min-w-[180px]"
+                className="shrink-0 rounded-2xl border border-glass-border bg-background/40 hover:border-primary/40 transition-all px-3 py-2 flex items-center gap-2.5 min-w-[200px]"
               >
-                <div className={`h-8 w-8 rounded-xl grid place-items-center text-base bg-gradient-to-br ${BADGE_TIER_META[b.tierName].ring}`}>{b.emoji}</div>
+                <ProofSeal emoji={b.emoji} tier={b.tierName} size="sm" />
                 <div className="text-left min-w-0">
                   <div className="text-xs font-semibold truncate">{b.label}</div>
                   <div className="text-[10px] text-muted-foreground">{BADGE_TIER_META[b.tierName].label}</div>
@@ -109,26 +109,17 @@ export const BadgesPanel = ({ onScan }: Props) => {
           <Button size="sm" variant="outline" className="mt-3" onClick={onScan}>Scan for a badge</Button>
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5">
           {filtered.map((b) => (
-            <button
+            <ProofSealCard
               key={b.id}
+              label={b.label}
+              emoji={b.emoji}
+              tier={b.tierName}
+              category={BADGE_CATEGORY_META[b.category].label}
+              compact
               onClick={() => setOpenId(b.id)}
-              className={`text-left rounded-2xl border p-3 transition-all ${
-                b.hidden
-                  ? "border-dashed border-border/60 bg-background/20 opacity-70"
-                  : "border-glass-border bg-background/40 hover:border-primary/40"
-              }`}
-            >
-              <div className="flex items-start justify-between">
-                <div className={`h-10 w-10 rounded-xl grid place-items-center text-xl bg-gradient-to-br ${BADGE_TIER_META[b.tierName].ring}`}>{b.emoji}</div>
-                {b.featured && <Star className="h-3.5 w-3.5 text-primary fill-primary" />}
-              </div>
-              <div className="text-sm font-semibold mt-2 truncate">{b.label}</div>
-              <div className="text-[10px] uppercase tracking-wider text-muted-foreground mt-0.5">
-                {BADGE_TIER_META[b.tierName].label} · {BADGE_CATEGORY_META[b.category].label}
-              </div>
-            </button>
+            />
           ))}
         </div>
       )}
@@ -139,25 +130,23 @@ export const BadgesPanel = ({ onScan }: Props) => {
           {open && (
             <>
               <DialogHeader>
-                <DialogTitle className="font-display text-xl flex items-center gap-2">
-                  <span>{open.emoji}</span> {open.label}
-                </DialogTitle>
+                <DialogTitle className="font-display text-xl">{open.label}</DialogTitle>
                 <DialogDescription className="flex items-center gap-2 flex-wrap">
                   <Badge variant="secondary" className="text-[10px]">
-                    {BADGE_TIER_META[open.tierName].emoji} {BADGE_TIER_META[open.tierName].label}
+                    {BADGE_TIER_META[open.tierName].label}
                   </Badge>
                   <Badge variant="outline" className="text-[10px]">
-                    {BADGE_CATEGORY_META[open.category].emoji} {BADGE_CATEGORY_META[open.category].label}
+                    {BADGE_CATEGORY_META[open.category].label}
                   </Badge>
                 </DialogDescription>
               </DialogHeader>
-              <div className={`rounded-2xl p-5 bg-gradient-to-br ${BADGE_TIER_META[open.tierName].ring} grid place-items-center`}>
-                <div className="text-6xl">{open.emoji}</div>
+              <div className="rounded-2xl bg-background/40 border border-glass-border p-6 grid place-items-center">
+                <ProofSeal emoji={open.emoji} tier={open.tierName} size="lg" />
               </div>
               <p className="text-sm text-foreground/80 leading-relaxed">{open.description}</p>
               {open.privacyNote && (
                 <p className="text-[11px] text-muted-foreground flex items-start gap-1.5 border-t border-border/40 pt-3">
-                  <ShieldCheck className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" />
+                  <ShieldCheck className="h-3.5 w-3.5 text-accent mt-0.5 shrink-0" />
                   {open.privacyNote}
                 </p>
               )}

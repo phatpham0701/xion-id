@@ -17,60 +17,87 @@ type Props = {
   ctaLabel?: string;
 };
 
-const blockSummary = (tpl: ProfileTemplate): string => {
-  const counts = new Map<string, number>();
-  tpl.blocks.forEach((b) => counts.set(b.type, (counts.get(b.type) ?? 0) + 1));
-  const labels: Record<string, string> = {
-    link: "link", social: "socials", nft: "NFT", wallet: "wallet",
-    music_embed: "music", video_embed: "video", image: "image",
-    tip_jar: "tip jar", calendar: "booking", contact_form: "form",
-    token_balance: "balance", avatar: "header", text: "bio", heading: "heading",
-  };
-  const order = ["link", "social", "image", "video_embed", "music_embed", "nft", "wallet", "token_balance", "tip_jar", "calendar", "contact_form"];
-  const parts: string[] = [];
-  order.forEach((k) => {
-    const n = counts.get(k);
-    if (n) parts.push(`${n} ${labels[k] ?? k}${n > 1 && k === "link" ? "s" : ""}`);
+const MODULE_LABELS: Record<string, string> = {
+  link: "Links", social: "Socials", nft: "Collectibles", wallet: "Identity",
+  music_embed: "Music", video_embed: "Video", image: "Media",
+  tip_jar: "Support", calendar: "Booking", contact_form: "Contact",
+  token_balance: "Balance", avatar: "Header", text: "Bio", heading: "Sections",
+};
+
+const blockSummary = (tpl: ProfileTemplate): string[] => {
+  const set = new Set<string>();
+  tpl.blocks.forEach((b) => {
+    const l = MODULE_LABELS[b.type];
+    if (l) set.add(l);
   });
-  return parts.slice(0, 3).join(" · ");
+  return Array.from(set).slice(0, 4);
+};
+
+const PERSONAS: Record<string, { persona: string; outcome: string }> = {
+  "essential-rewards":     { persona: "Best all-rounder",     outcome: "Profile, badges & live offers in one tap" },
+  "minimal-public":        { persona: "Minimal public card",  outcome: "Just your name, bio and one CTA" },
+  "badge-first":           { persona: "Proof-first identity", outcome: "Lead with verified signals" },
+  "quick-support":         { persona: "Accept support fast",  outcome: "Tip jar with a 1-minute setup" },
+  "creator-hub":           { persona: "Creator support hub",  outcome: "Drops, perks, and supporters in sync" },
+  "athlete-passport":      { persona: "Wellness & fitness",   outcome: "Stats, sponsors and event check-ins" },
+  "shopper-perks":         { persona: "Personal offers",      outcome: "Vouchers from brands you actually like" },
+  "community-leader":      { persona: "Community leader",     outcome: "Members, events, and supporters" },
+  "fundraise-starter":     { persona: "Campaign starter",     outcome: "Goal, supporters, progress at a glance" },
+  "local-business-rewards":{ persona: "Local business",       outcome: "Today's offers, check-in & loyalty" },
 };
 
 const TemplateCard = ({
   tpl, active, onSelect,
 }: { tpl: ProfileTemplate; active: boolean; onSelect: () => void }) => {
-  const summary = useMemo(() => blockSummary(tpl), [tpl]);
+  const modules = useMemo(() => blockSummary(tpl), [tpl]);
+  const meta = PERSONAS[tpl.id];
   return (
     <div
       className={cn(
-        "group relative rounded-2xl overflow-hidden border transition-all hover:scale-[1.015]",
-        active ? "border-primary ring-2 ring-primary/40" : "border-border/40 hover:border-primary/40",
+        "group relative rounded-3xl overflow-hidden border bg-background/40 transition-all hover:-translate-y-0.5",
+        active ? "border-primary ring-2 ring-primary/40 shadow-glow-primary" : "border-glass-border hover:border-primary/40",
       )}
     >
       <button onClick={onSelect} className="block w-full text-left">
-        <TemplatePreview template={tpl} />
-        {active && (
-          <div className="absolute top-2 right-2 h-6 w-6 rounded-full bg-primary text-primary-foreground grid place-items-center shadow-glow-primary z-10">
-            <Check className="h-3.5 w-3.5" strokeWidth={3} />
-          </div>
-        )}
+        <div className="relative">
+          <TemplatePreview template={tpl} />
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-brand opacity-90" />
+          {active && (
+            <div className="absolute top-3 right-3 h-7 w-7 rounded-full bg-primary text-primary-foreground grid place-items-center shadow-glow-primary z-10">
+              <Check className="h-4 w-4" strokeWidth={3} />
+            </div>
+          )}
+        </div>
       </button>
-      <div className="p-3 bg-card/80 backdrop-blur-md">
-        <div className="flex items-center gap-1.5 mb-0.5">
-          <span className="text-base">{tpl.emoji}</span>
-          <button onClick={onSelect} className="text-sm font-semibold truncate text-left hover:text-primary transition-colors">
-            {tpl.name}
+      <div className="p-4 bg-card/60 backdrop-blur-md space-y-2.5">
+        <div className="min-w-0">
+          <div className="flex items-center gap-1.5">
+            <span className="text-base">{tpl.emoji}</span>
+            <button onClick={onSelect} className="text-sm font-display font-semibold truncate text-left hover:text-primary transition-colors">
+              {tpl.name}
+            </button>
+          </div>
+          {meta && <div className="text-[10px] uppercase tracking-[0.18em] text-accent mt-1">{meta.persona}</div>}
+        </div>
+        <p className="text-[12px] text-muted-foreground leading-snug line-clamp-2">
+          {meta?.outcome ?? tpl.tagline}
+        </p>
+        <div className="flex flex-wrap gap-1">
+          {modules.map((m) => (
+            <span key={m} className="text-[10px] rounded-full border border-glass-border bg-background/40 px-1.5 py-0.5 text-muted-foreground">
+              {m}
+            </span>
+          ))}
+        </div>
+        <div className="flex items-center justify-between gap-2 pt-1">
+          <button onClick={onSelect} className="text-xs font-medium text-primary hover:underline">
+            {active ? "Selected" : "Use this template"}
           </button>
-        </div>
-        <div className="text-[11px] text-muted-foreground line-clamp-2 leading-snug mb-2">
-          {tpl.tagline}
-        </div>
-        <div className="flex items-center justify-between gap-2">
-          <span className="text-[10px] text-muted-foreground/80 truncate">{summary}</span>
           <Link
             to={`/preview/template/${tpl.id}`}
             target="_blank"
             rel="noreferrer"
-            className="text-[10px] text-primary hover:underline inline-flex items-center gap-0.5 shrink-0"
+            className="text-[11px] text-muted-foreground hover:text-foreground inline-flex items-center gap-0.5"
             onClick={(e) => e.stopPropagation()}
           >
             Live demo <ExternalLink className="h-2.5 w-2.5" />
@@ -151,15 +178,38 @@ export const TemplateGallery = ({
         ))}
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {filtered.map((tpl) => (
-          <TemplateCard
-            key={tpl.id}
-            tpl={tpl}
-            active={selectedId === tpl.id}
-            onSelect={() => setSelectedId(tpl.id)}
-          />
-        ))}
+      {/* Recommended for you */}
+      {category === "all" && (
+        <div className="space-y-3">
+          <div className="flex items-baseline justify-between">
+            <h2 className="font-display text-lg font-semibold">Recommended for you</h2>
+            <span className="text-[11px] text-muted-foreground">Based on your starter</span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {TEMPLATES.filter((t) => ["essential-rewards", "creator-hub", "badge-first"].includes(t.id)).map((tpl) => (
+              <TemplateCard
+                key={`rec-${tpl.id}`}
+                tpl={tpl}
+                active={selectedId === tpl.id}
+                onSelect={() => setSelectedId(tpl.id)}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="space-y-3">
+        <h2 className="font-display text-lg font-semibold">All templates</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filtered.map((tpl) => (
+            <TemplateCard
+              key={tpl.id}
+              tpl={tpl}
+              active={selectedId === tpl.id}
+              onSelect={() => setSelectedId(tpl.id)}
+            />
+          ))}
+        </div>
       </div>
 
       {selectedId && (

@@ -3,7 +3,7 @@ import { Wordmark } from "@/components/Wordmark";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { Sparkles, LogOut, LayoutTemplate } from "lucide-react";
+import { LogOut, LayoutTemplate } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,9 @@ import { OnboardingFlow } from "@/components/onboarding/OnboardingFlow";
 import { ProfileSummary } from "@/components/dashboard/ProfileSummary";
 import { QuickStats } from "@/components/dashboard/QuickStats";
 import { QuickActionTiles } from "@/components/dashboard/QuickActionTiles";
-import { RecommendedRewards } from "@/components/dashboard/RecommendedRewards";
+import { FeaturedBadges } from "@/components/dashboard/FeaturedBadges";
+import { MatchedRewards } from "@/components/dashboard/MatchedRewards";
+import { NextBestAction } from "@/components/dashboard/NextBestAction";
 import { BadgesPanel } from "@/components/dashboard/BadgesPanel";
 import { RewardsLocker } from "@/components/dashboard/RewardsLocker";
 import { BadgeScanWizard } from "@/components/dashboard/BadgeScanWizard";
@@ -108,15 +110,17 @@ const Dashboard = () => {
         </div>
       </header>
 
-      <main className="container py-8 md:py-10 relative space-y-5">
+      <main className="container py-8 md:py-10 relative space-y-6 overflow-x-hidden">
         <div className="animate-fade-in">
-          <h1 className="font-display text-3xl md:text-4xl font-bold tracking-tight">
-            Your <span className="text-gradient">passport</span>
+          <h1 className="font-display text-4xl md:text-5xl font-bold tracking-tight">
+            Your <span className="text-gradient-brand">passport</span>
           </h1>
-          <p className="mt-1 text-sm text-muted-foreground">A calm command center for your identity, badges, and rewards.</p>
+          <p className="mt-2 text-sm md:text-base text-muted-foreground max-w-xl">
+            Prove what matters. Reveal only what you choose. Unlock what fits you.
+          </p>
         </div>
 
-        {/* 1. Profile summary */}
+        {/* Above the fold: identity, signal, action */}
         <ProfileSummary
           displayName={profile.display_name}
           username={username}
@@ -124,21 +128,23 @@ const Dashboard = () => {
           isPublished={profile.is_published}
         />
 
-        {/* 2. Quick stats */}
         <QuickStats />
 
-        {/* 3. Quick actions */}
-        <QuickActionTiles onScan={() => setScanOpen(true)} onClaimRewards={() => {
-          document.getElementById("rewards-locker")?.scrollIntoView({ behavior: "smooth", block: "start" });
-        }} />
+        <NextBestAction onPrimary={() => setScanOpen(true)} />
 
+        <QuickActionTiles
+          onScan={() => setScanOpen(true)}
+          onClaimRewards={() => document.getElementById("rewards-locker")?.scrollIntoView({ behavior: "smooth", block: "start" })}
+        />
+
+        {/* Compact preview row */}
         <div className="grid lg:grid-cols-[1.4fr_1fr] gap-5">
-          <div className="space-y-5">
-            <BadgesPanel onScan={() => setScanOpen(true)} />
-            <div id="rewards-locker"><RewardsLocker /></div>
+          <div className="space-y-5 min-w-0">
+            <FeaturedBadges onScan={() => setScanOpen(true)} />
+            <MatchedRewards onScan={() => setScanOpen(true)} />
             <DemoActivity />
           </div>
-          <div className="space-y-5">
+          <div className="space-y-5 min-w-0">
             <PublicProfilePreview
               username={username}
               displayName={profile.display_name}
@@ -146,7 +152,6 @@ const Dashboard = () => {
               bio={profile.bio}
               isPublished={profile.is_published}
             />
-            <RecommendedRewards />
             <ProfileEditorCard
               profile={profile}
               onChange={setProfile}
@@ -154,6 +159,16 @@ const Dashboard = () => {
             />
           </div>
         </div>
+
+        {/* Deep panels — full inventory + locker, kept available but below the fold */}
+        <section id="all-badges" className="pt-2">
+          <h2 className="sr-only">All proof</h2>
+          <BadgesPanel onScan={() => setScanOpen(true)} />
+        </section>
+
+        <section id="rewards-locker">
+          <RewardsLocker />
+        </section>
       </main>
 
       <BadgeScanWizard open={scanOpen} onOpenChange={setScanOpen} />
