@@ -178,15 +178,38 @@ export const TemplateGallery = ({
         ))}
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {filtered.map((tpl) => (
-          <TemplateCard
-            key={tpl.id}
-            tpl={tpl}
-            active={selectedId === tpl.id}
-            onSelect={() => setSelectedId(tpl.id)}
-          />
-        ))}
+      {/* Recommended for you */}
+      {category === "all" && (
+        <div className="space-y-3">
+          <div className="flex items-baseline justify-between">
+            <h2 className="font-display text-lg font-semibold">Recommended for you</h2>
+            <span className="text-[11px] text-muted-foreground">Based on your starter</span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {TEMPLATES.filter((t) => ["essential-rewards", "creator-hub", "badge-first"].includes(t.id)).map((tpl) => (
+              <TemplateCard
+                key={`rec-${tpl.id}`}
+                tpl={tpl}
+                active={selectedId === tpl.id}
+                onSelect={() => setSelectedId(tpl.id)}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="space-y-3">
+        <h2 className="font-display text-lg font-semibold">All templates</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filtered.map((tpl) => (
+            <TemplateCard
+              key={tpl.id}
+              tpl={tpl}
+              active={selectedId === tpl.id}
+              onSelect={() => setSelectedId(tpl.id)}
+            />
+          ))}
+        </div>
       </div>
 
       {selectedId && (
