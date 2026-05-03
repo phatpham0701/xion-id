@@ -1,6 +1,8 @@
 import { Eye, ExternalLink, Copy, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { useDemo } from "./QuickStats";
+import { BADGE_TIER_META } from "@/lib/demoMode";
 
 type Props = {
   username: string;
