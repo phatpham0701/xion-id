@@ -1,3 +1,5 @@
+import { BrandLogo } from "@/components/BrandLogo";
+import { Wordmark } from "@/components/Wordmark";
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import QRCode from "qrcode";
@@ -77,10 +79,8 @@ const QrCenter = () => {
               <ArrowLeft className="h-4 w-4" /> Dashboard
             </Button>
             <Link to="/" className="flex items-center gap-2 ml-2">
-              <div className="h-9 w-9 rounded-xl bg-gradient-primary grid place-items-center">
-                <Sparkles className="h-4 w-4 text-primary-foreground" />
-              </div>
-              <span className="font-display text-lg font-semibold">Xion<span className="text-gradient">ID</span></span>
+              <BrandLogo size={36} />
+              <span className="font-display text-lg font-semibold"><Wordmark /></span>
             </Link>
           </div>
           <Badge variant="outline" className="text-[10px]"><QrCode className="h-3 w-3 mr-1" /> QR Center</Badge>

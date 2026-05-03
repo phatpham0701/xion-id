@@ -209,10 +209,10 @@ export const BADGE_LABELS: Record<BadgeKind, { label: string; emoji: string; des
   og_2025: { label: "OG 2025", emoji: "🌟", description: "Active on XION in 2025." },
   nft_collector: { label: "NFT Collector", emoji: "🎨", description: "Holds NFTs on XION." },
   nft_minter: { label: "NFT Minter", emoji: "🛠️", description: "Minted NFTs on-chain." },
-  tipper: { label: "Tipper", emoji: "💸", description: "Sent on-chain tips via XionID." },
+  tipper: { label: "Tipper", emoji: "💸", description: "Sent on-chain tips via XIONID." },
   dapp_explorer: { label: "dApp Explorer", emoji: "🧭", description: "Interacted with multiple dApps." },
   campaign_participant: { label: "Campaign", emoji: "🎯", description: "Joined an official campaign." },
   contest_winner: { label: "Contest Winner", emoji: "🏆", description: "Won an XION contest." },
   whale: { label: "Whale", emoji: "🐋", description: "Holds a significant XION balance." },
-  early_adopter: { label: "Early Adopter", emoji: "🚀", description: "Early XionID user." },
+  early_adopter: { label: "Early Adopter", emoji: "🚀", description: "Early XIONID user." },
 };

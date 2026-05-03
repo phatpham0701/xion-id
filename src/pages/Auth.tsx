@@ -1,3 +1,5 @@
+import { BrandLogo } from "@/components/BrandLogo";
+import { Wordmark } from "@/components/Wordmark";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
@@ -68,7 +70,7 @@ const AuthCard = () => {
           options: { emailRedirectTo: `${window.location.origin}/dashboard` },
         });
         if (error) throw error;
-        toast.success("Welcome aboard!", { description: "Your XionID is ready." });
+        toast.success("Welcome aboard!", { description: "Your XIONID is ready." });
         navigate("/dashboard");
       } else {
         const { error } = await supabase.auth.signInWithPassword({
@@ -94,16 +96,14 @@ const AuthCard = () => {
   return (
     <div className="glass-strong rounded-3xl p-8 md:p-10 w-full max-w-md animate-scale-in">
       <div className="flex items-center gap-2 mb-8">
-        <div className="h-9 w-9 rounded-xl bg-gradient-primary grid place-items-center shadow-glow-primary glow-primary">
-          <Sparkles className="h-4 w-4 text-primary-foreground" strokeWidth={2.5} />
-        </div>
+        <BrandLogo size={36} />
         <span className="font-display text-lg font-semibold tracking-tight">
-          Xion<span className="text-gradient">ID</span>
+          <Wordmark />
         </span>
       </div>
 
       <h1 className="font-display text-3xl font-bold tracking-tight mb-1.5">
-        {mode === "signup" ? "Create your XionID" : "Welcome back"}
+        {mode === "signup" ? "Create your XIONID" : "Welcome back"}
       </h1>
       <p className="text-sm text-muted-foreground mb-7">
         {mode === "signup"

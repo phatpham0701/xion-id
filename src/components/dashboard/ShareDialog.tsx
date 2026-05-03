@@ -51,7 +51,7 @@ export const ShareDialog = ({ open, onOpenChange, profileUrl, username }: Props)
   };
 
   const shareTwitter = () => {
-    const text = encodeURIComponent(`Check out my XionID profile`);
+    const text = encodeURIComponent(`Check out my XIONID profile`);
     const u = encodeURIComponent(profileUrl);
     window.open(`https://twitter.com/intent/tweet?text=${text}&url=${u}`, "_blank");
   };
@@ -62,7 +62,7 @@ export const ShareDialog = ({ open, onOpenChange, profileUrl, username }: Props)
   };
 
   const shareTelegram = () => {
-    const text = encodeURIComponent(`Check out my XionID profile`);
+    const text = encodeURIComponent(`Check out my XIONID profile`);
     const u = encodeURIComponent(profileUrl);
     window.open(`https://t.me/share/url?url=${u}&text=${text}`, "_blank");
   };
@@ -70,7 +70,7 @@ export const ShareDialog = ({ open, onOpenChange, profileUrl, username }: Props)
   const nativeShare = async () => {
     if (!navigator.share) return copyLink();
     try {
-      await navigator.share({ title: "My XionID", url: profileUrl });
+      await navigator.share({ title: "My XIONID", url: profileUrl });
     } catch { /* cancelled */ }
   };
 

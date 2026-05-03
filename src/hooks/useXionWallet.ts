@@ -55,7 +55,7 @@ export const useXionWallet = () => {
       if (error) {
         if (error.code === "23505") {
           toast.error("Account already linked", {
-            description: "This XION address is connected to another XionID account.",
+            description: "This XION address is connected to another XIONID account.",
           });
         } else {
           toast.error("Couldn't save account", { description: error.message });

@@ -1,11 +1,13 @@
 // Centralized brand constants — change here to rebrand globally.
 export const BRAND = {
-  name: "XionID",
+  name: "XIONID",
   // The two-tone wordmark splits at this index for the gradient half.
-  wordmarkPrefix: "Xion",
+  wordmarkPrefix: "XION ",
   wordmarkSuffix: "ID",
-  domain: "xionid.app",
-  twitter: "@XionID",
+  tagline: "Verify everything.",
+  taglineSecondary: "One identity. Better rewards. Real proof.",
+  domain: "xionid.com",
+  twitter: "@XIONID",
 } as const;
 
 export const profileUrl = (username: string) =>

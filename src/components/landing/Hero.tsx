@@ -11,17 +11,18 @@ const Hero = () => {
       <div className="container relative grid lg:grid-cols-[1.1fr_1fr] gap-12 lg:gap-8 items-center">
         <div className="animate-fade-in">
           <div className="inline-flex items-center gap-2 glass rounded-full px-4 py-1.5 text-xs font-medium text-muted-foreground mb-6">
-            <Sparkles className="h-3.5 w-3.5 text-primary" />
-            <span>Identity & rewards passport · Demo</span>
+            <Sparkles className="h-3.5 w-3.5 text-accent" />
+            <span className="tracking-[0.18em] uppercase text-[10px]">Verify everything</span>
           </div>
 
-          <h1 className="font-display text-5xl sm:text-6xl lg:text-7xl font-bold leading-[1.05] tracking-tight">
-            One identity. Better rewards.{" "}
-            <span className="text-gradient">Real proof.</span>
+          <h1 className="font-display text-5xl sm:text-6xl lg:text-7xl font-extrabold leading-[1.05] tracking-tight">
+            One identity.{" "}
+            <span className="text-gradient-brand">Better rewards.</span>{" "}
+            Real proof.
           </h1>
 
           <p className="mt-6 text-lg text-muted-foreground max-w-xl leading-relaxed">
-            Build a polished profile, collect verified badges, and unlock more relevant offers — with full control over what you show.
+            XIONID is your verifiable identity passport — earn badges, unlock rewards, and prove who you are across every app you love.
           </p>
 
           <div className="mt-9 flex flex-col sm:flex-row gap-3">

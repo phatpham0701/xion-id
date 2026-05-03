@@ -1,3 +1,5 @@
+import { BrandLogo } from "@/components/BrandLogo";
+import { Wordmark } from "@/components/Wordmark";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Sparkles, Plus, ArrowLeft, Megaphone, Users, Target } from "lucide-react";
@@ -25,10 +27,8 @@ const Campaigns = () => {
               <ArrowLeft className="h-4 w-4" /> Dashboard
             </Button>
             <Link to="/" className="flex items-center gap-2 ml-2">
-              <div className="h-9 w-9 rounded-xl bg-gradient-primary grid place-items-center">
-                <Sparkles className="h-4 w-4 text-primary-foreground" />
-              </div>
-              <span className="font-display text-lg font-semibold">Xion<span className="text-gradient">ID</span></span>
+              <BrandLogo size={36} />
+              <span className="font-display text-lg font-semibold"><Wordmark /></span>
             </Link>
           </div>
           <Button onClick={() => setOpen(true)} className="bg-gradient-primary">
