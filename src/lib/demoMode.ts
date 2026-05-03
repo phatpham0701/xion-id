@@ -30,15 +30,38 @@ export const DEMO_TERMS = {
 // Types
 // ─────────────────────────────────────────────────────────────
 
+export type BadgeCategory =
+  | "identity"
+  | "activity"
+  | "support"
+  | "lifestyle"
+  | "community"
+  | "rewards"
+  | "education"
+  | "recruitment"
+  | "events"
+  | "creator";
+
+export type BadgeTier = "silver" | "gold" | "diamond";
+
 export type DemoBadge = {
   id: string;
   kind: string;
   label: string;
   emoji: string;
   description: string;
+  /** Numeric tier kept for legacy components (1=silver, 2=gold, 3=diamond). */
   tier: number;
+  tierName: BadgeTier;
+  category: BadgeCategory;
   verifiedAt: string;
+  hidden?: boolean;
+  featured?: boolean;
+  /** Short note shown on issuance / detail. */
+  privacyNote?: string;
 };
+
+export type RewardStatus = "available" | "claimed" | "expiring" | "archived";
 
 export type DemoReward = {
   id: string;
@@ -47,6 +70,12 @@ export type DemoReward = {
   cost: number; // abstract "points" — never call it tokens
   claimed: boolean;
   imageUrl?: string;
+  brand?: string;
+  benefit?: string;
+  requiredBadgeKind?: string;
+  status?: RewardStatus;
+  expiresAt?: string;
+  claimedAt?: string;
 };
 
 export type DemoCampaign = {
