@@ -65,18 +65,7 @@ export const RewardsLocker = () => {
 
   const confirmClaim = () => {
     if (!confirm) return;
-    // If the reward exists in user state, claim it; else inject a copy as claimed.
-    const userHas = s.rewards.some((r) => r.id === confirm.id);
-    if (userHas) {
-      claimDemoReward(confirm.id);
-    } else {
-      // Mutate via existing helper isn't possible without write — fallback: claim by injecting through state.
-      // Use updateDemoState directly via window event hack: simplest is to reuse claimDemoReward after upserting.
-      // For demo we simulate by toasting; the locker UI will show it as claimed via local sample mark.
-      confirm.claimed = true;
-      confirm.status = "claimed";
-      confirm.claimedAt = new Date().toISOString();
-    }
+    upsertAndClaimReward(confirm);
     toast.success(`Claimed: ${confirm.title}`, { description: "Added to your reward locker." });
     setConfirm(null);
   };
