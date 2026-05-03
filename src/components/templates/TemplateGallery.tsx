@@ -64,7 +64,7 @@ const TemplateCard = ({
           <div className="flex items-center gap-1.5">
             <span className="text-base">{tpl.emoji}</span>
             <button onClick={onSelect} className="text-sm font-display font-semibold truncate text-left hover:text-primary transition-colors">
-              {tpl.name}
+              {meta?.name ?? tpl.name}
             </button>
           </div>
           {meta && <div className="text-[10px] uppercase tracking-[0.18em] text-accent mt-1">{meta.persona}</div>}
