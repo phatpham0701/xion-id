@@ -3,18 +3,40 @@ import { useAbstraxionAccount } from "@burnt-labs/abstraxion";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { getXionConfigError } from "@/lib/xion";
 
 /**
  * Unified XION wallet hook.
- * - Exposes connection state + connect/disconnect.
- * - Auto-syncs the wallet address to the signed-in user's profile.
+ * - Wraps Abstraxion's useAbstraxionAccount.
+ * - Handles `?granted=true` redirect-back from the Auth app.
+ * - Syncs the connected address onto the signed-in user's profile.
  */
 export const useXionWallet = () => {
   const { user } = useAuth();
-  const { data, isConnected, isConnecting, login, logout } = useAbstraxionAccount();
+  const account = useAbstraxionAccount() as {
+    data?: { bech32Address?: string };
+    isConnected?: boolean;
+    isConnecting?: boolean;
+    isLoading?: boolean;
+    login: () => Promise<void> | void;
+    logout: () => Promise<void> | void;
+  };
+
+  const { data, login, logout } = account;
+  const address = data?.bech32Address;
+  const isConnecting = Boolean(account.isConnecting ?? account.isLoading);
+  const isConnected = Boolean((account.isConnected ?? Boolean(address)) && address);
+
   const lastSyncedRef = useRef<string | null>(null);
 
-  const address: string | undefined = data?.bech32Address;
+  // Handle redirect back from XION Auth app: ?granted=true
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("granted") === "true" && !data?.bech32Address) {
+      void login();
+    }
+  }, [login, data?.bech32Address]);
 
   // Sync to profile whenever a fresh address appears.
   useEffect(() => {
@@ -31,17 +53,16 @@ export const useXionWallet = () => {
         })
         .eq("user_id", user.id);
       if (error) {
-        // Unique conflict = same address linked to another profile.
         if (error.code === "23505") {
-          toast.error("Wallet already linked", {
+          toast.error("Account already linked", {
             description: "This XION address is connected to another XionID account.",
           });
         } else {
-          toast.error("Couldn't save wallet", { description: error.message });
+          toast.error("Couldn't save account", { description: error.message });
         }
         lastSyncedRef.current = null;
       } else {
-        toast.success("Wallet connected ⚡", {
+        toast.success("Account connected ⚡", {
           description: "Your XION address is now on your profile.",
         });
       }
@@ -49,12 +70,15 @@ export const useXionWallet = () => {
   }, [address, user]);
 
   const connect = async () => {
-    // Abstraxion opens a popup that's blocked when running inside an iframe
-    // (Lovable preview). Detect & guide instead of silently failing.
+    const cfgError = getXionConfigError();
+    if (cfgError) {
+      toast.error("XION not configured", { description: cfgError });
+      return;
+    }
     if (typeof window !== "undefined" && window.top !== window.self) {
       toast.error("Open in a new tab to connect", {
         description:
-          "Wallet popups are blocked inside the preview iframe. Open the preview in its own tab and try again.",
+          "Sign-in popups are blocked inside the preview iframe. Open the preview in its own tab and try again.",
       });
       return;
     }
@@ -62,14 +86,7 @@ export const useXionWallet = () => {
       await login();
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      const isAppDetails =
-        /application details|treasury|grant|contract/i.test(msg) ||
-        /unable to load/i.test(msg);
-      toast.error(isAppDetails ? "XION treasury not reachable" : "Connect failed", {
-        description: isAppDetails
-          ? "Check that VITE_XION_TREASURY points to a contract on xion-testnet-2 (create one at dashboard.burnt.com)."
-          : msg || "Try again",
-      });
+      toast.error("Connect failed", { description: msg || "Try again" });
     }
   };
 
@@ -77,7 +94,7 @@ export const useXionWallet = () => {
     try {
       await logout();
       lastSyncedRef.current = null;
-      toast.success("Wallet disconnected");
+      toast.success("Account disconnected");
     } catch (err) {
       toast.error("Disconnect failed", {
         description: err instanceof Error ? err.message : "Try again",
@@ -87,8 +104,8 @@ export const useXionWallet = () => {
 
   return {
     address,
-    isConnected: Boolean(isConnected && address),
-    isConnecting: Boolean(isConnecting),
+    isConnected,
+    isConnecting,
     connect,
     disconnect,
   };

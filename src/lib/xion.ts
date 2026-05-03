@@ -1,35 +1,65 @@
-// Public XION testnet-2 config — safe to bundle to client.
+// XION Abstraxion / Treasury config — read from Vite env.
 //
-// IMPORTANT: `treasury` must be a real contract address you own on
-// xion-testnet-2. Create one at https://dashboard.burnt.com (Treasury tab),
-// then set VITE_XION_TREASURY in your project's environment.
+// Treasury contracts are app-specific. We do NOT ship a hardcoded fallback
+// because pointing at someone else's treasury silently breaks fee grants.
 //
-// If unset, wallet connect will be disabled with a friendly message instead
-// of crashing inside Abstraxion's "Unable to load application details" modal.
+// Required env (see .env.example):
+//   VITE_CHAIN_ID
+//   VITE_RPC_URL
+//   VITE_REST_URL
+//   VITE_GAS_PRICE
+//   VITE_TREASURY_ADDRESS  (preferred; VITE_XION_TREASURY supported as legacy fallback)
+//   VITE_AUTH_APP_URL
 
-const FALLBACK_TREASURY = "xion1m69vedc7x4p0rx3gkgwyrk87qnqda62evvwut7923evqztnx97gq3cst8h";
-const ENV_TREASURY =
-  (import.meta.env.VITE_XION_TREASURY as string | undefined)?.trim() || FALLBACK_TREASURY;
+const env = import.meta.env;
 
-// Bech32 quick check — Abstraxion will reject anything that isn't a
-// well-formed xion1… contract address with a valid checksum.
-const isLikelyXionAddress = (addr: string | undefined): addr is string =>
-  !!addr && /^xion1[02-9ac-hj-np-z]{38,72}$/.test(addr);
+const pick = (...vals: Array<string | undefined>): string =>
+  (vals.find((v) => typeof v === "string" && v.trim().length > 0) ?? "").trim();
+
+const TREASURY = pick(
+  env.VITE_TREASURY_ADDRESS as string | undefined,
+  env.VITE_XION_TREASURY as string | undefined, // legacy
+);
+
+const CHAIN_ID = pick(env.VITE_CHAIN_ID as string | undefined) || "xion-testnet-2";
+const RPC_URL =
+  pick(env.VITE_RPC_URL as string | undefined) || "https://rpc.xion-testnet-2.burnt.com:443";
+const REST_URL =
+  pick(env.VITE_REST_URL as string | undefined) || "https://api.xion-testnet-2.burnt.com";
+const GAS_PRICE = pick(env.VITE_GAS_PRICE as string | undefined) || "0.001uxion";
+const AUTH_APP_URL =
+  pick(env.VITE_AUTH_APP_URL as string | undefined) || "https://auth.testnet.burnt.com";
 
 export const XION_CONFIG = {
-  // Empty string when not configured — code paths must check `isTreasuryConfigured`.
-  treasury: isLikelyXionAddress(ENV_TREASURY) ? ENV_TREASURY : "",
-  rpcUrl: "https://rpc.xion-testnet-2.burnt.com:443",
-  // NOTE: REST URL must NOT carry an explicit :443 suffix — some Cosmos SDK
-  // routes 404 when the port is appended. Matches Burnt's official demo .env.
-  restUrl: "https://api.xion-testnet-2.burnt.com",
-  chainId: "xion-testnet-2",
+  chainId: CHAIN_ID,
+  treasury: TREASURY,
+  rpcUrl: RPC_URL,
+  restUrl: REST_URL,
+  gasPrice: GAS_PRICE,
+  authAppUrl: AUTH_APP_URL,
   denom: "uxion",
   explorerTx: (h: string) => `https://www.mintscan.io/xion-testnet/tx/${h}`,
   explorerAddr: (a: string) => `https://www.mintscan.io/xion-testnet/address/${a}`,
 };
 
 export const isTreasuryConfigured = (): boolean => XION_CONFIG.treasury.length > 0;
+
+export const getXionConfigError = (): string | null => {
+  const missing: string[] = [];
+  if (!XION_CONFIG.treasury) missing.push("VITE_TREASURY_ADDRESS");
+  if (!XION_CONFIG.authAppUrl) missing.push("VITE_AUTH_APP_URL");
+  if (missing.length === 0) return null;
+  return `XION access is not configured yet. Add ${missing.join(" and ")}.`;
+};
+
+export const xionEnvStatus = () => ({
+  VITE_CHAIN_ID: !!pick(env.VITE_CHAIN_ID as string | undefined),
+  VITE_RPC_URL: !!pick(env.VITE_RPC_URL as string | undefined),
+  VITE_REST_URL: !!pick(env.VITE_REST_URL as string | undefined),
+  VITE_GAS_PRICE: !!pick(env.VITE_GAS_PRICE as string | undefined),
+  VITE_TREASURY_ADDRESS: !!TREASURY,
+  VITE_AUTH_APP_URL: !!pick(env.VITE_AUTH_APP_URL as string | undefined),
+});
 
 export const truncateAddress = (addr?: string | null, head = 8, tail = 6): string => {
   if (!addr) return "";
