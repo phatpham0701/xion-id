@@ -1,46 +1,82 @@
-import { MousePointerClick, Palette, Wallet, Image as ImageIcon, HandCoins, Sparkles, BarChart3, Shield } from "lucide-react";
+import { User, Award, Gift, Users, Mic, Megaphone, Trophy, ShoppingBag } from "lucide-react";
 
-const features = [
-  { icon: MousePointerClick, title: "Drag & drop everything", desc: "Build your profile visually. Reorder, resize, and remix blocks in real time." },
-  { icon: Palette, title: "Full customization studio", desc: "Themes, gradients, fonts, button shapes, animations — even custom CSS." },
-  { icon: Wallet, title: "Wallet-native blocks", desc: "Show your XION address, NFT collection, and token balances on-chain." },
-  { icon: ImageIcon, title: "Rich media embeds", desc: "Drop in images, YouTube, Vimeo and Spotify. Your story, your way." },
-  { icon: HandCoins, title: "On-chain tip jar", desc: "Receive XION tips directly to your wallet. No middlemen, no cuts." },
-  { icon: BarChart3, title: "Built-in analytics", desc: "Track views and clicks per block. Know what your audience loves." },
-  { icon: Shield, title: "Social login → wallet", desc: "Powered by XION Meta Accounts. One tap in, fully self-custodial." },
-  { icon: Sparkles, title: "Free. Forever.", desc: "No paywalls, no premium tier. XION's gasless infra makes it possible." },
+const valueCards = [
+  {
+    icon: User,
+    title: "Profiles",
+    desc: "A polished, sharable page that represents you. Pick a starter, edit in seconds.",
+  },
+  {
+    icon: Award,
+    title: "Badges",
+    desc: "Collect verified-style proof for the things you actually do — events, places, drops.",
+  },
+  {
+    icon: Gift,
+    title: "Rewards",
+    desc: "Unlock offers that fit you. You stay in control of what's shown and what's used.",
+  },
+];
+
+const personas = [
+  { icon: ShoppingBag, label: "Offer seekers" },
+  { icon: Mic,         label: "Creators" },
+  { icon: Users,       label: "Communities" },
+  { icon: Megaphone,   label: "Support campaigns" },
+  { icon: Trophy,      label: "Athletes" },
 ];
 
 const Features = () => {
   return (
-    <section id="features" className="py-24 md:py-32 relative">
+    <section id="product" className="py-24 md:py-32 relative">
       <div className="container">
-        <div className="max-w-2xl mx-auto text-center mb-16 animate-fade-in">
+        <div className="max-w-2xl mx-auto text-center mb-14 animate-fade-in">
           <div className="inline-flex items-center gap-2 glass rounded-full px-3 py-1 text-xs font-medium text-muted-foreground mb-4">
-            Features
+            Product
           </div>
           <h2 className="font-display text-4xl md:text-5xl font-bold tracking-tight">
-            A studio for your <span className="text-gradient">on-chain self</span>.
+            One passport for{" "}
+            <span className="text-gradient">who you are</span>.
           </h2>
           <p className="mt-4 text-muted-foreground text-lg">
-            Every block, every pixel — yours to shape. We just provide the canvas.
+            Three simple things, working together.
           </p>
         </div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {features.map((f, i) => (
+        <div className="grid md:grid-cols-3 gap-5">
+          {valueCards.map((f) => (
             <article
               key={f.title}
-              className="glass rounded-2xl p-6 hover:border-primary/30 hover:-translate-y-1 transition-all duration-300 group"
-              style={{ animationDelay: `${i * 60}ms` }}
+              className="glass-strong rounded-3xl p-7 hover:border-primary/30 hover:-translate-y-1 transition-all duration-300 group"
             >
-              <div className="h-11 w-11 rounded-xl bg-gradient-primary/10 grid place-items-center mb-4 group-hover:scale-110 transition-transform" style={{ background: "linear-gradient(135deg, hsl(var(--primary)/0.18), hsl(var(--secondary)/0.18))" }}>
+              <div
+                className="h-12 w-12 rounded-2xl grid place-items-center mb-5 group-hover:scale-110 transition-transform"
+                style={{ background: "linear-gradient(135deg, hsl(var(--primary)/0.18), hsl(var(--secondary)/0.18))" }}
+              >
                 <f.icon className="h-5 w-5 text-primary" strokeWidth={2} />
               </div>
-              <h3 className="font-display font-semibold text-base mb-1.5">{f.title}</h3>
+              <h3 className="font-display text-xl font-semibold mb-2">{f.title}</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">{f.desc}</p>
             </article>
           ))}
+        </div>
+
+        {/* Persona strip */}
+        <div className="mt-14">
+          <div className="text-center text-xs uppercase tracking-[0.2em] text-muted-foreground mb-5">
+            Built for
+          </div>
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            {personas.map((p) => (
+              <div
+                key={p.label}
+                className="glass rounded-full px-4 py-2 inline-flex items-center gap-2 text-sm text-foreground/80"
+              >
+                <p.icon className="h-3.5 w-3.5 text-primary" />
+                {p.label}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </section>

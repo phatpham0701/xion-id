@@ -15,12 +15,9 @@ const Navbar = () => {
         </Link>
 
         <nav className="hidden md:flex items-center gap-8 text-sm text-muted-foreground">
-          <a href="#features" className="hover:text-foreground transition-colors">Features</a>
-          <a href="#how" className="hover:text-foreground transition-colors">How it works</a>
-          <a href="#showcase" className="hover:text-foreground transition-colors">Showcase</a>
-          <a href="https://xion.burnt.com/" target="_blank" rel="noreferrer" className="hover:text-foreground transition-colors">
-            Built on XION ↗
-          </a>
+          <a href="#product" className="hover:text-foreground transition-colors">Product</a>
+          <Link to="/templates" className="hover:text-foreground transition-colors">Templates</Link>
+          <Link to="/auth" className="hover:text-foreground transition-colors">Demo</Link>
         </nav>
 
         <div className="flex items-center gap-2">
@@ -28,7 +25,7 @@ const Navbar = () => {
             <Link to="/auth">Sign in</Link>
           </Button>
           <Button size="sm" className="bg-gradient-primary text-primary-foreground hover:opacity-90 transition-opacity font-medium" asChild>
-            <Link to="/auth">Claim your profile</Link>
+            <Link to="/auth">Get started</Link>
           </Button>
         </div>
       </div>

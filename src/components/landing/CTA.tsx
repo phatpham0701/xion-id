@@ -1,18 +1,8 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const CTA = () => {
-  const navigate = useNavigate();
-  const [handle, setHandle] = useState("");
-
-  const onSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const trimmed = handle.trim();
-    navigate(`/auth${trimmed ? `?handle=${encodeURIComponent(trimmed)}` : ""}`);
-  };
-
   return (
     <section className="py-24 md:py-32 relative">
       <div className="container">
@@ -21,35 +11,28 @@ const CTA = () => {
           <div className="aurora-orb h-[340px] w-[340px] -bottom-24 -right-10 bg-secondary animate-aurora-drift" style={{ animationDelay: "-9s" }} />
 
           <div className="relative max-w-2xl mx-auto">
+            <div className="inline-flex items-center gap-2 glass rounded-full px-3 py-1 text-xs font-medium text-muted-foreground mb-5">
+              Two steps to get started
+            </div>
             <h2 className="font-display text-4xl md:text-6xl font-bold tracking-tight leading-[1.05]">
-              Claim your <span className="text-gradient">XionID</span>.
+              Pick a goal. Pick a starter.{" "}
+              <span className="text-gradient">You're in.</span>
             </h2>
             <p className="mt-5 text-muted-foreground text-lg">
-              Free for life. Gasless on XION. Live in under a minute.
+              No setup forms. No long onboarding. Just a polished passport, ready to share.
             </p>
 
-            <form className="mt-9 flex flex-col sm:flex-row gap-2 max-w-md mx-auto" onSubmit={onSubmit}>
-              <div className="flex-1 glass rounded-full flex items-center pl-5 pr-1 h-12">
-                <span className="text-muted-foreground text-sm">xionid.app/</span>
-                <input
-                  type="text"
-                  value={handle}
-                  onChange={(e) => setHandle(e.target.value)}
-                  placeholder="yourname"
-                  className="flex-1 bg-transparent outline-none text-sm placeholder:text-muted-foreground/60 px-1"
-                  maxLength={24}
-                  aria-label="Choose your handle"
-                />
-              </div>
-              <Button size="lg" type="submit" className="bg-gradient-primary text-primary-foreground hover:opacity-90 font-medium h-12 px-6 rounded-full shadow-glow-primary glow-primary group">
-                Claim
-                <ArrowRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            <div className="mt-9 flex flex-col sm:flex-row gap-3 justify-center">
+              <Button asChild size="lg" className="bg-gradient-primary text-primary-foreground hover:opacity-90 font-medium h-12 px-7 group shadow-glow-primary glow-primary">
+                <Link to="/auth">
+                  Try the demo
+                  <ArrowRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                </Link>
               </Button>
-            </form>
-
-            <p className="mt-4 text-xs text-muted-foreground">
-              No credit card. No gas. No catch.
-            </p>
+              <Button asChild size="lg" variant="outline" className="glass border-glass-border h-12 px-7">
+                <Link to="/preview/template/essential-rewards">View sample profile</Link>
+              </Button>
+            </div>
           </div>
         </div>
       </div>
