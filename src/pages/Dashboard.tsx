@@ -133,7 +133,7 @@ const Dashboard = () => {
 
         <QuickActionTiles
           onScan={() => setScanOpen(true)}
-          onClaimRewards={() => document.getElementById("rewards-locker")?.scrollIntoView({ behavior: "smooth", block: "start" })}
+          onClaimRewards={() => navigate("/rewards")}
         />
 
         {/* Compact preview row */}
@@ -141,7 +141,7 @@ const Dashboard = () => {
           <div className="space-y-5 min-w-0">
             <FeaturedBadges onScan={() => setScanOpen(true)} />
             <MatchedRewards onScan={() => setScanOpen(true)} />
-            <DemoActivity />
+            <RecentActivity />
           </div>
           <div className="space-y-5 min-w-0">
             <PublicProfilePreview
@@ -158,16 +158,6 @@ const Dashboard = () => {
             />
           </div>
         </div>
-
-        {/* Deep panels — full inventory + locker, kept available but below the fold */}
-        <section id="all-badges" className="pt-2">
-          <h2 className="sr-only">All proof</h2>
-          <BadgesPanel onScan={() => setScanOpen(true)} />
-        </section>
-
-        <section id="rewards-locker">
-          <RewardsLocker />
-        </section>
       </main>
 
       <BadgeScanWizard open={scanOpen} onOpenChange={setScanOpen} />
