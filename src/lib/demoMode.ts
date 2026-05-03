@@ -260,3 +260,58 @@ export const scanDemoQr = (code: string): DemoState =>
     const q = s.qrItems.find((x) => x.code === code);
     if (q) q.scanned = true;
   });
+
+// ─────────────────────────────────────────────────────────────
+// Onboarding catalogs (Phase 1)
+// ─────────────────────────────────────────────────────────────
+
+export const DEMO_GOALS: { key: DemoGoalKey; title: string; blurb: string; emoji: string }[] = [
+  { key: "offers",   title: "Get more relevant offers", blurb: "Unlock perks tailored to what you actually do.", emoji: "🎁" },
+  { key: "page",     title: "Build my public page",     blurb: "A polished page you can share with one tap.",   emoji: "✨" },
+  { key: "badges",   title: "Collect badges",           blurb: "Earn proof for the things you're part of.",     emoji: "🏅" },
+  { key: "campaign", title: "Launch a support campaign",blurb: "Let people back what you're working on.",       emoji: "📣" },
+];
+
+export const DEMO_STARTERS: {
+  key: DemoStarterKey;
+  title: string;
+  blurb: string;
+  goalFit: DemoGoalKey[];
+  emoji: string;
+}[] = [
+  { key: "essential",    title: "Essential Rewards Passport", blurb: "Best all-rounder. Profile + rewards + offers.",     goalFit: ["offers","page"],          emoji: "🎫" },
+  { key: "minimal",      title: "Minimal Public Card",        blurb: "Just the essentials, beautifully laid out.",         goalFit: ["page"],                   emoji: "🪪" },
+  { key: "badgeFirst",   title: "Badge-First Passport",       blurb: "Lead with verified proof and badges.",                goalFit: ["badges","page"],          emoji: "🏅" },
+  { key: "quickSupport", title: "Quick Support Page",         blurb: "Accept support in under a minute.",                   goalFit: ["campaign"],               emoji: "💝" },
+  { key: "creatorHub",   title: "Creator Support Hub",        blurb: "Posts, perks, and supporters in one place.",          goalFit: ["campaign","page"],        emoji: "🎨" },
+  { key: "athlete",      title: "Athlete Passport",           blurb: "Stats, sponsors, and event check-ins.",               goalFit: ["badges","offers"],        emoji: "🏃" },
+  { key: "shopper",      title: "Shopper Perks Passport",     blurb: "Personal offers from brands you like.",               goalFit: ["offers"],                 emoji: "🛍️" },
+  { key: "community",    title: "Community Leader Page",      blurb: "Member directory + event reminders.",                 goalFit: ["page","campaign"],        emoji: "🤝" },
+  { key: "fundraise",    title: "Fundraise Campaign Starter", blurb: "Goal, supporters, and progress in one view.",         goalFit: ["campaign"],               emoji: "🚀" },
+];
+
+export const completeDemoOnboarding = (goal: DemoGoalKey, starter: DemoStarterKey): DemoState =>
+  updateDemoState((s) => {
+    s.onboarded = true;
+    s.selectedGoal = goal;
+    s.selectedStarter = starter;
+    s.activity.unshift({
+      id: `a-onboard-${Date.now()}`,
+      kind: "profile",
+      title: `Started with ${DEMO_STARTERS.find((x) => x.key === starter)?.title ?? "a starter"}`,
+      at: new Date().toISOString(),
+    });
+  });
+
+// Profile completeness 0–100 derived from demo state.
+export const getProfileCompleteness = (s: DemoState = getDemoState()): number => {
+  let score = 20;
+  if (s.profile.identityClaimed) score += 20;
+  if (s.profile.bio) score += 10;
+  if (s.profile.avatarEmoji) score += 5;
+  if (s.badges.length >= 3) score += 15;
+  if (s.support.length > 0) score += 10;
+  if (s.qrItems.some((q) => q.scanned)) score += 10;
+  if (s.onboarded) score += 10;
+  return Math.min(100, score);
+};
