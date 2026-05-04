@@ -19,15 +19,35 @@ const BadgesAll = () => {
   const [dbBadges, setDbBadges] = useState<WalletBadgeRow[]>([]);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      setDbBadges([]);
+      return;
+    }
+
     (async () => {
-      const { data: p } = await supabase.from("profiles").select("id").eq("user_id", user.id).maybeSingle();
-      if (!p?.id) return;
-      const { data } = await supabase
+      const { data: p, error: profileError } = await supabase.from("profiles").select("id").eq("user_id", user.id).maybeSingle();
+      if (profileError) {
+        console.warn("Failed to load profile for badges", profileError);
+        setDbBadges([]);
+        return;
+      }
+      if (!p?.id) {
+        setDbBadges([]);
+        return;
+      }
+
+      const { data, error } = await supabase
         .from("wallet_badges")
         .select("id, kind, tier, verified_at, xion_address")
         .eq("profile_id", p.id)
         .order("verified_at", { ascending: false });
+
+      if (error) {
+        console.warn("Failed to load wallet badges", error);
+        setDbBadges([]);
+        return;
+      }
+
       setDbBadges((data as WalletBadgeRow[]) ?? []);
     })();
   }, [user?.id, scanOpen]);
