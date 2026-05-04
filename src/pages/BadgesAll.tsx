@@ -22,7 +22,7 @@ const BADGE_KIND_META: Partial<Record<BadgeKind, { category: BadgeCategory; desc
   nft_minter: { category: "activity", description: "Created a verified badge record." },
   tipper: { category: "support", description: "Supported others through verified support." },
   dapp_explorer: { category: "activity", description: "Explored partner experiences." },
-  campaign_participant: { category: "campaign", description: "Joined a verified campaign." },
+  campaign_participant: { category: "community", description: "Joined a verified campaign." },
   contest_winner: { category: "community", description: "Recognized for a verified achievement." },
   whale: { category: "identity", description: "Recognized as a high-value supporter." },
   early_adopter: { category: "identity", description: "One of the earliest XIONID adopters." },
