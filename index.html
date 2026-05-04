@@ -30,8 +30,20 @@
   <meta name="twitter:description" content="XIONID is your verifiable identity passport — earn badges, unlock rewards, and prove who you are across every app you love.">
 </head>
 
-  <body>
+  <body style="margin:0;background:#071326;color:#f1f3f8;font-family:Manrope,system-ui,sans-serif;">
+    <!-- Static pre-hydration shell: paints LCP element ("Get started" CTA) immediately,
+         without waiting for the JS bundle. Hidden as soon as React mounts into #root. -->
+    <style>
+      #pre-shell{position:fixed;top:0;left:0;right:0;z-index:50;height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem;box-sizing:border-box;}
+      #pre-shell .brand{font-weight:700;font-size:1.125rem;letter-spacing:-0.01em;color:#f1f3f8;}
+      #pre-shell .cta{display:inline-flex;align-items:center;justify-content:center;height:36px;padding:0 12px;border-radius:8px;font-size:14px;font-weight:600;color:#fff;background:linear-gradient(135deg,#6D5EF7,#69A8FF);text-decoration:none;}
+      #root:not(:empty) ~ #pre-shell{display:none;}
+    </style>
     <div id="root"></div>
+    <header id="pre-shell" aria-hidden="true">
+      <span class="brand">XIONID</span>
+      <a class="cta" href="/auth" aria-label="Get started with XIONID">Get started</a>
+    </header>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
