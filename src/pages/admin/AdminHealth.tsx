@@ -33,10 +33,10 @@ const AdminHealth = () => {
       const auditInsert = await supabase
         .from("admin_audit_logs")
         .insert({
-          action: "profile.update",
+          action: "health.check",
           actor_id: user?.id ?? null,
           actor_email: user?.email ?? null,
-          target_type: "health_check",
+          target_type: "system",
           target_id: `health-${Date.now()}`,
           details: { source: "admin.health" } as never,
         } as never)
@@ -64,6 +64,9 @@ const AdminHealth = () => {
           <StatusCard key={c.key} label={c.label} ok={c.ok} detail={c.detail} />
         ))}
       </div>
+      <p className="mt-3 text-xs text-muted-foreground">
+        Note: the writable audit check intentionally creates one health-check audit row each time this page runs.
+      </p>
     </AdminLayout>
   );
 };

@@ -11,51 +11,51 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 const AdminDemoControls = () => {
   const [handle, setHandle] = useState("paulus");
 
-  const seedProfile = () => {
+  const seedProfile = (notify = true) => {
     updateDemoState((s) => {
       s.profile.username = handle.trim() || "paulus";
-      s.profile.displayName = "Paulus";
-      s.profile.bio = "Foundation demo profile for live walkthroughs.";
-      s.profile.avatarEmoji = "🛡️";
+      s.profile.displayName = "Paulus Pham";
+      s.profile.bio = "A privacy-first lifestyle passport for selected proof, badges, and relevant rewards.";
+      s.profile.avatarEmoji = "✅";
       s.profile.identityClaimed = true;
     });
-    toast({ title: "Seeded Paulus sample profile" });
+    if (notify) toast({ title: "Seeded Paulus sample profile" });
   };
 
-  const seedBadges = () => {
+  const seedBadges = (notify = true) => {
     updateDemoState((s) => {
       s.badges = [
         { id: `b-${Date.now()}-1`, kind: "founding_member", label: "Founding Member", emoji: "🏛️", description: "Early foundation collaborator.", tier: 3, tierName: "diamond", category: "community", verifiedAt: new Date().toISOString(), featured: true },
         { id: `b-${Date.now()}-2`, kind: "ecosystem_builder", label: "Ecosystem Builder", emoji: "🧱", description: "Contributed to ecosystem growth.", tier: 2, tierName: "gold", category: "creator", verifiedAt: new Date().toISOString() },
       ];
     });
-    toast({ title: "Seeded sample badges" });
+    if (notify) toast({ title: "Seeded sample badges" });
   };
 
-  const seedRewards = () => {
+  const seedRewards = (notify = true) => {
     updateDemoState((s) => {
       s.rewards = [
         { id: `demo-r-${Date.now()}-1`, title: "VIP Demo Access", description: "Priority access to next foundation briefing.", cost: 150, claimed: false, status: "available", brand: "Foundation" },
         { id: `demo-r-${Date.now()}-2`, title: "Community Grant Pass", description: "Fast-track review for pilot grants.", cost: 300, claimed: false, status: "available", brand: "Foundation" },
       ];
     });
-    toast({ title: "Seeded sample rewards" });
+    if (notify) toast({ title: "Seeded sample rewards" });
   };
 
-  const seedCampaigns = () => {
+  const seedCampaigns = (notify = true) => {
     updateDemoState((s) => {
       s.campaigns = [
         { id: `demo-c-${Date.now()}-1`, title: "Foundation Builder Sprint", blurb: "Fund core contributors for a 6-week sprint.", goalAmount: 10000, raised: 2500, participants: 42, endsAt: "2026-08-01T00:00:00Z", joined: false, coverEmoji: "🚀" },
       ];
     });
-    toast({ title: "Seeded sample campaigns" });
+    if (notify) toast({ title: "Seeded sample campaigns" });
   };
 
   const prepareFoundationDemo = () => {
-    seedProfile();
-    seedBadges();
-    seedRewards();
-    seedCampaigns();
+    seedProfile(false);
+    seedBadges(false);
+    seedRewards(false);
+    seedCampaigns(false);
     toast({ title: "Foundation demo prepared" });
   };
 
