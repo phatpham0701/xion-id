@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { Link, NavLink, Navigate, useLocation } from "react-router-dom";
-import { Loader2, LayoutDashboard, Users, IdCard, Award, Gift, Megaphone, ScrollText, ArrowLeft } from "lucide-react";
+import { Loader2, LayoutDashboard, Users, IdCard, Award, Gift, Megaphone, ScrollText, ArrowLeft, Activity, FlaskConical } from "lucide-react";
 import { useIsAdmin } from "@/lib/admin";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
@@ -13,6 +13,8 @@ const NAV = [
   { to: "/admin/rewards", label: "Rewards", icon: Gift },
   { to: "/admin/campaigns", label: "Campaigns", icon: Megaphone },
   { to: "/admin/audit", label: "Audit log", icon: ScrollText },
+  { to: "/admin/health", label: "Health", icon: Activity },
+  { to: "/admin/demo", label: "Demo controls", icon: FlaskConical },
 ];
 
 export const RequireAdmin = ({ children }: { children: ReactNode }) => {
