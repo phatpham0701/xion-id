@@ -82,10 +82,10 @@ const AdminDemoControls = () => {
         </div>
 
         <div className="grid gap-2 md:grid-cols-2">
-          <Button variant="outline" onClick={seedProfile}>Seed Paulus sample profile</Button>
-          <Button variant="outline" onClick={seedBadges}>Seed sample badges</Button>
-          <Button variant="outline" onClick={seedRewards}>Seed sample rewards</Button>
-          <Button variant="outline" onClick={seedCampaigns}>Seed sample campaigns</Button>
+          <Button variant="outline" onClick={() => seedProfile()}>Seed Paulus sample profile</Button>
+          <Button variant="outline" onClick={() => seedBadges()}>Seed sample badges</Button>
+          <Button variant="outline" onClick={() => seedRewards()}>Seed sample rewards</Button>
+          <Button variant="outline" onClick={() => seedCampaigns()}>Seed sample campaigns</Button>
         </div>
 
         <div className="flex flex-wrap gap-2">
