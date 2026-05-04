@@ -53,6 +53,7 @@ function App() {
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
+          <Suspense fallback={<PageFallback />}>
           <Routes>
             <Route path="/" element={<Index />} />
             <Route
