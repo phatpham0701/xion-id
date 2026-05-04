@@ -26,18 +26,22 @@ const lazyAdmin = (El: React.ComponentType) => (
     <Suspense fallback={<AdminFallback />}><El /></Suspense>
   </RequireAdmin>
 );
-import Auth from "./pages/Auth.tsx";
-import Dashboard from "./pages/Dashboard.tsx";
-import Editor from "./pages/Editor.tsx";
-import Templates from "./pages/Templates.tsx";
-import BadgesAll from "./pages/BadgesAll.tsx";
-import RewardsBox from "./pages/RewardsBox.tsx";
-import TemplatePreview from "./pages/TemplatePreview.tsx";
-import Campaigns from "./pages/Campaigns.tsx";
-import PublicCampaign from "./pages/PublicCampaign.tsx";
-import QrCenter from "./pages/QrCenter.tsx";
-import PublicProfile from "./pages/PublicProfile.tsx";
-import NotFound from "./pages/NotFound.tsx";
+const Auth = lazy(() => import("./pages/Auth.tsx"));
+const Dashboard = lazy(() => import("./pages/Dashboard.tsx"));
+const Editor = lazy(() => import("./pages/Editor.tsx"));
+const Templates = lazy(() => import("./pages/Templates.tsx"));
+const BadgesAll = lazy(() => import("./pages/BadgesAll.tsx"));
+const RewardsBox = lazy(() => import("./pages/RewardsBox.tsx"));
+const TemplatePreview = lazy(() => import("./pages/TemplatePreview.tsx"));
+const Campaigns = lazy(() => import("./pages/Campaigns.tsx"));
+const PublicCampaign = lazy(() => import("./pages/PublicCampaign.tsx"));
+const QrCenter = lazy(() => import("./pages/QrCenter.tsx"));
+const PublicProfile = lazy(() => import("./pages/PublicProfile.tsx"));
+const NotFound = lazy(() => import("./pages/NotFound.tsx"));
+
+const PageFallback = () => (
+  <div className="min-h-screen grid place-items-center"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
+);
 
 const queryClient = new QueryClient();
 
