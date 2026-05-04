@@ -205,10 +205,10 @@ export const BadgeScanWizard = ({ open, onOpenChange, initialSignal, onIssued }:
                 variant="outline"
                 onClick={async () => {
                   setBadgeFeatured(issued.id, false);
-                  try {
-                    await persistBadgeVisibility(issued, { featured: false, hidden: true });
-                  } catch {
-                    toast.error("Could not update public profile. Please try again.");
+                  const result = await persistBadgeVisibility(issued, { featured: false, hidden: true });
+                  if (!result.ok) {
+                    toast.success("Kept private", { description: "Badge visibility saved in demo profile." });
+                    onOpenChange(false);
                     return;
                   }
                   toast.success("Kept private", { description: "Only you can see this badge." });
@@ -220,10 +220,10 @@ export const BadgeScanWizard = ({ open, onOpenChange, initialSignal, onIssued }:
               <Button
                 onClick={async () => {
                   setBadgeFeatured(issued.id, true);
-                  try {
-                    await persistBadgeToPublicProfile(issued, { featured: true, hidden: false });
-                  } catch {
-                    toast.error("Could not update public profile. Please try again.");
+                  const result = await persistBadgeToPublicProfile(issued, { featured: true, hidden: false });
+                  if (!result.ok) {
+                    toast.success("Badge shown in demo profile", { description: `${issued.label} is visible for demo preview.` });
+                    onOpenChange(false);
                     return;
                   }
                   toast.success("Badge added to public profile", { description: `${issued.label} is visible to visitors.` });

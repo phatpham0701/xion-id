@@ -131,36 +131,66 @@ const writeSettings = async (profileId: string, settings: Record<string, unknown
   if (error) throw error;
 };
 
+export type PublicBadgePersistResult = { ok: true } | { ok: false; reason: "not_authenticated" | "db_error" };
+
 /** Persist a freshly-issued / featured badge to the user's public profile. */
 export const persistBadgeToPublicProfile = async (
   badge: DemoBadge,
   patch: { featured?: boolean; hidden?: boolean } = { featured: true, hidden: false },
-): Promise<void> => {
-  const profile = await fetchOwnProfile();
-  if (!profile) return;
-  const next = mergeBadgeIntoPublicSettings(
-    profile.settings as SettingsLike,
-    badge,
-    patch,
-  );
-  await writeSettings(profile.id, next);
+): Promise<PublicBadgePersistResult> => {
+  try {
+    const profile = await fetchOwnProfile();
+    if (!profile) return { ok: false, reason: "not_authenticated" };
+    const next = mergeBadgeIntoPublicSettings(
+      profile.settings as SettingsLike,
+      badge,
+      patch,
+    );
+    await writeSettings(profile.id, next);
+    return { ok: true };
+  } catch (error) {
+    console.warn("[publicBadges] persistBadgeToPublicProfile failed", {
+      badgeId: badge.id,
+      badgeKind: badge.kind,
+      patch,
+      error,
+    });
+    return { ok: false, reason: "db_error" };
+  }
 };
 
 export const persistBadgeVisibility = async (
   badge: DemoBadge,
   patch: { featured?: boolean; hidden?: boolean },
-): Promise<void> => {
-  const profile = await fetchOwnProfile();
-  if (!profile) return;
-  // Merge first (so the badge exists), then apply visibility patch.
-  const merged = mergeBadgeIntoPublicSettings(profile.settings as SettingsLike, badge);
-  const next = setBadgeVisibilityInPublicSettings(merged, badge.id, patch);
-  await writeSettings(profile.id, next);
+): Promise<PublicBadgePersistResult> => {
+  try {
+    const profile = await fetchOwnProfile();
+    if (!profile) return { ok: false, reason: "not_authenticated" };
+    // Merge first (so the badge exists), then apply visibility patch.
+    const merged = mergeBadgeIntoPublicSettings(profile.settings as SettingsLike, badge);
+    const next = setBadgeVisibilityInPublicSettings(merged, badge.id, patch);
+    await writeSettings(profile.id, next);
+    return { ok: true };
+  } catch (error) {
+    console.warn("[publicBadges] persistBadgeVisibility failed", {
+      badgeId: badge.id,
+      badgeKind: badge.kind,
+      patch,
+      error,
+    });
+    return { ok: false, reason: "db_error" };
+  }
 };
 
-export const removeBadgeFromPublicProfile = async (badgeId: string): Promise<void> => {
-  const profile = await fetchOwnProfile();
-  if (!profile) return;
-  const next = removeBadgeFromPublicSettings(profile.settings as SettingsLike, badgeId);
-  await writeSettings(profile.id, next);
+export const removeBadgeFromPublicProfile = async (badgeId: string): Promise<PublicBadgePersistResult> => {
+  try {
+    const profile = await fetchOwnProfile();
+    if (!profile) return { ok: false, reason: "not_authenticated" };
+    const next = removeBadgeFromPublicSettings(profile.settings as SettingsLike, badgeId);
+    await writeSettings(profile.id, next);
+    return { ok: true };
+  } catch (error) {
+    console.warn("[publicBadges] removeBadgeFromPublicProfile failed", { badgeId, error });
+    return { ok: false, reason: "db_error" };
+  }
 };
