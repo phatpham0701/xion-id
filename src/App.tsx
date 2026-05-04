@@ -1,11 +1,31 @@
+import { lazy, Suspense } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { Loader2 } from "lucide-react";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { RequireAuth, RedirectIfAuthed } from "@/components/auth/RouteGuards";
+import { RequireAdmin } from "@/components/admin/AdminLayout";
 import Index from "./pages/Index.tsx";
+
+const AdminHome = lazy(() => import("./pages/admin/AdminHome.tsx"));
+const AdminUsers = lazy(() => import("./pages/admin/AdminUsers.tsx"));
+const AdminProfiles = lazy(() => import("./pages/admin/AdminProfiles.tsx"));
+const AdminBadges = lazy(() => import("./pages/admin/AdminBadges.tsx"));
+const AdminRewards = lazy(() => import("./pages/admin/AdminRewards.tsx"));
+const AdminCampaigns = lazy(() => import("./pages/admin/AdminCampaigns.tsx"));
+const AdminAudit = lazy(() => import("./pages/admin/AdminAudit.tsx"));
+
+const AdminFallback = () => (
+  <div className="min-h-screen grid place-items-center"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
+);
+const lazyAdmin = (El: React.ComponentType) => (
+  <RequireAdmin>
+    <Suspense fallback={<AdminFallback />}><El /></Suspense>
+  </RequireAdmin>
+);
 import Auth from "./pages/Auth.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
 import Editor from "./pages/Editor.tsx";
