@@ -3,7 +3,8 @@ import { Wordmark } from "@/components/Wordmark";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { LogOut, LayoutTemplate } from "lucide-react";
+import { LogOut, LayoutTemplate, Shield } from "lucide-react";
+import { useIsAdmin } from "@/lib/admin";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -24,6 +25,7 @@ import { getDemoState } from "@/lib/demoMode";
 
 const Dashboard = () => {
   const { user, signOut } = useAuth();
+  const { isAdmin } = useIsAdmin();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<EditableProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -106,6 +108,14 @@ const Dashboard = () => {
                 Templates
               </Link>
             </Button>
+            {isAdmin && (
+              <Button variant="ghost" size="sm" asChild className="hidden sm:inline-flex">
+                <Link to="/admin">
+                  <Shield className="h-4 w-4 mr-1.5" />
+                  Admin
+                </Link>
+              </Button>
+            )}
             <span className="hidden md:inline text-xs text-muted-foreground mr-2">{user?.email}</span>
             <Button variant="ghost" size="sm" onClick={handleSignOut}>
               <LogOut className="h-4 w-4 mr-1.5" />
