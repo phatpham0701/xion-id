@@ -1,9 +1,11 @@
 import { ReactNode } from "react";
+import { useEffect, useState } from "react";
 import { Link, NavLink, Navigate, useLocation } from "react-router-dom";
-import { Loader2, LayoutDashboard, Users, IdCard, Award, Gift, Megaphone, ScrollText, ArrowLeft } from "lucide-react";
+import { Loader2, LayoutDashboard, Users, IdCard, Award, Gift, Megaphone, ScrollText, ArrowLeft, Activity, FlaskConical } from "lucide-react";
 import { useIsAdmin } from "@/lib/admin";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 
 const NAV = [
   { to: "/admin", label: "Overview", icon: LayoutDashboard, end: true },
@@ -13,12 +15,28 @@ const NAV = [
   { to: "/admin/rewards", label: "Rewards", icon: Gift },
   { to: "/admin/campaigns", label: "Campaigns", icon: Megaphone },
   { to: "/admin/audit", label: "Audit log", icon: ScrollText },
+  { to: "/admin/health", label: "Health", icon: Activity },
+  { to: "/admin/demo", label: "Demo controls", icon: FlaskConical },
 ];
 
 export const RequireAdmin = ({ children }: { children: ReactNode }) => {
   const { user, loading: authLoading } = useAuth();
   const { loading, isAdmin } = useIsAdmin();
+  const [sessionChecked, setSessionChecked] = useState(false);
+  const [hasSession, setHasSession] = useState(false);
   const location = useLocation();
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase.auth.getSession();
+      if (cancelled) return;
+      setHasSession(!!data.session);
+      setSessionChecked(true);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id, authLoading]);
   if (authLoading || loading) {
     return (
       <div className="min-h-screen grid place-items-center">
@@ -26,7 +44,8 @@ export const RequireAdmin = ({ children }: { children: ReactNode }) => {
       </div>
     );
   }
-  if (!user) return <Navigate to="/auth" state={{ from: location }} replace />;
+  if (!sessionChecked) return null;
+  if (!user && !hasSession) return <Navigate to="/auth" state={{ from: location }} replace />;
   if (!isAdmin) return <Navigate to="/dashboard" replace />;
   return <>{children}</>;
 };

@@ -9,6 +9,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { logAdminAction } from "@/lib/admin";
 import { toast } from "@/hooks/use-toast";
 import { Search, Shield, ShieldOff, ExternalLink } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 type ProfileRow = {
   id: string;
@@ -21,12 +23,15 @@ type ProfileRow = {
 };
 
 type RoleRow = { user_id: string; role: "admin" | "user" };
+type UserBadgeRow = { id: string; profile_id: string; kind: string; tier: number; verified_at: string; xion_address: string };
 
 const AdminUsers = () => {
   const [rows, setRows] = useState<ProfileRow[]>([]);
   const [roles, setRoles] = useState<Record<string, "admin" | "user">>({});
   const [q, setQ] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
+  const [badgeViewer, setBadgeViewer] = useState<ProfileRow | null>(null);
+  const [badgeRows, setBadgeRows] = useState<UserBadgeRow[]>([]);
 
   const load = async () => {
     const { data } = await supabase
@@ -92,6 +97,22 @@ const AdminUsers = () => {
     }
   };
 
+  const openBadges = async (row: ProfileRow) => {
+    setBadgeViewer(row);
+    const { data } = await supabase
+      .from("wallet_badges")
+      .select("id, profile_id, kind, tier, verified_at, xion_address")
+      .eq("profile_id", row.id)
+      .order("verified_at", { ascending: false });
+    setBadgeRows((data as UserBadgeRow[]) ?? []);
+  };
+
+  const removeBadge = async (badge: UserBadgeRow) => {
+    await supabase.from("wallet_badges").delete().eq("id", badge.id);
+    await logAdminAction({ action: "badge.remove", targetType: "badge", targetId: badge.id, details: { kind: badge.kind } });
+    if (badgeViewer) await openBadges(badgeViewer);
+  };
+
   return (
     <AdminLayout title="Users" description="Search accounts, manage roles, suspend if needed.">
       <Card className="p-3">
@@ -146,13 +167,43 @@ const AdminUsers = () => {
                     </td>
                     <td className="px-3 py-2">
                       <div className="flex justify-end gap-2">
-                        <Button size="sm" variant="outline" disabled={busy === r.user_id} onClick={() => toggleAdmin(r.user_id, isAdmin)}>
-                          {isAdmin ? <ShieldOff className="mr-1 h-3.5 w-3.5" /> : <Shield className="mr-1 h-3.5 w-3.5" />}
-                          {isAdmin ? "Revoke admin" : "Make admin"}
-                        </Button>
-                        <Button size="sm" variant={r.is_suspended ? "default" : "outline"} disabled={busy === r.user_id} onClick={() => toggleSuspend(r)}>
-                          {r.is_suspended ? "Unsuspend" : "Suspend"}
-                        </Button>
+                        {isAdmin ? (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button size="sm" variant="outline" disabled={busy === r.user_id}>
+                                <ShieldOff className="mr-1 h-3.5 w-3.5" /> Revoke admin
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Revoke admin access?</AlertDialogTitle>
+                                <AlertDialogDescription>This user will lose admin access immediately.</AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={() => toggleAdmin(r.user_id, true)}>Revoke</AlertDialogAction></AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        ) : (
+                          <Button size="sm" variant="outline" disabled={busy === r.user_id} onClick={() => toggleAdmin(r.user_id, false)}>
+                            <Shield className="mr-1 h-3.5 w-3.5" /> Make admin
+                          </Button>
+                        )}
+                        {r.is_suspended ? (
+                          <Button size="sm" variant="default" disabled={busy === r.user_id} onClick={() => toggleSuspend(r)}>Unsuspend</Button>
+                        ) : (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button size="sm" variant="outline" disabled={busy === r.user_id}>Suspend</Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Suspend this user?</AlertDialogTitle>
+                                <AlertDialogDescription>The user profile will be marked suspended until manually reversed.</AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={() => toggleSuspend(r)}>Suspend</AlertDialogAction></AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        )}
+                        <Button size="sm" variant="outline" onClick={() => openBadges(r)}>View badges</Button>
                       </div>
                     </td>
                   </tr>
@@ -169,6 +220,48 @@ const AdminUsers = () => {
           </table>
         </div>
       </Card>
+      <Dialog open={!!badgeViewer} onOpenChange={(o) => !o && setBadgeViewer(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>
+              Badges · {badgeViewer?.display_name ?? "Unknown"} {badgeViewer?.username ? `(@${badgeViewer.username})` : ""}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="text-left text-xs text-muted-foreground">
+                <tr className="border-b">
+                  <th className="px-2 py-2">Kind</th>
+                  <th className="px-2 py-2">Tier</th>
+                  <th className="px-2 py-2">Verified</th>
+                  <th className="px-2 py-2">Source</th>
+                  <th className="px-2 py-2 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {badgeRows.map((b) => (
+                  <tr key={b.id} className="border-b last:border-0">
+                    <td className="px-2 py-2">{b.kind}</td>
+                    <td className="px-2 py-2">{b.tier}</td>
+                    <td className="px-2 py-2">{new Date(b.verified_at).toLocaleString()}</td>
+                    <td className="px-2 py-2">{b.xion_address}</td>
+                    <td className="px-2 py-2 text-right">
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild><Button size="sm" variant="outline">Remove</Button></AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader><AlertDialogTitle>Remove badge?</AlertDialogTitle><AlertDialogDescription>This badge will be removed from the user profile.</AlertDialogDescription></AlertDialogHeader>
+                          <AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={() => removeBadge(b)}>Remove</AlertDialogAction></AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </td>
+                  </tr>
+                ))}
+                {badgeRows.length === 0 && <tr><td colSpan={5} className="px-2 py-8 text-center text-muted-foreground">No badges found for this profile.</td></tr>}
+              </tbody>
+            </table>
+          </div>
+        </DialogContent>
+      </Dialog>
     </AdminLayout>
   );
 };
