@@ -126,14 +126,14 @@ export const logAdminAction = async (params: {
 
   if (!user) return;
 
-  const { error } = await supabase.from("admin_audit_logs").insert({
+  const { error } = await supabase.from("admin_audit_logs").insert([{
     actor_id: user.id,
-    actor_email: user.email ?? null,
+    actor_email: user.email ?? undefined,
     action: params.action,
-    target_type: params.targetType ?? null,
-    target_id: params.targetId ?? null,
-    details: params.details ?? {},
-  });
+    target_type: params.targetType ?? undefined,
+    target_id: params.targetId ?? undefined,
+    details: (params.details ?? {}) as any,
+  }]);
 
   if (error) {
     console.warn("[XIONID Admin] Failed to write audit log:", error.message);
