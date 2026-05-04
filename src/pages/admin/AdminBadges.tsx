@@ -46,6 +46,7 @@ const KINDS = [
 const AdminBadges = () => {
   const [rows, setRows] = useState<BadgeRow[]>([]);
   const [profiles, setProfiles] = useState<Record<string, ProfileLite>>({});
+  const [allProfiles, setAllProfiles] = useState<ProfileLite[]>([]);
   const [q, setQ] = useState("");
   const [profileFilter, setProfileFilter] = useState<string>("all");
   const [open, setOpen] = useState(false);
@@ -64,7 +65,16 @@ const AdminBadges = () => {
       const map: Record<string, ProfileLite> = {};
       (ps as ProfileLite[] | null)?.forEach((p) => (map[p.id] = p));
       setProfiles(map);
+    } else {
+      setProfiles({});
     }
+
+    const { data: recentProfiles } = await supabase
+      .from("profiles")
+      .select("id, username, display_name")
+      .order("updated_at", { ascending: false })
+      .limit(200);
+    setAllProfiles((recentProfiles as ProfileLite[] | null) ?? []);
   };
   useEffect(() => {
     load();
@@ -141,9 +151,29 @@ const AdminBadges = () => {
             <DialogContent>
               <DialogHeader><DialogTitle>Issue demo badge</DialogTitle></DialogHeader>
               <div className="space-y-3">
-                <div>
-                  <Label>Profile ID</Label>
-                  <Input value={draft.profile_id} onChange={(e) => setDraft({ ...draft, profile_id: e.target.value })} placeholder="profiles.id (uuid)" />
+                <div className="space-y-2">
+                  <Label>Profile</Label>
+                  <Select
+                    value={draft.profile_id || "manual"}
+                    onValueChange={(value) =>
+                      setDraft({ ...draft, profile_id: value === "manual" ? "" : value })
+                    }
+                  >
+                    <SelectTrigger><SelectValue placeholder="Select profile" /></SelectTrigger>
+                    <SelectContent>
+                      {allProfiles.map((p) => (
+                        <SelectItem key={p.id} value={p.id}>
+                          {p.display_name ?? "Unnamed"} {p.username ? `(@${p.username})` : ""}
+                        </SelectItem>
+                      ))}
+                      <SelectItem value="manual">Manual profile ID…</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Input
+                    value={draft.profile_id}
+                    onChange={(e) => setDraft({ ...draft, profile_id: e.target.value })}
+                    placeholder="profiles.id (uuid) fallback"
+                  />
                 </div>
                 <div>
                   <Label>Kind</Label>
