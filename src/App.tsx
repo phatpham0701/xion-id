@@ -99,6 +99,14 @@ function App() {
               path="/rewards"
               element={<RequireAuth><RewardsBox /></RequireAuth>}
             />
+            {/* Admin (lazy + RequireAdmin) */}
+            <Route path="/admin" element={lazyAdmin(AdminHome)} />
+            <Route path="/admin/users" element={lazyAdmin(AdminUsers)} />
+            <Route path="/admin/profiles" element={lazyAdmin(AdminProfiles)} />
+            <Route path="/admin/badges" element={lazyAdmin(AdminBadges)} />
+            <Route path="/admin/rewards" element={lazyAdmin(AdminRewards)} />
+            <Route path="/admin/campaigns" element={lazyAdmin(AdminCampaigns)} />
+            <Route path="/admin/audit" element={lazyAdmin(AdminAudit)} />
             {/* Public campaign page — open route */}
             <Route path="/c/:id" element={<PublicCampaign />} />
             {/* Public template preview — open route, no auth required */}
