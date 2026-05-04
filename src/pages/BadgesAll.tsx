@@ -16,15 +16,15 @@ type WalletBadgeRow = { id: string; kind: BadgeKind; tier: number; verified_at: 
 const TIER_NAME: Record<number, BadgeTier> = { 1: "silver", 2: "gold", 3: "diamond" };
 
 const BADGE_KIND_META: Partial<Record<BadgeKind, { category: BadgeCategory; description: string }>> = {
-  og_2024: { category: "identity", description: "Active on XION since 2024 or earlier." },
-  og_2025: { category: "identity", description: "Active on XION in 2025." },
-  nft_collector: { category: "lifestyle", description: "Collected verified digital items." },
-  nft_minter: { category: "activity", description: "Created verified digital collectibles." },
-  tipper: { category: "support", description: "Supported others through verified tips." },
-  dapp_explorer: { category: "activity", description: "Interacted with multiple apps in the ecosystem." },
-  campaign_participant: { category: "campaign", description: "Joined an official campaign." },
-  contest_winner: { category: "community", description: "Won an official contest." },
-  whale: { category: "identity", description: "Recognized for high-balance participation." },
+  og_2024: { category: "identity", description: "Early verified member." },
+  og_2025: { category: "identity", description: "Verified member from the 2025 cohort." },
+  nft_collector: { category: "lifestyle", description: "Collected verified proof." },
+  nft_minter: { category: "activity", description: "Created a verified badge record." },
+  tipper: { category: "support", description: "Supported others through verified support." },
+  dapp_explorer: { category: "activity", description: "Explored partner experiences." },
+  campaign_participant: { category: "campaign", description: "Joined a verified campaign." },
+  contest_winner: { category: "community", description: "Recognized for a verified achievement." },
+  whale: { category: "identity", description: "Recognized as a high-value supporter." },
   early_adopter: { category: "identity", description: "One of the earliest XIONID adopters." },
 };
 
@@ -50,7 +50,7 @@ const mapWalletBadgeToUiBadge = (row: WalletBadgeRow): DemoBadge => {
     category: meta?.category ?? "identity",
     verifiedAt: row.verified_at,
     featured: true,
-    privacyNote: row.xion_address ? `Issued from wallet ${row.xion_address}.` : undefined,
+    privacyNote: row.xion_address ? `Verified source: ${row.xion_address}.` : "Verified record. You control whether this appears on your profile.",
   };
 };
 
