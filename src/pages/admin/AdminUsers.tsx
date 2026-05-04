@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { logAdminAction } from "@/lib/admin";
 import { toast } from "@/hooks/use-toast";
 import { Search, Shield, ShieldOff, ExternalLink } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 type ProfileRow = {
   id: string;
@@ -146,13 +147,42 @@ const AdminUsers = () => {
                     </td>
                     <td className="px-3 py-2">
                       <div className="flex justify-end gap-2">
-                        <Button size="sm" variant="outline" disabled={busy === r.user_id} onClick={() => toggleAdmin(r.user_id, isAdmin)}>
-                          {isAdmin ? <ShieldOff className="mr-1 h-3.5 w-3.5" /> : <Shield className="mr-1 h-3.5 w-3.5" />}
-                          {isAdmin ? "Revoke admin" : "Make admin"}
-                        </Button>
-                        <Button size="sm" variant={r.is_suspended ? "default" : "outline"} disabled={busy === r.user_id} onClick={() => toggleSuspend(r)}>
-                          {r.is_suspended ? "Unsuspend" : "Suspend"}
-                        </Button>
+                        {isAdmin ? (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button size="sm" variant="outline" disabled={busy === r.user_id}>
+                                <ShieldOff className="mr-1 h-3.5 w-3.5" /> Revoke admin
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Revoke admin access?</AlertDialogTitle>
+                                <AlertDialogDescription>This user will lose admin access immediately.</AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={() => toggleAdmin(r.user_id, true)}>Revoke</AlertDialogAction></AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        ) : (
+                          <Button size="sm" variant="outline" disabled={busy === r.user_id} onClick={() => toggleAdmin(r.user_id, false)}>
+                            <Shield className="mr-1 h-3.5 w-3.5" /> Make admin
+                          </Button>
+                        )}
+                        {r.is_suspended ? (
+                          <Button size="sm" variant="default" disabled={busy === r.user_id} onClick={() => toggleSuspend(r)}>Unsuspend</Button>
+                        ) : (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button size="sm" variant="outline" disabled={busy === r.user_id}>Suspend</Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Suspend this user?</AlertDialogTitle>
+                                <AlertDialogDescription>The user profile will be marked suspended until manually reversed.</AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={() => toggleSuspend(r)}>Suspend</AlertDialogAction></AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        )}
                       </div>
                     </td>
                   </tr>

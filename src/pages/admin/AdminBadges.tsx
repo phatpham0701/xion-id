@@ -14,6 +14,7 @@ import {
   DialogFooter,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { logAdminAction } from "@/lib/admin";
 import { toast } from "@/hooks/use-toast";
@@ -46,6 +47,7 @@ const KINDS = [
 const AdminBadges = () => {
   const [rows, setRows] = useState<BadgeRow[]>([]);
   const [profiles, setProfiles] = useState<Record<string, ProfileLite>>({});
+  const [allProfiles, setAllProfiles] = useState<ProfileLite[]>([]);
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState({ profile_id: "", kind: "og_2024", tier: 1, xion_address: "" });
@@ -64,6 +66,8 @@ const AdminBadges = () => {
       (ps as ProfileLite[] | null)?.forEach((p) => (map[p.id] = p));
       setProfiles(map);
     }
+    const { data: all } = await supabase.from("profiles").select("id, username, display_name").order("created_at", { ascending: false }).limit(500);
+    setAllProfiles((all as ProfileLite[]) ?? []);
   };
   useEffect(() => {
     load();
@@ -127,8 +131,21 @@ const AdminBadges = () => {
               <DialogHeader><DialogTitle>Issue demo badge</DialogTitle></DialogHeader>
               <div className="space-y-3">
                 <div>
-                  <Label>Profile ID</Label>
-                  <Input value={draft.profile_id} onChange={(e) => setDraft({ ...draft, profile_id: e.target.value })} placeholder="profiles.id (uuid)" />
+                  <Label>Select profile</Label>
+                  <Select value={draft.profile_id} onValueChange={(v) => setDraft({ ...draft, profile_id: v })}>
+                    <SelectTrigger><SelectValue placeholder="Choose profile by name / username" /></SelectTrigger>
+                    <SelectContent>
+                      {allProfiles.map((p) => (
+                        <SelectItem key={p.id} value={p.id}>
+                          {(p.display_name ?? "Unnamed")} {p.username ? `(@${p.username})` : ""}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <div className="mt-2">
+                    <Label>Manual profile ID (fallback)</Label>
+                    <Input value={draft.profile_id} onChange={(e) => setDraft({ ...draft, profile_id: e.target.value })} placeholder="profiles.id (uuid)" />
+                  </div>
                 </div>
                 <div>
                   <Label>Kind</Label>
@@ -182,9 +199,25 @@ const AdminBadges = () => {
                     <td className="px-3 py-2">{r.tier}</td>
                     <td className="px-3 py-2 text-xs text-muted-foreground">{new Date(r.verified_at).toLocaleDateString()}</td>
                     <td className="px-3 py-2 text-right">
-                      <Button size="sm" variant="outline" onClick={() => remove(r)}>
-                        <Trash2 className="mr-1 h-3.5 w-3.5" /> Remove
-                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button size="sm" variant="outline">
+                            <Trash2 className="mr-1 h-3.5 w-3.5" /> Remove
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Remove badge?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This will permanently remove the badge from this profile.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => remove(r)}>Remove</AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </td>
                   </tr>
                 );
