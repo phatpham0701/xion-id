@@ -34,10 +34,10 @@ export const BadgesPanel = ({ onScan, extraBadges = [] }: Props) => {
   const allBadges = useMemo(() => {
     const map = new Map<string, DemoBadge>();
     for (const badge of s.badges) {
-      map.set(badge.kind, badge);
+      map.set(badge.id, badge);
     }
     for (const badge of extraBadges) {
-      map.set(badge.kind, badge);
+      map.set(badge.id, badge);
     }
     return Array.from(map.values());
   }, [s.badges, extraBadges]);
@@ -170,11 +170,11 @@ export const BadgesPanel = ({ onScan, extraBadges = [] }: Props) => {
                   onClick={async () => {
                     const next = !open.featured;
                     setBadgeFeatured(open.id, next);
-                    try {
-                      if (next) await persistBadgeToPublicProfile(open, { featured: true, hidden: false });
-                      else await persistBadgeVisibility(open, { featured: false });
-                    } catch {
-                      toast.error("Could not update public profile. Please try again.");
+                    const result = next
+                      ? await persistBadgeToPublicProfile(open, { featured: true, hidden: false })
+                      : await persistBadgeVisibility(open, { featured: false });
+                    if (!result.ok) {
+                      toast.success(next ? "Badge shown in demo profile" : "Badge visibility saved in demo profile");
                       return;
                     }
                     toast.success(next ? "Badge added to public profile" : "Removed from public profile");
@@ -189,11 +189,11 @@ export const BadgesPanel = ({ onScan, extraBadges = [] }: Props) => {
                   onClick={async () => {
                     const next = !open.hidden;
                     setBadgeHidden(open.id, next);
-                    try {
-                      if (next) await removeBadgeFromPublicProfile(open.id);
-                      else await persistBadgeToPublicProfile(open, { featured: open.featured ?? false, hidden: false });
-                    } catch {
-                      toast.error("Could not update public profile. Please try again.");
+                    const result = next
+                      ? await removeBadgeFromPublicProfile(open.id)
+                      : await persistBadgeToPublicProfile(open, { featured: open.featured ?? false, hidden: false });
+                    if (!result.ok) {
+                      toast.success(next ? "Badge hidden in demo profile" : "Badge shown in demo profile");
                       return;
                     }
                     toast.success(next ? "Badge hidden from public profile" : "Badge visible");
