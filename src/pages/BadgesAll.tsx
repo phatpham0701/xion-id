@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -9,9 +9,50 @@ import { Wordmark } from "@/components/Wordmark";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { BADGE_LABELS, type BadgeKind } from "@/lib/badgeScanner";
-import { Badge } from "@/components/ui/badge";
+import { type BadgeCategory, type BadgeTier, type DemoBadge } from "@/lib/demoMode";
 
 type WalletBadgeRow = { id: string; kind: BadgeKind; tier: number; verified_at: string; xion_address: string };
+
+const TIER_NAME: Record<number, BadgeTier> = { 1: "silver", 2: "gold", 3: "diamond" };
+
+const BADGE_KIND_META: Partial<Record<BadgeKind, { category: BadgeCategory; description: string }>> = {
+  og_2024: { category: "identity", description: "Active on XION since 2024 or earlier." },
+  og_2025: { category: "identity", description: "Active on XION in 2025." },
+  nft_collector: { category: "lifestyle", description: "Collected verified digital items." },
+  nft_minter: { category: "activity", description: "Created verified digital collectibles." },
+  tipper: { category: "support", description: "Supported others through verified tips." },
+  dapp_explorer: { category: "activity", description: "Interacted with multiple apps in the ecosystem." },
+  campaign_participant: { category: "campaign", description: "Joined an official campaign." },
+  contest_winner: { category: "community", description: "Won an official contest." },
+  whale: { category: "identity", description: "Recognized for high-balance participation." },
+  early_adopter: { category: "identity", description: "One of the earliest XIONID adopters." },
+};
+
+const toTitle = (kind: string) =>
+  kind
+    .split("_")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+
+const mapWalletBadgeToUiBadge = (row: WalletBadgeRow): DemoBadge => {
+  const known = BADGE_LABELS[row.kind as BadgeKind];
+  const meta = BADGE_KIND_META[row.kind as BadgeKind];
+  const safeTier = TIER_NAME[row.tier] ?? "silver";
+
+  return {
+    id: `wallet-${row.id}`,
+    kind: row.kind,
+    label: known?.label ?? toTitle(row.kind),
+    emoji: known?.emoji ?? "✨",
+    description: meta?.description ?? "Imported from your verified badge inventory.",
+    tier: row.tier,
+    tierName: safeTier,
+    category: meta?.category ?? "identity",
+    verifiedAt: row.verified_at,
+    featured: true,
+    privacyNote: row.xion_address ? `Issued from wallet ${row.xion_address}.` : undefined,
+  };
+};
 
 const BadgesAll = () => {
   const [scanOpen, setScanOpen] = useState(false);
@@ -51,6 +92,9 @@ const BadgesAll = () => {
       setDbBadges((data as WalletBadgeRow[]) ?? []);
     })();
   }, [user?.id, scanOpen]);
+
+  const walletUiBadges = useMemo(() => dbBadges.map(mapWalletBadgeToUiBadge), [dbBadges]);
+
   return (
     <div className="min-h-screen relative overflow-x-hidden">
       <header className="border-b border-border/40 glass sticky top-0 z-40">
@@ -70,27 +114,7 @@ const BadgesAll = () => {
           <h1 className="font-display text-3xl md:text-4xl font-bold tracking-tight">Your <span className="text-gradient-brand">proof</span></h1>
           <p className="mt-2 text-sm text-muted-foreground">Every signal you've verified. Filter by tier or category.</p>
         </div>
-        <BadgesPanel onScan={() => setScanOpen(true)} />
-        <div className="rounded-2xl border bg-card p-4">
-          <h2 className="font-semibold">On-chain badge inventory</h2>
-          <p className="text-xs text-muted-foreground mt-1">Issued from wallet_badges (including admin-issued badges).</p>
-          <div className="mt-3 space-y-2">
-            {dbBadges.map((b) => (
-              <div key={b.id} className="flex items-center justify-between rounded-lg border px-3 py-2">
-                <div className="text-sm">
-                  <span className="mr-2">{BADGE_LABELS[b.kind]?.emoji ?? "✨"}</span>
-                  <span className="font-medium">{BADGE_LABELS[b.kind]?.label ?? b.kind}</span>
-                  <span className="ml-2 text-xs text-muted-foreground">source: {b.xion_address}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline">Tier {b.tier}</Badge>
-                  <span className="text-xs text-muted-foreground">{new Date(b.verified_at).toLocaleDateString()}</span>
-                </div>
-              </div>
-            ))}
-            {dbBadges.length === 0 && <div className="text-sm text-muted-foreground">No on-chain badges yet.</div>}
-          </div>
-        </div>
+        <BadgesPanel onScan={() => setScanOpen(true)} extraBadges={walletUiBadges} />
       </main>
       <BadgeScanWizard open={scanOpen} onOpenChange={setScanOpen} />
     </div>

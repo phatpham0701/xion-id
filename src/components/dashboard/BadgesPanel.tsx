@@ -12,36 +12,49 @@ import {
   setBadgeHidden,
   type BadgeCategory,
   type BadgeTier,
+  type DemoBadge,
 } from "@/lib/demoMode";
 import { persistBadgeToPublicProfile, persistBadgeVisibility, removeBadgeFromPublicProfile } from "@/lib/publicBadges";
 import { toast } from "sonner";
 
 type Props = {
   onScan: () => void;
+  extraBadges?: DemoBadge[];
 };
 
 const ALL = "all" as const;
 type Filter<T extends string> = typeof ALL | T;
 
-export const BadgesPanel = ({ onScan }: Props) => {
+export const BadgesPanel = ({ onScan, extraBadges = [] }: Props) => {
   const s = useDemo();
   const [cat, setCat] = useState<Filter<BadgeCategory>>(ALL);
   const [tier, setTier] = useState<Filter<BadgeTier>>(ALL);
   const [openId, setOpenId] = useState<string | null>(null);
 
+  const allBadges = useMemo(() => {
+    const map = new Map<string, DemoBadge>();
+    for (const badge of s.badges) {
+      map.set(badge.kind, badge);
+    }
+    for (const badge of extraBadges) {
+      map.set(badge.kind, badge);
+    }
+    return Array.from(map.values());
+  }, [s.badges, extraBadges]);
+
   const filtered = useMemo(() => {
-    return s.badges.filter((b) => {
+    return allBadges.filter((b) => {
       if (cat !== ALL && b.category !== cat) return false;
       if (tier !== ALL && b.tierName !== tier) return false;
       return true;
     });
-  }, [s.badges, cat, tier]);
+  }, [allBadges, cat, tier]);
 
-  const recent = [...s.badges]
+  const recent = [...allBadges]
     .sort((a, b) => +new Date(b.verifiedAt) - +new Date(a.verifiedAt))
     .slice(0, 3);
 
-  const open = openId ? s.badges.find((b) => b.id === openId) ?? null : null;
+  const open = openId ? allBadges.find((b) => b.id === openId) ?? null : null;
 
   return (
     <div className="glass-strong rounded-3xl p-5 md:p-6">
@@ -49,7 +62,7 @@ export const BadgesPanel = ({ onScan }: Props) => {
         <div className="flex items-center gap-2">
           <Award className="h-4 w-4 text-primary" />
           <h2 className="font-display text-base font-semibold">Badges</h2>
-          <Badge variant="secondary" className="text-[10px]">{s.badges.length}</Badge>
+          <Badge variant="secondary" className="text-[10px]">{allBadges.length}</Badge>
         </div>
         <Button size="sm" onClick={onScan} className="bg-gradient-primary">
           <Plus className="h-3.5 w-3.5" /> Verify a signal
