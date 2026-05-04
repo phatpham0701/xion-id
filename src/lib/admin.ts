@@ -112,7 +112,8 @@ export type AuditAction =
   | "reward.delete"
   | "reward.activate"
   | "campaign.feature"
-  | "campaign.status";
+  | "campaign.status"
+  | "health.check";
 
 export const logAdminAction = async (params: {
   action: AuditAction;
@@ -120,22 +121,26 @@ export const logAdminAction = async (params: {
   targetId?: string;
   details?: Record<string, unknown>;
 }): Promise<void> => {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  try {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-  if (!user) return;
+    if (!user) return;
 
-  const { error } = await supabase.from("admin_audit_logs").insert([{
-    actor_id: user.id,
-    actor_email: user.email ?? undefined,
-    action: params.action,
-    target_type: params.targetType ?? undefined,
-    target_id: params.targetId ?? undefined,
-    details: (params.details ?? {}) as any,
-  }]);
+    const { error } = await supabase.from("admin_audit_logs").insert([{
+      actor_id: user.id,
+      actor_email: user.email ?? undefined,
+      action: params.action,
+      target_type: params.targetType ?? undefined,
+      target_id: params.targetId ?? undefined,
+      details: (params.details ?? {}) as any,
+    }]);
 
-  if (error) {
-    console.warn("[XIONID Admin] Failed to write audit log:", error.message);
+    if (error) {
+      console.warn("[XIONID Admin] Failed to write audit log:", error.message);
+    }
+  } catch (error) {
+    console.warn("[XIONID Admin] Audit logging failed unexpectedly:", error);
   }
 };

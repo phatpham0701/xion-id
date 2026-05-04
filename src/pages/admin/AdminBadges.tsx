@@ -49,6 +49,7 @@ const AdminBadges = () => {
   const [profiles, setProfiles] = useState<Record<string, ProfileLite>>({});
   const [allProfiles, setAllProfiles] = useState<ProfileLite[]>([]);
   const [q, setQ] = useState("");
+  const [profileFilter, setProfileFilter] = useState<string>("all");
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState({ profile_id: "", kind: "og_2024", tier: 1, xion_address: "" });
 
@@ -65,9 +66,16 @@ const AdminBadges = () => {
       const map: Record<string, ProfileLite> = {};
       (ps as ProfileLite[] | null)?.forEach((p) => (map[p.id] = p));
       setProfiles(map);
+    } else {
+      setProfiles({});
     }
-    const { data: all } = await supabase.from("profiles").select("id, username, display_name").order("created_at", { ascending: false }).limit(500);
-    setAllProfiles((all as ProfileLite[]) ?? []);
+
+    const { data: recentProfiles } = await supabase
+      .from("profiles")
+      .select("id, username, display_name")
+      .order("updated_at", { ascending: false })
+      .limit(200);
+    setAllProfiles((recentProfiles as ProfileLite[] | null) ?? []);
   };
   useEffect(() => {
     load();
@@ -75,27 +83,30 @@ const AdminBadges = () => {
 
   const filtered = useMemo(() => {
     const s = q.trim().toLowerCase();
-    if (!s) return rows;
-    return rows.filter((r) => r.kind.includes(s) || (profiles[r.profile_id]?.username ?? "").toLowerCase().includes(s));
-  }, [rows, q, profiles]);
+    const byProfile = profileFilter === "all" ? rows : rows.filter((r) => r.profile_id === profileFilter);
+    if (!s) return byProfile;
+    return byProfile.filter((r) => r.kind.includes(s) || (profiles[r.profile_id]?.username ?? "").toLowerCase().includes(s));
+  }, [rows, q, profiles, profileFilter]);
 
   const issue = async () => {
     if (!draft.profile_id) {
       toast({ title: "Profile id required", variant: "destructive" });
       return;
     }
+    const ownerProfile = allProfiles.find((p) => p.id === draft.profile_id);
     const { data, error } = await supabase
       .from("wallet_badges")
       .insert({
         profile_id: draft.profile_id,
         kind: draft.kind as never,
         tier: draft.tier,
-        xion_address: draft.xion_address || "demo",
+        xion_address: draft.xion_address || ownerProfile?.username || "demo",
         metadata: { issued_by: "admin" } as never,
       })
       .select("id")
       .maybeSingle();
     if (error) {
+      console.warn("[admin/badges] issue failed:", error.message);
       toast({ title: "Failed", description: error.message, variant: "destructive" });
       return;
     }
@@ -123,6 +134,17 @@ const AdminBadges = () => {
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search by kind or @username" className="pl-9" />
           </div>
+          <div className="w-full max-w-sm">
+            <Select value={profileFilter} onValueChange={setProfileFilter}>
+              <SelectTrigger><SelectValue placeholder="Filter by profile" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All profiles</SelectItem>
+                {allProfiles.map((p) => (
+                  <SelectItem key={p.id} value={p.id}>{p.display_name ?? "Unnamed"} {p.username ? `(@${p.username})` : ""}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
               <Button size="sm"><Plus className="mr-1 h-4 w-4" /> Issue badge</Button>
@@ -130,22 +152,29 @@ const AdminBadges = () => {
             <DialogContent>
               <DialogHeader><DialogTitle>Issue demo badge</DialogTitle></DialogHeader>
               <div className="space-y-3">
-                <div>
-                  <Label>Select profile</Label>
-                  <Select value={draft.profile_id} onValueChange={(v) => setDraft({ ...draft, profile_id: v })}>
-                    <SelectTrigger><SelectValue placeholder="Choose profile by name / username" /></SelectTrigger>
+                <div className="space-y-2">
+                  <Label>Profile</Label>
+                  <Select
+                    value={draft.profile_id || "manual"}
+                    onValueChange={(value) =>
+                      setDraft({ ...draft, profile_id: value === "manual" ? "" : value })
+                    }
+                  >
+                    <SelectTrigger><SelectValue placeholder="Select profile" /></SelectTrigger>
                     <SelectContent>
                       {allProfiles.map((p) => (
                         <SelectItem key={p.id} value={p.id}>
-                          {(p.display_name ?? "Unnamed")} {p.username ? `(@${p.username})` : ""}
+                          {p.display_name ?? "Unnamed"} {p.username ? `(@${p.username})` : ""}
                         </SelectItem>
                       ))}
+                      <SelectItem value="manual">Manual profile ID…</SelectItem>
                     </SelectContent>
                   </Select>
-                  <div className="mt-2">
-                    <Label>Manual profile ID (fallback)</Label>
-                    <Input value={draft.profile_id} onChange={(e) => setDraft({ ...draft, profile_id: e.target.value })} placeholder="profiles.id (uuid)" />
-                  </div>
+                  <Input
+                    value={draft.profile_id}
+                    onChange={(e) => setDraft({ ...draft, profile_id: e.target.value })}
+                    placeholder="profiles.id (uuid) fallback"
+                  />
                 </div>
                 <div>
                   <Label>Kind</Label>
