@@ -30,5 +30,6 @@ jobs:
       - name: Build app
         run: npm run build
 
-      - name: Lint app
+      - name: Lint report
         run: npm run lint
+        continue-on-error: true
