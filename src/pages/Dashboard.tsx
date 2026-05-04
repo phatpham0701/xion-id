@@ -108,6 +108,14 @@ const Dashboard = () => {
                 Templates
               </Link>
             </Button>
+            {isAdmin && (
+              <Button variant="ghost" size="sm" asChild className="hidden sm:inline-flex">
+                <Link to="/admin">
+                  <Shield className="h-4 w-4 mr-1.5" />
+                  Admin
+                </Link>
+              </Button>
+            )}
             <span className="hidden md:inline text-xs text-muted-foreground mr-2">{user?.email}</span>
             <Button variant="ghost" size="sm" onClick={handleSignOut}>
               <LogOut className="h-4 w-4 mr-1.5" />
