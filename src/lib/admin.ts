@@ -107,6 +107,7 @@ export type AuditAction =
   | "badge.issue"
   | "badge.remove"
   | "badge.feature"
+  | "public_badge.remove"
   | "reward.create"
   | "reward.update"
   | "reward.delete"
