@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_audit_logs: {
+        Row: {
+          action: string
+          actor_email: string | null
+          actor_id: string
+          created_at: string
+          details: Json
+          id: string
+          target_id: string | null
+          target_type: string | null
+        }
+        Insert: {
+          action: string
+          actor_email?: string | null
+          actor_id: string
+          created_at?: string
+          details?: Json
+          id?: string
+          target_id?: string | null
+          target_type?: string | null
+        }
+        Update: {
+          action?: string
+          actor_email?: string | null
+          actor_id?: string
+          created_at?: string
+          details?: Json
+          id?: string
+          target_id?: string | null
+          target_type?: string | null
+        }
+        Relationships: []
+      }
       analytics_events: {
         Row: {
           block_id: string | null
@@ -104,7 +137,9 @@ export type Database = {
           created_at: string
           display_name: string | null
           id: string
+          is_featured: boolean
           is_published: boolean
+          is_suspended: boolean
           settings: Json
           theme: Json
           updated_at: string
@@ -119,7 +154,9 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           id?: string
+          is_featured?: boolean
           is_published?: boolean
+          is_suspended?: boolean
           settings?: Json
           theme?: Json
           updated_at?: string
@@ -134,7 +171,9 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           id?: string
+          is_featured?: boolean
           is_published?: boolean
+          is_suspended?: boolean
           settings?: Json
           theme?: Json
           updated_at?: string
