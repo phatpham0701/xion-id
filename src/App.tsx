@@ -17,8 +17,6 @@ const AdminBadges = lazy(() => import("./pages/admin/AdminBadges.tsx"));
 const AdminRewards = lazy(() => import("./pages/admin/AdminRewards.tsx"));
 const AdminCampaigns = lazy(() => import("./pages/admin/AdminCampaigns.tsx"));
 const AdminAudit = lazy(() => import("./pages/admin/AdminAudit.tsx"));
-const AdminHealth = lazy(() => import("./pages/admin/AdminHealth.tsx"));
-const AdminDemoControls = lazy(() => import("./pages/admin/AdminDemoControls.tsx"));
 
 const AdminFallback = () => (
   <div className="min-h-screen grid place-items-center"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
@@ -114,8 +112,6 @@ function App() {
             <Route path="/admin/rewards" element={lazyAdmin(AdminRewards)} />
             <Route path="/admin/campaigns" element={lazyAdmin(AdminCampaigns)} />
             <Route path="/admin/audit" element={lazyAdmin(AdminAudit)} />
-            <Route path="/admin/health" element={lazyAdmin(AdminHealth)} />
-            <Route path="/admin/demo" element={lazyAdmin(AdminDemoControls)} />
             {/* Public campaign page — open route */}
             <Route path="/c/:id" element={<PublicCampaign />} />
             {/* Public template preview — open route, no auth required */}

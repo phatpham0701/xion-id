@@ -167,6 +167,13 @@ const AdminUsers = () => {
                     </td>
                     <td className="px-3 py-2">
                       <div className="flex justify-end gap-2">
+                        <Button size="sm" variant="outline" disabled={busy === r.user_id} onClick={() => toggleAdmin(r.user_id, isAdmin)}>
+                          {isAdmin ? <ShieldOff className="mr-1 h-3.5 w-3.5" /> : <Shield className="mr-1 h-3.5 w-3.5" />}
+                          {isAdmin ? "Revoke admin" : "Make admin"}
+                        </Button>
+                        <Button size="sm" variant={r.is_suspended ? "default" : "outline"} disabled={busy === r.user_id} onClick={() => toggleSuspend(r)}>
+                          {r.is_suspended ? "Unsuspend" : "Suspend"}
+                        </Button>
                         {isAdmin ? (
                           <AlertDialog>
                             <AlertDialogTrigger asChild>

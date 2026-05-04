@@ -18,7 +18,6 @@ import { getDemoState, updateDemoState, type DemoReward } from "@/lib/demoMode";
 import { logAdminAction } from "@/lib/admin";
 import { toast } from "@/hooks/use-toast";
 import { Plus, Trash2, Power } from "lucide-react";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 const empty: DemoReward = {
   id: "",
@@ -97,9 +96,6 @@ const AdminRewards = () => {
   return (
     <AdminLayout title="Rewards" description="Demo rewards locker. Backed by local pitch data.">
       <Card className="p-3">
-        <div className="mb-3 rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-100">
-          Demo data stored locally in this browser.
-        </div>
         <div className="flex justify-end">
           <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) setEditing(null); }}>
             <DialogTrigger asChild>
@@ -147,23 +143,9 @@ const AdminRewards = () => {
                 <Button size="sm" variant="outline" onClick={() => toggleActive(r)}>
                   <Power className="mr-1 h-3.5 w-3.5" /> {r.status === "archived" ? "Activate" : "Deactivate"}
                 </Button>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button size="sm" variant="outline">
-                      <Trash2 className="mr-1 h-3.5 w-3.5" /> Delete
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Delete reward?</AlertDialogTitle>
-                      <AlertDialogDescription>This action removes the reward from local demo state.</AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => remove(r)}>Delete</AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                <Button size="sm" variant="outline" onClick={() => remove(r)}>
+                  <Trash2 className="mr-1 h-3.5 w-3.5" /> Delete
+                </Button>
               </div>
             </div>
           ))}
