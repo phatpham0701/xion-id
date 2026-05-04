@@ -25,6 +25,7 @@ import { getDemoState } from "@/lib/demoMode";
 
 const Dashboard = () => {
   const { user, signOut } = useAuth();
+  const { isAdmin } = useIsAdmin();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<EditableProfile | null>(null);
   const [loading, setLoading] = useState(true);
