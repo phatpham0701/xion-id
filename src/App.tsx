@@ -8,8 +8,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { RequireAuth, RedirectIfAuthed } from "@/components/auth/RouteGuards";
 import { RequireAdmin } from "@/components/admin/AdminLayout";
-import Index from "./pages/Index.tsx";
 
+const Index = lazy(() => import("./pages/Index.tsx"));
 const AdminHome = lazy(() => import("./pages/admin/AdminHome.tsx"));
 const AdminUsers = lazy(() => import("./pages/admin/AdminUsers.tsx"));
 const AdminProfiles = lazy(() => import("./pages/admin/AdminProfiles.tsx"));
