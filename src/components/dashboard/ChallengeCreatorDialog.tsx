@@ -27,9 +27,10 @@ export const ChallengeCreatorDialog = ({ open, onOpenChange, state, onStateChang
   const badges = useMemo(() => getSuggestedBadges(sportType), [sportType]);
   const [linkedBadgeId, setLinkedBadgeId] = useState(badges[0]?.id ?? "running-1");
 
-  const handleSportType = (value: SportInterest) => {
-    const nextBadges = getSuggestedBadges(value);
-    setSportType(value);
+  const handleSportType = (value: string) => {
+    const nextSport = value as SportInterest;
+    const nextBadges = getSuggestedBadges(nextSport);
+    setSportType(nextSport);
     setLinkedBadgeId(nextBadges[0]?.id ?? "");
   };
 
