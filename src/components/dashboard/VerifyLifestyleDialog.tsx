@@ -34,9 +34,10 @@ export const VerifyLifestyleDialog = ({ open, onOpenChange, state, onStateChange
 
   const selectedBadge: SportBadgeDefinition = suggested.find((badge) => badge.id === badgeId) ?? suggested[0];
 
-  const handleInterest = (value: SportInterest) => {
-    const badges = getSuggestedBadges(value);
-    setInterest(value);
+  const handleInterest = (value: string) => {
+    const nextInterest = value as SportInterest;
+    const badges = getSuggestedBadges(nextInterest);
+    setInterest(nextInterest);
     setBadgeId(badges[0]?.id ?? "");
   };
 

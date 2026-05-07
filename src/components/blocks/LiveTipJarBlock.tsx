@@ -1,18 +1,10 @@
 import { useState } from "react";
-// (no extra type imports needed — sendTip accepts any abstraxion SigningClient)
 import { Heart, Loader2, ExternalLink, Check, Zap, AlertCircle } from "lucide-react";
-import { useAbstraxionAccount, useAbstraxionSigningClient } from "@burnt-labs/abstraxion";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { XION_CONFIG, truncateAddress } from "@/lib/xion";
-import {
-  MAX_MESSAGE_LEN,
-  MAX_TIP_XION,
-  sendTip,
-  verifyAndRecordTip,
-} from "@/lib/tipJar";
+import { MAX_MESSAGE_LEN, MAX_TIP_XION } from "@/lib/tipJar";
 import { trackEvent } from "@/lib/analytics";
 
 type Props = {
@@ -28,6 +20,12 @@ type Props = {
   allowMessage: boolean;
 };
 
+const truncateAddress = (addr?: string | null, head = 8, tail = 6): string => {
+  if (!addr) return "";
+  if (addr.length <= head + tail + 1) return addr;
+  return `${addr.slice(0, head)}…${addr.slice(-tail)}`;
+};
+
 export const LiveTipJarBlock = ({
   profileId,
   blockId,
@@ -40,16 +38,11 @@ export const LiveTipJarBlock = ({
   allowCustom,
   allowMessage,
 }: Props) => {
-  const { data: account, isConnected, login } = useAbstraxionAccount();
-  const { client } = useAbstraxionSigningClient();
-
   const [selectedAmount, setSelectedAmount] = useState<number>(suggestedAmounts[0] ?? 1);
   const [customAmount, setCustomAmount] = useState<string>("");
   const [message, setMessage] = useState<string>("");
   const [isSending, setIsSending] = useState(false);
   const [success, setSuccess] = useState<{ hash: string; amount: number } | null>(null);
-
-  const senderAddress = account?.bech32Address;
 
   const effectiveAmount = (() => {
     if (customAmount) {
@@ -61,16 +54,16 @@ export const LiveTipJarBlock = ({
 
   const canTip = !!recipientAddress && effectiveAmount > 0 && effectiveAmount <= MAX_TIP_XION;
 
-  // Owner hasn't connected wallet → friendly empty state.
+  // Owner hasn't configured a support destination yet → friendly empty state.
   if (!recipientAddress) {
     return (
       <div className="rounded-2xl border border-dashed border-border/60 bg-background/40 p-5 text-center">
         <div className="mx-auto mb-2 grid h-10 w-10 place-items-center rounded-2xl bg-muted/40 text-muted-foreground">
           <AlertCircle className="h-4 w-4" />
         </div>
-        <div className="text-sm font-semibold text-foreground">Tips not available yet</div>
+        <div className="text-sm font-semibold text-foreground">Support not available yet</div>
         <p className="mt-1 text-xs text-muted-foreground">
-          The owner hasn't connected a XION wallet yet.
+          The owner has not configured a support destination for this pitch demo.
         </p>
       </div>
     );
@@ -85,18 +78,16 @@ export const LiveTipJarBlock = ({
         </div>
         <div>
           <div className="font-display text-base font-bold text-foreground">
-            Sent {success.amount} {currency} ⚡
+            Support intent recorded · {success.amount} {currency} ⚡
           </div>
-          <p className="mt-1 text-xs text-muted-foreground">Thanks for supporting this creator!</p>
+          <p className="mt-1 text-xs text-muted-foreground">Pitch-safe demo mode: no live payment was sent.</p>
         </div>
         <div className="flex items-center justify-center gap-2">
           <a
-            href={XION_CONFIG.explorerTx(success.hash)}
-            target="_blank"
-            rel="noreferrer"
+            href={`#${success.hash}`}
             className="inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-background/60 px-3 py-1.5 text-xs font-medium text-foreground hover:border-primary/50 hover:text-primary"
           >
-            View tx <ExternalLink className="h-3 w-3" />
+            Demo record <ExternalLink className="h-3 w-3" />
           </a>
           <button
             type="button"
@@ -107,7 +98,7 @@ export const LiveTipJarBlock = ({
             }}
             className="rounded-full border border-border/60 bg-background/60 px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground"
           >
-            Tip again
+            Record again
           </button>
         </div>
       </div>
@@ -117,66 +108,18 @@ export const LiveTipJarBlock = ({
   const handleTip = async () => {
     if (!recipientAddress || effectiveAmount <= 0) return;
 
-    // Step 1: ensure connected
-    if (!isConnected || !senderAddress || !client) {
-      try {
-        await login();
-        toast.message("Wallet connected", { description: "Tap the tip button again to send." });
-      } catch (err) {
-        toast.error("Couldn't connect wallet", {
-          description: err instanceof Error ? err.message : "Try again",
-        });
-      }
-      return;
-    }
-
     setIsSending(true);
     try {
       const memo = allowMessage ? message.trim().slice(0, MAX_MESSAGE_LEN) : "";
+      const demoHash = `demo-support-${Date.now()}`;
 
-      const { txHash, height } = await sendTip({
-        client,
-        senderAddress,
-        recipientAddress,
-        amountXion: effectiveAmount,
-        memo,
+      await trackEvent(profileId, "support_intent", blockId).catch(() => {});
+      setSuccess({ hash: demoHash, amount: effectiveAmount });
+      toast.success(`Support intent recorded · ${effectiveAmount} ${currency}`, {
+        description: memo ? "Message saved in demo mode." : "Pitch-safe mode: no live payment was sent.",
       });
-
-      // Server-side verify + record. Edge function fetches tx from LCD,
-      // validates sender/recipient/denom/amount, then inserts via service role.
-      const verify = await verifyAndRecordTip({
-        profileId,
-        blockId,
-        txHash,
-        message: memo || null,
-      });
-
-      // If LCD hasn't indexed the tx yet, retry once in the background.
-      if (verify.status === "pending") {
-        setTimeout(() => {
-          verifyAndRecordTip({
-            profileId,
-            blockId,
-            txHash,
-            message: memo || null,
-          }).catch(() => {});
-        }, 8000);
-      }
-
-      // Analytics event for the owner's dashboard.
-      trackEvent(profileId, "tip_sent", blockId).catch(() => {});
-
-      setSuccess({ hash: txHash, amount: effectiveAmount });
-      toast.success(`Tipped ${effectiveAmount} ${currency} ⚡`, {
-        description:
-          verify.status === "pending"
-            ? "Broadcast! Verifying on-chain in a moment…"
-            : "Transaction verified on XION testnet-2.",
-      });
-      // Avoid unused var warning in some lint configs
-      void height;
     } catch (err) {
-      toast.error("Tip failed", {
+      toast.error("Couldn't record support intent", {
         description: err instanceof Error ? err.message : "Try again",
       });
     } finally {
@@ -264,15 +207,13 @@ export const LiveTipJarBlock = ({
         ) : (
           <>
             <Zap className="h-4 w-4" strokeWidth={2.5} />
-            {isConnected
-              ? `${cta} · ${effectiveAmount || 0} ${currency}`
-              : "Connect wallet to tip"}
+            {`${cta} · ${effectiveAmount || 0} ${currency}`}
           </>
         )}
       </button>
 
       <div className="rounded-full border border-primary/20 bg-background/40 px-3 py-1.5 text-center text-[11px] text-muted-foreground">
-        Gas sponsored by treasury · 0 fees for you ⚡
+        Pitch-safe support demo · live XION transfer deferred ⚡
       </div>
     </div>
   );
