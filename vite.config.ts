@@ -38,14 +38,12 @@ export default defineConfig(({ mode }) => ({
           ) {
             return "cosmos";
           }
-          if (id.includes("@radix-ui")) return "radix";
+          // Keep React + anything that depends on React (lucide-react, radix, etc.)
+          // in the default vendor chunk so initialization order is guaranteed.
+          // Only split heavy, independent libraries.
           if (id.includes("recharts") || id.includes("d3-")) return "charts";
-          if (id.includes("@tanstack")) return "query";
-          if (id.includes("@supabase")) return "supabase";
           if (id.includes("qrcode") || id.includes("qr-code")) return "qrcode";
-          if (id.includes("lucide-react")) return "icons";
-          if (id.includes("react-dom")) return "react-dom";
-          if (id.includes("/react/") || id.endsWith("/react")) return "react";
+          if (id.includes("@supabase")) return "supabase";
           return "vendor";
         },
       },
