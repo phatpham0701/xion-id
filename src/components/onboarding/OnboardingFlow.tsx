@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { ArrowLeft, ArrowRight, Check, Loader2, Sparkles } from "lucide-react";
@@ -167,7 +167,7 @@ export const OnboardingFlow = ({ profile, onSaved }: Props) => {
   );
 };
 
-const Header = ({ eyebrow, title, sub }: { eyebrow: string; title: React.ReactNode; sub: string }) => (
+const Header = ({ eyebrow, title, sub }: { eyebrow: string; title: ReactNode; sub: string }) => (
   <div className="text-center">
     <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2">{eyebrow}</div>
     <h1 className="font-display text-3xl md:text-4xl font-bold tracking-tight">{title}</h1>
