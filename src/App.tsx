@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, type ComponentType } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Loader2 } from "lucide-react";
@@ -23,7 +23,7 @@ const AdminDemoControls = lazy(() => import("./pages/admin/AdminDemoControls.tsx
 const AdminFallback = () => (
   <div className="min-h-screen grid place-items-center"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
 );
-const lazyAdmin = (El: React.ComponentType) => (
+const lazyAdmin = (El: ComponentType) => (
   <RequireAdmin>
     <Suspense fallback={<AdminFallback />}><El /></Suspense>
   </RequireAdmin>
