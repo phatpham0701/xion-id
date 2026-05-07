@@ -28,80 +28,81 @@ export type SportBadgeDefinition = {
   id: string;
   name: string;
   interest: SportInterest;
+  tierIntent: BadgeTier;
   proofHint: string;
   description: string;
 };
 
 const badgeSeeds: Record<SportInterest, Omit<SportBadgeDefinition, "id" | "interest">[]> = {
   Running: [
-    { name: "First 5K Proof", proofHint: "run screenshot or manual run log", description: "Entry proof that running is part of your week." },
-    { name: "Weekly Run Streak", proofHint: "three runs in seven days", description: "Basic consistency across a training week." },
-    { name: "Tempo Builder", proofHint: "tempo workout note", description: "Proof of structured run effort." },
-    { name: "Long Run Signal", proofHint: "long run distance log", description: "Endurance behavior with measurable distance." },
-    { name: "Run Crew Contributor", proofHint: "group run participation", description: "Community signal from showing up with others." },
+    { tierIntent: "Bronze", name: "Run Lifestyle Starter", proofHint: "first run log, screenshot, or event note", description: "Entry proof that running is part of your active lifestyle." },
+    { tierIntent: "Silver", name: "Weekly Runner", proofHint: "one or more runs in a week", description: "Basic running consistency with repeatable proof." },
+    { tierIntent: "Gold", name: "Run Consistency Builder", proofHint: "multi-run week or structured run note", description: "Strong signal that running is becoming a real habit." },
+    { tierIntent: "Diamond", name: "Race-Ready Runner", proofHint: "long run, race registration, bib, or finish proof", description: "High-signal running lifestyle proof for brands and events." },
+    { tierIntent: "Elite", name: "Run Lifestyle Ambassador", proofHint: "community run, pacing, content, or referral proof", description: "Ambassador-level running identity with community contribution." },
   ],
   "Gym / Strength": [
-    { name: "Strength Starter", proofHint: "workout log or lift screenshot", description: "Entry proof of gym or strength training." },
-    { name: "Progressive Overload", proofHint: "two-week lift progression", description: "Consistency signal from improving a movement." },
-    { name: "Leg Day Verified", proofHint: "lower-body session log", description: "Proof of balanced strength work." },
-    { name: "Form Discipline", proofHint: "coach note or training clip", description: "Quality signal for safe movement practice." },
-    { name: "Strength Mentor", proofHint: "training partner support note", description: "Community signal from helping others train." },
+    { tierIntent: "Bronze", name: "Strength Lifestyle Starter", proofHint: "first gym log, lift screenshot, or membership note", description: "Entry proof that strength training is part of your week." },
+    { tierIntent: "Silver", name: "Weekly Strength Builder", proofHint: "one or more strength sessions in a week", description: "Basic gym consistency across a training week." },
+    { tierIntent: "Gold", name: "Progressive Strength Signal", proofHint: "volume, load, or movement progression", description: "Strong consistency signal from structured strength work." },
+    { tierIntent: "Diamond", name: "Strength Discipline Proof", proofHint: "balanced split, form note, coach note, or program proof", description: "High-signal proof of disciplined and sustainable training." },
+    { tierIntent: "Elite", name: "Strength Lifestyle Ambassador", proofHint: "training partner, community, content, or referral proof", description: "Career-worthy strength lifestyle reputation and influence." },
   ],
   Cycling: [
-    { name: "Ride Logged", proofHint: "ride screenshot or manual distance", description: "Entry proof of cycling activity." },
-    { name: "Weekend Rider", proofHint: "weekend route log", description: "Lifestyle consistency across leisure training." },
-    { name: "Climb Hunter", proofHint: "elevation proof", description: "High-effort ride behavior." },
-    { name: "Commute Signal", proofHint: "commute ride proof", description: "Cycling embedded into daily lifestyle." },
-    { name: "Peloton Pack", proofHint: "group ride proof", description: "Community proof from riding with others." },
+    { tierIntent: "Bronze", name: "Cycling Lifestyle Starter", proofHint: "first ride screenshot or manual distance", description: "Entry proof that cycling is part of your lifestyle." },
+    { tierIntent: "Silver", name: "Weekly Rider", proofHint: "weekly ride log", description: "Basic cycling consistency over a week." },
+    { tierIntent: "Gold", name: "Endurance Ride Builder", proofHint: "distance, route, cadence, or duration proof", description: "Strong cycling signal from repeatable endurance behavior." },
+    { tierIntent: "Diamond", name: "Cycling Gear Signal", proofHint: "gear usage, ride streak, event, or group route", description: "High-signal cycling proof for gear, events, and communities." },
+    { tierIntent: "Elite", name: "Cycling Lifestyle Ambassador", proofHint: "group ride, route leadership, content, or referral proof", description: "Ambassador-level cycling identity with community value." },
   ],
   Swimming: [
-    { name: "Pool Proof", proofHint: "swim session log", description: "Entry proof of swimming activity." },
-    { name: "Lap Consistency", proofHint: "weekly lap count", description: "Basic swim consistency." },
-    { name: "Technique Builder", proofHint: "drill session note", description: "Quality signal for improving stroke discipline." },
-    { name: "Open Water Ready", proofHint: "open-water session proof", description: "High-signal swim lifestyle proof." },
-    { name: "Swim Squad", proofHint: "club or group session proof", description: "Community signal from shared training." },
+    { tierIntent: "Bronze", name: "Swim Lifestyle Starter", proofHint: "first swim log", description: "Entry proof that swimming is part of your active lifestyle." },
+    { tierIntent: "Silver", name: "Weekly Swimmer", proofHint: "weekly lap or duration proof", description: "Basic swim consistency across a training week." },
+    { tierIntent: "Gold", name: "Technique Builder", proofHint: "drill set, lap count, or stroke practice note", description: "Strong signal for skill development and consistency." },
+    { tierIntent: "Diamond", name: "Aquatic Discipline Proof", proofHint: "open-water, long swim, or structured swim block", description: "High-signal swim lifestyle proof with discipline and endurance." },
+    { tierIntent: "Elite", name: "Swim Lifestyle Ambassador", proofHint: "club, group session, event, content, or referral proof", description: "Ambassador-level swimming identity with community contribution." },
   ],
   "Hybrid Athlete": [
-    { name: "Hybrid Starter", proofHint: "run plus strength session", description: "Entry proof across endurance and strength." },
-    { name: "Two-a-Day Proof", proofHint: "two workouts in one day", description: "Advanced consistency signal." },
-    { name: "Engine + Iron", proofHint: "cardio and lift week", description: "Balanced high-signal training." },
-    { name: "Recovery-Aware Hybrid", proofHint: "recovery routine attached", description: "Proof that intensity is matched by recovery." },
-    { name: "Hybrid Event Ready", proofHint: "event or simulation result", description: "Career-worthy multi-discipline proof." },
+    { tierIntent: "Bronze", name: "Hybrid Lifestyle Starter", proofHint: "proof from two training modalities", description: "Entry proof across endurance and strength lifestyle behavior." },
+    { tierIntent: "Silver", name: "Multi-Sport Consistency", proofHint: "two sports repeated within a week", description: "Basic consistency across more than one sport." },
+    { tierIntent: "Gold", name: "Engine + Strength Builder", proofHint: "cardio and strength proof in the same block", description: "Strong signal of balanced hybrid training." },
+    { tierIntent: "Diamond", name: "Recovery-Aware Hybrid", proofHint: "training plus recovery proof", description: "High-signal hybrid proof that intensity is matched by recovery." },
+    { tierIntent: "Elite", name: "Hybrid Lifestyle Ambassador", proofHint: "multi-sport event, community, content, or referral proof", description: "Career-worthy hybrid athlete identity and public lifestyle signal." },
   ],
   "Marathon / Events": [
-    { name: "Race Registered", proofHint: "registration confirmation", description: "Entry proof toward an event goal." },
-    { name: "Training Block Started", proofHint: "first week plan", description: "Structured preparation signal." },
-    { name: "Bib Earned", proofHint: "bib or event check-in", description: "Participation proof from an organized event." },
-    { name: "Finish Line Proof", proofHint: "finish result or photo", description: "Strong event completion signal." },
-    { name: "Event Ambassador", proofHint: "volunteer, pacer, or creator proof", description: "High-signal contribution to an event community." },
+    { tierIntent: "Bronze", name: "Event Lifestyle Starter", proofHint: "registration, ticket, or event intent proof", description: "Entry proof that events are part of your lifestyle." },
+    { tierIntent: "Silver", name: "Training Block Starter", proofHint: "first training week or preparation note", description: "Basic consistency toward an event goal." },
+    { tierIntent: "Gold", name: "Bib Holder", proofHint: "bib, check-in, or event participation proof", description: "Strong proof of real-world event participation." },
+    { tierIntent: "Diamond", name: "Finish Line Proof", proofHint: "finish result, medal, photo, or timing proof", description: "High-signal event completion proof." },
+    { tierIntent: "Elite", name: "Event Lifestyle Ambassador", proofHint: "volunteer, pacer, creator, referral, or community proof", description: "Ambassador-level contribution to an event community." },
   ],
   Recovery: [
-    { name: "Recovery Ritual", proofHint: "mobility, sleep, or cooldown log", description: "Entry proof of taking recovery seriously." },
-    { name: "Mobility Streak", proofHint: "three mobility sessions", description: "Basic consistency in movement care." },
-    { name: "Sleep Discipline", proofHint: "sleep routine summary", description: "Lifestyle signal for sustainable training." },
-    { name: "Deload Smart", proofHint: "deload week note", description: "High-quality training judgment." },
-    { name: "Recovery Advocate", proofHint: "shared routine or community support", description: "Ambassador-level recovery behavior." },
+    { tierIntent: "Bronze", name: "Recovery Lifestyle Starter", proofHint: "mobility, sleep, cooldown, or rest habit note", description: "Entry proof of taking recovery seriously." },
+    { tierIntent: "Silver", name: "Weekly Recovery Ritual", proofHint: "three recovery sessions or routines", description: "Basic consistency in movement care and recovery behavior." },
+    { tierIntent: "Gold", name: "Sleep + Mobility Builder", proofHint: "sleep routine, mobility streak, or cooldown proof", description: "Strong signal for sustainable training discipline." },
+    { tierIntent: "Diamond", name: "Recovery Discipline Proof", proofHint: "deload week, HRV-aware adjustment, or recovery protocol", description: "High-signal proof of intelligent training judgment." },
+    { tierIntent: "Elite", name: "Recovery Lifestyle Ambassador", proofHint: "shared routine, community education, content, or referral proof", description: "Ambassador-level recovery behavior that helps others." },
   ],
   Wellness: [
-    { name: "Wellness Check-In", proofHint: "habit log", description: "Entry proof of a wellness practice." },
-    { name: "Hydration Habit", proofHint: "hydration streak", description: "Basic consistency in daily care." },
-    { name: "Mindful Movement", proofHint: "walk, yoga, or mobility proof", description: "Balanced lifestyle signal." },
-    { name: "Stress Reset", proofHint: "breathwork or reset routine", description: "Proof of sustainable wellness behavior." },
-    { name: "Community Wellness Lead", proofHint: "group wellness activity", description: "High-signal contribution to others." },
+    { tierIntent: "Bronze", name: "Wellness Lifestyle Starter", proofHint: "wellness check-in or habit log", description: "Entry proof of a wellness practice." },
+    { tierIntent: "Silver", name: "Daily Care Builder", proofHint: "hydration, walking, breathwork, or mobility streak", description: "Basic consistency in daily wellness care." },
+    { tierIntent: "Gold", name: "Mindful Movement Signal", proofHint: "walk, yoga, mobility, or stress reset proof", description: "Strong balanced lifestyle signal." },
+    { tierIntent: "Diamond", name: "Wellness Discipline Proof", proofHint: "multi-week habit streak or routine summary", description: "High-signal proof of sustainable wellness behavior." },
+    { tierIntent: "Elite", name: "Wellness Lifestyle Ambassador", proofHint: "group activity, shared routine, content, or referral proof", description: "Ambassador-level wellness identity with community value." },
   ],
   "Sports Gear": [
-    { name: "Gear In Use", proofHint: "training photo or gear log", description: "Entry proof that gear supports real activity." },
-    { name: "Shoe Rotation", proofHint: "gear rotation note", description: "Consistency signal around training readiness." },
-    { name: "Durability Tester", proofHint: "usage report", description: "Useful signal for brands and communities." },
-    { name: "Kit Review Signal", proofHint: "review plus activity proof", description: "Creator-quality gear feedback." },
-    { name: "Gear Ambassador", proofHint: "community recommendation or test history", description: "High-signal gear lifestyle reputation." },
+    { tierIntent: "Bronze", name: "Gear Lifestyle Starter", proofHint: "gear purchase or gear-in-use proof", description: "Entry proof that sport gear supports real activity." },
+    { tierIntent: "Silver", name: "Gear In Use", proofHint: "training photo, usage log, or gear rotation note", description: "Basic signal that gear is actively used, not just purchased." },
+    { tierIntent: "Gold", name: "Durability Feedback Signal", proofHint: "usage report or repeated activity with the same gear", description: "Strong product feedback signal for sport brands." },
+    { tierIntent: "Diamond", name: "Trusted Gear Reviewer", proofHint: "review plus activity proof", description: "High-signal gear lifestyle proof with useful feedback." },
+    { tierIntent: "Elite", name: "Gear Lifestyle Ambassador", proofHint: "community recommendation, product test, content, or referral proof", description: "Ambassador-level gear reputation and creator value." },
   ],
   Supplements: [
-    { name: "Nutrition Routine", proofHint: "routine note", description: "Entry proof of intentional nutrition support." },
-    { name: "Protein Consistency", proofHint: "weekly intake habit", description: "Basic consistency in fueling." },
-    { name: "Hydration + Electrolytes", proofHint: "training-day nutrition proof", description: "Sport-specific nutrition behavior." },
-    { name: "Race Fuel Tested", proofHint: "long workout fueling note", description: "High-signal preparation proof." },
-    { name: "Nutrition Educator", proofHint: "shared routine with disclaimer", description: "Ambassador-level nutrition community signal." },
+    { tierIntent: "Bronze", name: "Nutrition Lifestyle Starter", proofHint: "nutrition routine, receipt, or training-day note", description: "Entry proof of intentional nutrition support." },
+    { tierIntent: "Silver", name: "Protein Consistency", proofHint: "weekly protein or supplement routine", description: "Basic consistency in fueling and recovery support." },
+    { tierIntent: "Gold", name: "Training Fuel Builder", proofHint: "hydration, electrolytes, or workout fueling proof", description: "Strong signal for sport-specific nutrition behavior." },
+    { tierIntent: "Diamond", name: "Race Fuel Tested", proofHint: "long workout, event prep, or tested fueling note", description: "High-signal proof of performance-oriented preparation." },
+    { tierIntent: "Elite", name: "Nutrition Lifestyle Ambassador", proofHint: "shared routine with disclaimer, community content, or referral proof", description: "Ambassador-level nutrition lifestyle signal." },
   ],
 };
 
@@ -167,6 +168,8 @@ export type PersonalChallenge = {
 
 export type SportLifestyleState = {
   version: 1;
+  source: "local-demo";
+  updatedAt: string;
   selectedInterest: SportInterest;
   earnedBadges: Record<string, { tier: BadgeTier; progress: number; proofs: number }>;
   proofs: LifestyleProof[];
@@ -174,16 +177,19 @@ export type SportLifestyleState = {
 };
 
 const STORAGE_KEY = "xionid:sport-lifestyle:v1";
+const nowIso = () => new Date().toISOString();
 
 export const defaultSportLifestyleState = (): SportLifestyleState => ({
   version: 1,
+  source: "local-demo",
+  updatedAt: nowIso(),
   selectedInterest: "Running",
   earnedBadges: {
     "running-1": { tier: "Bronze", progress: 25, proofs: 1 },
     "recovery-1": { tier: "Bronze", progress: 15, proofs: 1 },
   },
   proofs: [
-    { id: "proof-demo-1", interest: "Running", badgeId: "running-1", proofType: "Demo run screenshot", status: "Simulated", createdAt: new Date().toISOString() },
+    { id: "proof-demo-1", interest: "Running", badgeId: "running-1", proofType: "Demo run screenshot", status: "Simulated", createdAt: nowIso() },
   ],
   challenges: [
     {
@@ -199,12 +205,72 @@ export const defaultSportLifestyleState = (): SportLifestyleState => ({
   ],
 });
 
+const isSportInterest = (value: unknown): value is SportInterest =>
+  typeof value === "string" && SPORT_INTERESTS.includes(value as SportInterest);
+
+const isBadgeTier = (value: unknown): value is BadgeTier =>
+  typeof value === "string" && BADGE_TIERS.includes(value as BadgeTier);
+
+const clampNumber = (value: unknown, fallback: number, min: number, max: number) => {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.min(max, Math.max(min, parsed));
+};
+
+export const sanitizeSportLifestyleState = (raw: unknown): SportLifestyleState => {
+  const fallback = defaultSportLifestyleState();
+  if (!raw || typeof raw !== "object") return fallback;
+
+  const value = raw as Partial<SportLifestyleState>;
+  const earnedBadges = Object.entries(value.earnedBadges ?? {}).reduce<SportLifestyleState["earnedBadges"]>((acc, [badgeId, badge]) => {
+    if (!SPORT_BADGES.some((item) => item.id === badgeId)) return acc;
+    const safeBadge = badge as { tier?: unknown; progress?: unknown; proofs?: unknown };
+    const proofs = clampNumber(safeBadge.proofs, 0, 0, 999);
+    acc[badgeId] = {
+      tier: isBadgeTier(safeBadge.tier) ? safeBadge.tier : getTierFromProofs(proofs),
+      progress: clampNumber(safeBadge.progress, Math.min(100, proofs * 20), 0, 100),
+      proofs,
+    };
+    return acc;
+  }, {});
+
+  const proofs = Array.isArray(value.proofs)
+    ? value.proofs.filter((proof): proof is LifestyleProof => {
+        const item = proof as Partial<LifestyleProof>;
+        return Boolean(item.id && isSportInterest(item.interest) && item.badgeId && item.proofType && item.createdAt);
+      }).slice(0, 100)
+    : fallback.proofs;
+
+  const challenges = Array.isArray(value.challenges)
+    ? value.challenges.filter((challenge): challenge is PersonalChallenge => {
+        const item = challenge as Partial<PersonalChallenge>;
+        return Boolean(item.id && item.title && isSportInterest(item.sportType) && item.deadline && item.linkedBadgeId);
+      }).map((challenge) => ({
+        ...challenge,
+        target: clampNumber(challenge.target, 1, 1, 999),
+        currentProgress: clampNumber(challenge.currentProgress, 0, 0, clampNumber(challenge.target, 1, 1, 999)),
+      })).slice(0, 50)
+    : fallback.challenges;
+
+  return {
+    ...fallback,
+    ...value,
+    version: 1,
+    source: "local-demo",
+    updatedAt: typeof value.updatedAt === "string" ? value.updatedAt : nowIso(),
+    selectedInterest: isSportInterest(value.selectedInterest) ? value.selectedInterest : fallback.selectedInterest,
+    earnedBadges: Object.keys(earnedBadges).length ? earnedBadges : fallback.earnedBadges,
+    proofs,
+    challenges,
+  };
+};
+
 export const getSportLifestyleState = (): SportLifestyleState => {
   if (typeof window === "undefined") return defaultSportLifestyleState();
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) return defaultSportLifestyleState();
-    return { ...defaultSportLifestyleState(), ...JSON.parse(raw) };
+    return sanitizeSportLifestyleState(JSON.parse(raw));
   } catch {
     return defaultSportLifestyleState();
   }
@@ -212,8 +278,19 @@ export const getSportLifestyleState = (): SportLifestyleState => {
 
 export const saveSportLifestyleState = (next: SportLifestyleState) => {
   if (typeof window === "undefined") return;
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-  window.dispatchEvent(new CustomEvent("xionid:sport-lifestyle:change"));
+  const safe = sanitizeSportLifestyleState({ ...next, updatedAt: nowIso(), source: "local-demo" });
+  try {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(safe));
+    window.dispatchEvent(new CustomEvent("xionid:sport-lifestyle:change"));
+  } catch {
+    // Private browsing / quota failure should not break the pitch-safe UI.
+  }
+};
+
+export const resetSportLifestyleState = () => {
+  const fresh = defaultSportLifestyleState();
+  saveSportLifestyleState(fresh);
+  return fresh;
 };
 
 export const getSuggestedBadges = (interest: SportInterest) => SPORT_BADGES.filter((badge) => badge.interest === interest);
@@ -247,9 +324,9 @@ export const getCountdown = (deadline: string) => {
 };
 
 export const demoLeaderboard = (state: SportLifestyleState) => [
-  { rank: 1, name: "Maya Chen", sport: "Hybrid Athlete", signal: 420, topBadge: "Elite Hybrid Event Ready" },
-  { rank: 2, name: "Jordan Lee", sport: "Running", signal: 355, topBadge: "Diamond Long Run Signal" },
+  { rank: 1, name: "Maya Chen", sport: "Hybrid Athlete", signal: 420, topBadge: "Elite Hybrid Lifestyle Ambassador" },
+  { rank: 2, name: "Jordan Lee", sport: "Running", signal: 355, topBadge: "Diamond Race-Ready Runner" },
   { rank: 3, name: "You", sport: state.selectedInterest, signal: getRankScore(state), topBadge: "Lifestyle proof in progress" },
-  { rank: 4, name: "Sam Rivera", sport: "Recovery", signal: 285, topBadge: "Gold Recovery Ritual" },
-  { rank: 5, name: "Ari Novak", sport: "Cycling", signal: 260, topBadge: "Gold Weekend Rider" },
+  { rank: 4, name: "Sam Rivera", sport: "Recovery", signal: 285, topBadge: "Gold Sleep + Mobility Builder" },
+  { rank: 5, name: "Ari Novak", sport: "Cycling", signal: 260, topBadge: "Gold Endurance Ride Builder" },
 ].sort((a, b) => b.signal - a.signal || a.rank - b.rank).map((entry, index) => ({ ...entry, rank: index + 1 }));
