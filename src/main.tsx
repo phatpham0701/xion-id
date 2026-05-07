@@ -15,9 +15,11 @@ const isExtensionNoise = (value: unknown): boolean => {
   const msg = value instanceof Error ? `${value.message}\n${value.stack ?? ""}` : String(value ?? "");
   return /Extension context invalidated/i.test(msg) || /chrome-extension:\/\//i.test(msg);
 };
+
 window.addEventListener("unhandledrejection", (e) => {
   if (isExtensionNoise(e.reason)) e.preventDefault();
 });
+
 window.addEventListener("error", (e) => {
   if (isExtensionNoise(e.error ?? e.message) || (e.filename && e.filename.startsWith("chrome-extension://"))) {
     e.preventDefault();
@@ -42,6 +44,7 @@ const LazyXionProvider = lazy(async () => {
     import("@burnt-labs/abstraxion"),
     import("@burnt-labs/ui/dist/index.css"),
   ]);
+
   const config = {
     chainId: XION_CONFIG.chainId,
     treasury: XION_CONFIG.treasury,
@@ -53,6 +56,8 @@ const LazyXionProvider = lazy(async () => {
       authAppUrl: XION_CONFIG.authAppUrl,
     },
   } as Parameters<typeof AbstraxionProvider>[0]["config"];
+
+                  
   return {
     default: ({ children }: { children: ReactNode }) => (
       <AbstraxionProvider config={config}>{children}</AbstraxionProvider>
