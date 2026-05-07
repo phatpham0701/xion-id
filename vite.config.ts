@@ -14,11 +14,16 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
   build: {
+    target: "es2020",
+    cssCodeSplit: true,
+    sourcemap: false,
+    chunkSizeWarningLimit: 900,
     rollupOptions: {
       output: {
         // Split heavy/optional dependencies into their own chunks so the
-        // landing page does not need to download/parse them up-front.
-        // This dramatically improves Speed Index by shrinking the initial JS.
+        // landing page and Sport Lifestyle pilot do not need to download/parse
+        // them up-front. This keeps the Foundation demo fast while preserving
+        // the existing XION integration path for later.
         manualChunks(id) {
           if (!id.includes("node_modules")) return undefined;
           if (id.includes("@burnt-labs") || id.includes("abstraxion")) return "xion";
@@ -37,6 +42,7 @@ export default defineConfig(({ mode }) => ({
           if (id.includes("recharts") || id.includes("d3-")) return "charts";
           if (id.includes("@tanstack")) return "query";
           if (id.includes("@supabase")) return "supabase";
+          if (id.includes("qrcode") || id.includes("qr-code")) return "qrcode";
           if (id.includes("lucide-react")) return "icons";
           if (id.includes("react-dom")) return "react-dom";
           if (id.includes("/react/") || id.endsWith("/react")) return "react";
