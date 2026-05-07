@@ -34,6 +34,7 @@ const Editor = lazy(() => import("./pages/Editor.tsx"));
 const Templates = lazy(() => import("./pages/Templates.tsx"));
 const BadgesAll = lazy(() => import("./pages/BadgesAll.tsx"));
 const RewardsBox = lazy(() => import("./pages/RewardsBox.tsx"));
+const Challenges = lazy(() => import("./pages/Challenges.tsx"));
 const TemplatePreview = lazy(() => import("./pages/TemplatePreview.tsx"));
 const Campaigns = lazy(() => import("./pages/Campaigns.tsx"));
 const PublicCampaign = lazy(() => import("./pages/PublicCampaign.tsx"));
@@ -105,6 +106,14 @@ function App() {
             <Route
               path="/rewards"
               element={<RequireAuth><RewardsBox /></RequireAuth>}
+            />
+            <Route
+              path="/opportunities"
+              element={<RequireAuth><RewardsBox /></RequireAuth>}
+            />
+            <Route
+              path="/challenges"
+              element={<RequireAuth><Challenges /></RequireAuth>}
             />
             {/* Admin (lazy + RequireAdmin) */}
             <Route path="/admin" element={lazyAdmin(AdminHome)} />

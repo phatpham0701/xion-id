@@ -1,18 +1,14 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { ArrowRight, ArrowLeft, Check, Loader2, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Loader2, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { RESERVED_USERNAMES } from "@/lib/brand";
-import {
-  DEMO_GOALS,
-  DEMO_STARTERS,
-  completeDemoOnboarding,
-  type DemoGoalKey,
-  type DemoStarterKey,
-} from "@/lib/demoMode";
+import { completeDemoOnboarding } from "@/lib/demoMode";
+import { SPORT_INTERESTS, getSportLifestyleState, saveSportLifestyleState, type SportInterest } from "@/lib/sportLifestyle";
 import type { EditableProfile } from "@/components/dashboard/ProfileEditorCard";
 
 type Props = {
@@ -20,81 +16,85 @@ type Props = {
   onSaved: (p: EditableProfile) => void;
 };
 
-type Step = "goal" | "starter";
+type Step = "identity" | "sport";
 
 const USERNAME_RE = /^[a-zA-Z0-9_.\-]+$/;
-
-const sanitize = (raw: string): string => {
-  const cleaned = raw.toLowerCase().replace(/[^a-z0-9_.\-]/g, "").slice(0, 20);
-  return cleaned.length >= 3 ? cleaned : "";
+const AVATARS = ["🏃", "🏋️", "🚴", "🏊", "🧘", "🥇", "⚡", "🛡️"];
+const avatarDataUrl = (emoji: string) =>
+  `data:image/svg+xml;utf8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128"><rect width="128" height="128" rx="28" fill="#1f1b4d"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="64">${emoji}</text></svg>`)}`;
+const avatarEmojiFromUrl = (value?: string | null) => {
+  if (!value) return AVATARS[0];
+  const found = AVATARS.find((item) => value.includes(encodeURIComponent(item)) || value.includes(item));
+  return found ?? AVATARS[0];
 };
+
+const sanitize = (raw: string): string => raw.toLowerCase().replace(/[^a-z0-9_.\-]/g, "").slice(0, 20);
 
 const generateDemoUsername = async (email?: string | null): Promise<string> => {
   const prefix = email ? sanitize(email.split("@")[0]) : "";
-  const base = prefix || "demo-user";
-  const candidates = [
-    base,
-    `${base}-${Math.floor(1000 + Math.random() * 9000)}`,
-    `${base}-${Math.floor(1000 + Math.random() * 9000)}`,
-  ];
+  const base = prefix.length >= 3 ? prefix : "demo-athlete";
+  const candidates = [base, `${base}-${Math.floor(1000 + Math.random() * 9000)}`, `${base}-${Math.floor(1000 + Math.random() * 9000)}`];
   for (const cand of candidates) {
     if (RESERVED_USERNAMES.has(cand)) continue;
     if (!USERNAME_RE.test(cand) || cand.length < 3) continue;
     try {
-      const { data } = await supabase
-        .from("profiles").select("id").eq("username", cand).maybeSingle();
+      const { data } = await supabase.from("profiles").select("id").eq("username", cand).maybeSingle();
       if (!data) return cand;
     } catch {
-      return cand; // Supabase unavailable — fall back to candidate
+      return cand;
     }
   }
-  return `demo-user-${Math.floor(10000 + Math.random() * 90000)}`;
+  return `demo-athlete-${Math.floor(10000 + Math.random() * 90000)}`;
 };
 
 export const OnboardingFlow = ({ profile, onSaved }: Props) => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [step, setStep] = useState<Step>("goal");
-  const [goal, setGoal] = useState<DemoGoalKey | null>(null);
-  const [starter, setStarter] = useState<DemoStarterKey | null>(null);
+  const [step, setStep] = useState<Step>("identity");
+  const [username, setUsername] = useState(profile.username ?? "");
+  const [displayName, setDisplayName] = useState(profile.display_name ?? user?.user_metadata?.full_name ?? "");
+  const [avatar, setAvatar] = useState(avatarEmojiFromUrl(profile.avatar_url));
+  const [interest, setInterest] = useState<SportInterest>(getSportLifestyleState().selectedInterest);
   const [saving, setSaving] = useState(false);
 
-  const recommended = goal ? DEMO_STARTERS.filter((s) => s.goalFit.includes(goal)) : DEMO_STARTERS;
-  const others = goal ? DEMO_STARTERS.filter((s) => !s.goalFit.includes(goal)) : [];
+  const validateIdentity = () => {
+    const clean = sanitize(username);
+    if (clean.length < 3 || !USERNAME_RE.test(clean) || RESERVED_USERNAMES.has(clean)) {
+      toast.error("Choose a valid username with at least 3 letters or numbers.");
+      return false;
+    }
+    if (!displayName.trim()) {
+      toast.error("Add a display name for your Sport Lifestyle Passport.");
+      return false;
+    }
+    return true;
+  };
 
   const finish = async () => {
-    if (!starter || !goal) return;
+    if (!validateIdentity()) return;
     setSaving(true);
+    const clean = sanitize(username) || (await generateDemoUsername(user?.email));
+    const avatarUrl = avatarDataUrl(avatar);
+    const nextProfile = { ...profile, username: clean, display_name: displayName.trim(), avatar_url: avatarUrl };
     try {
-      // Auto-generate a demo username if none claimed yet.
-      if (!profile.username) {
-        const generated = await generateDemoUsername(user?.email);
-        try {
-          const { data, error } = await supabase
-            .from("profiles").update({ username: generated }).eq("id", profile.id)
-            .select("id, username, display_name, avatar_url, bio, is_published").single();
-          if (!error && data) {
-            onSaved(data as EditableProfile);
-          } else {
-            // Graceful fallback: keep going with a local profile shape.
-            onSaved({ ...profile, username: generated });
-          }
-        } catch {
-          onSaved({ ...profile, username: generated });
-        }
-      }
-
-      completeDemoOnboarding(goal, starter);
-      toast.success("Demo passport ready.");
-      navigate("/dashboard");
+      const { data, error } = await supabase
+        .from("profiles")
+        .update({ username: clean, display_name: displayName.trim(), avatar_url: avatarUrl })
+        .eq("id", profile.id)
+        .select("id, username, display_name, avatar_url, bio, is_published")
+        .single();
+      if (!error && data) onSaved(data as EditableProfile);
+      else onSaved(nextProfile);
     } catch {
-      // Never surface raw errors in demo mode.
-      completeDemoOnboarding(goal, starter);
-      toast.success("Demo passport ready.");
-      navigate("/dashboard");
-    } finally {
-      setSaving(false);
+      onSaved(nextProfile);
     }
+
+    const lifestyle = getSportLifestyleState();
+    saveSportLifestyleState({ ...lifestyle, selectedInterest: interest });
+    completeDemoOnboarding("badges", "athlete");
+    toast.success("Sport Lifestyle Passport ready.", { description: "You're landing on the Dashboard command center." });
+    navigate("/dashboard");
+    setSaving(false);
   };
 
   return (
@@ -103,96 +103,60 @@ export const OnboardingFlow = ({ profile, onSaved }: Props) => {
       <div className="aurora-orb h-[460px] w-[460px] bottom-0 -right-20 bg-primary animate-aurora-drift" style={{ animationDelay: "-7s" }} />
 
       <div className="relative w-full max-w-3xl animate-scale-in">
-        {/* Progress */}
         <div className="flex items-center justify-center gap-2 mb-6">
-          <Pip active={step === "goal"} done={step === "starter"} label="1" />
+          <Pip active={step === "identity"} done={step === "sport"} label="1" />
           <div className="h-px w-10 bg-border" />
-          <Pip active={step === "starter"} done={false} label="2" />
+          <Pip active={step === "sport"} done={false} label="2" />
         </div>
 
         <div className="glass-strong rounded-3xl p-8 md:p-10">
-          {step === "goal" && (
+          {step === "identity" && (
             <>
-              <Header
-                eyebrow="Step 1 of 2"
-                title={<>Choose your <span className="text-gradient">goal</span></>}
-                sub="Pick the one that fits best — you can change it later."
-              />
-              <div className="mt-7 grid sm:grid-cols-2 gap-3">
-                {DEMO_GOALS.map((g) => (
-                  <button
-                    key={g.key}
-                    onClick={() => setGoal(g.key)}
-                    className={`text-left rounded-2xl p-4 border transition-all ${
-                      goal === g.key
-                        ? "border-primary/60 bg-primary/5 shadow-glow-primary"
-                        : "border-glass-border bg-background/30 hover:border-primary/30"
-                    }`}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className="text-2xl">{g.emoji}</div>
-                      <div className="min-w-0 flex-1">
-                        <div className="font-display font-semibold">{g.title}</div>
-                        <div className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{g.blurb}</div>
-                      </div>
-                      {goal === g.key && <Check className="h-4 w-4 text-primary shrink-0" />}
-                    </div>
-                  </button>
-                ))}
+              <Header eyebrow="Step 1 of 2" title={<>Build your <span className="text-gradient">identity</span></>} sub="Create the basic identity layer for your Sport Lifestyle Passport." />
+              <div className="mt-7 grid gap-4">
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Username</label>
+                    <Input value={username} onChange={(event) => setUsername(sanitize(event.target.value))} placeholder="alexrunner" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Display name</label>
+                    <Input value={displayName} onChange={(event) => setDisplayName(event.target.value)} placeholder="Alex Rivera" />
+                  </div>
+                </div>
+                <div>
+                  <div className="text-sm font-medium mb-2">Avatar</div>
+                  <div className="flex flex-wrap gap-2">
+                    {AVATARS.map((item) => (
+                      <button key={item} type="button" onClick={() => setAvatar(item)} className={`h-12 w-12 rounded-2xl border text-2xl ${avatar === item ? "border-primary bg-primary/10" : "border-glass-border bg-background/40"}`}>{item}</button>
+                    ))}
+                  </div>
+                  <div className="mt-3 rounded-2xl border border-dashed border-primary/30 bg-primary/5 p-3 text-sm text-muted-foreground">Optional AI/3D avatar: placeholder only for this pilot, so it will not block completion.</div>
+                </div>
               </div>
-
               <div className="mt-7 flex justify-end">
-                <Button
-                  onClick={() => setStep("starter")}
-                  disabled={!goal}
-                  className="bg-gradient-primary text-primary-foreground font-medium h-11 px-6"
-                >
-                  Continue
-                  <ArrowRight className="ml-1 h-4 w-4" />
-                </Button>
+                <Button onClick={() => validateIdentity() && setStep("sport")} className="bg-gradient-primary text-primary-foreground font-medium h-11 px-6">Continue <ArrowRight className="ml-1 h-4 w-4" /></Button>
               </div>
             </>
           )}
 
-          {step === "starter" && (
+          {step === "sport" && (
             <>
-              <Header
-                eyebrow="Step 2 of 2"
-                title={<>Choose your <span className="text-gradient">starter</span></>}
-                sub="A polished starting point — fully customizable later."
-              />
-
-              <div className="mt-7 space-y-5">
-                <StarterGrid items={recommended} selected={starter} onPick={setStarter} title="Recommended for you" />
-                {others.length > 0 && (
-                  <StarterGrid items={others} selected={starter} onPick={setStarter} title="Other starters" muted />
-                )}
+              <Header eyebrow="Step 2 of 2" title={<>Pick your <span className="text-gradient">sport lifestyle</span></>} sub="Your first interest personalizes badges, challenges, proof types, and opportunities." />
+              <div className="mt-7 grid sm:grid-cols-2 gap-3">
+                {SPORT_INTERESTS.map((item) => (
+                  <button key={item} onClick={() => setInterest(item)} className={`text-left rounded-2xl p-4 border transition-all ${interest === item ? "border-primary/60 bg-primary/5 shadow-glow-primary" : "border-glass-border bg-background/30 hover:border-primary/30"}`}>
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="font-display font-semibold">{item}</span>
+                      {interest === item && <Check className="h-4 w-4 text-primary shrink-0" />}
+                    </div>
+                  </button>
+                ))}
               </div>
-
               <div className="mt-7 flex items-center justify-between">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() => setStep("goal")}
-                  className="text-muted-foreground"
-                >
-                  <ArrowLeft className="h-4 w-4 mr-1" />
-                  Back
-                </Button>
-                <Button
-                  type="button"
-                  onClick={finish}
-                  disabled={!starter || saving}
-                  className="bg-gradient-primary text-primary-foreground font-medium h-11 px-6 shadow-glow-primary glow-primary"
-                >
-                  {saving ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <>
-                      <Sparkles className="h-4 w-4 mr-1.5" />
-                      Open my passport
-                    </>
-                  )}
+                <Button type="button" variant="ghost" onClick={() => setStep("identity")} className="text-muted-foreground"><ArrowLeft className="h-4 w-4 mr-1" />Back</Button>
+                <Button type="button" onClick={finish} disabled={saving} className="bg-gradient-primary text-primary-foreground font-medium h-11 px-6 shadow-glow-primary glow-primary">
+                  {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Sparkles className="h-4 w-4 mr-1.5" />Open Dashboard</>}
                 </Button>
               </div>
             </>
@@ -212,57 +176,7 @@ const Header = ({ eyebrow, title, sub }: { eyebrow: string; title: React.ReactNo
 );
 
 const Pip = ({ active, done, label }: { active: boolean; done: boolean; label: string }) => (
-  <div
-    className={`h-7 w-7 rounded-full grid place-items-center text-[11px] font-semibold border ${
-      done
-        ? "bg-primary text-primary-foreground border-primary"
-        : active
-        ? "bg-primary/15 text-primary border-primary/60"
-        : "bg-background/40 text-muted-foreground border-border"
-    }`}
-  >
+  <div className={`h-7 w-7 rounded-full grid place-items-center text-[11px] font-semibold border ${done ? "bg-primary text-primary-foreground border-primary" : active ? "bg-primary/15 text-primary border-primary/60" : "bg-background/40 text-muted-foreground border-border"}`}>
     {done ? <Check className="h-3.5 w-3.5" /> : label}
-  </div>
-);
-
-const StarterGrid = ({
-  items,
-  selected,
-  onPick,
-  title,
-  muted,
-}: {
-  items: typeof DEMO_STARTERS;
-  selected: DemoStarterKey | null;
-  onPick: (k: DemoStarterKey) => void;
-  title: string;
-  muted?: boolean;
-}) => (
-  <div>
-    <div className={`text-xs uppercase tracking-wider mb-2 ${muted ? "text-muted-foreground/70" : "text-muted-foreground"}`}>
-      {title}
-    </div>
-    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
-      {items.map((s) => (
-        <button
-          key={s.key}
-          onClick={() => onPick(s.key)}
-          className={`text-left rounded-2xl p-3.5 border transition-all ${
-            selected === s.key
-              ? "border-primary/60 bg-primary/5 shadow-glow-primary"
-              : "border-glass-border bg-background/30 hover:border-primary/30"
-          }`}
-        >
-          <div className="flex items-start gap-2.5">
-            <div className="text-xl shrink-0">{s.emoji}</div>
-            <div className="min-w-0 flex-1">
-              <div className="font-display font-semibold text-sm leading-tight">{s.title}</div>
-              <div className="text-[11px] text-muted-foreground mt-1 leading-relaxed line-clamp-2">{s.blurb}</div>
-            </div>
-            {selected === s.key && <Check className="h-3.5 w-3.5 text-primary shrink-0" />}
-          </div>
-        </button>
-      ))}
-    </div>
   </div>
 );

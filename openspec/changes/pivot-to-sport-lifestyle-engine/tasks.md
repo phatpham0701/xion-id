@@ -11,18 +11,18 @@
 - [x] Define lifestyle opportunities requirements.
 
 ## Future Implementation Checklist
-- [ ] Confirm branch is updated against GitHub `main` before coding.
-- [ ] Audit existing auth/onboarding/dashboard routes and identify minimal changes.
-- [ ] Route signed-in users with completed basic identity directly to Dashboard.
-- [ ] Add or adapt basic identity completion for username, display name, avatar, and optional AI/3D avatar placeholder.
-- [ ] Add Dashboard primary CTA: “Verify your lifestyle”.
-- [ ] Add sport lifestyle interest selection and persist selected interests.
-- [ ] Add suggestion logic for badges, challenges, proof types, and opportunities based on selected interests.
-- [ ] Add proof submission/simulation flow for the pilot.
-- [ ] Add five-tier sport lifestyle badge model: Bronze, Silver, Gold, Diamond, Elite.
-- [ ] Add personal challenge creation with deadline and countdown.
-- [ ] Add rank progression from repeated proofs, challenge completions, and referrals.
-- [ ] Add matched lifestyle opportunities surface without generic voucher marketplace behavior.
-- [ ] Keep public copy Web2-first and sport-lifestyle-first.
-- [ ] Run build/typecheck.
-- [ ] Complete manual test checklist for auth, onboarding, dashboard CTA, proof simulation, badge awarding, challenges, leaderboard, and opportunities.
+- [ ] Confirm branch is updated against GitHub `main` before coding. (Attempted `git fetch origin main`; repository has no `origin` remote configured in this environment.)
+- [x] Audit existing auth/onboarding/dashboard routes and identify minimal changes.
+- [x] Route signed-in users with completed basic identity directly to Dashboard.
+- [x] Add or adapt basic identity completion for username, display name, avatar, and optional AI/3D avatar placeholder.
+- [x] Add Dashboard primary CTA: “Verify your lifestyle”.
+- [x] Add sport lifestyle interest selection and persist selected interests.
+- [x] Add suggestion logic for badges, challenges, proof types, and opportunities based on selected interests.
+- [x] Add proof submission/simulation flow for the pilot.
+- [x] Add five-tier sport lifestyle badge model: Bronze, Silver, Gold, Diamond, Elite.
+- [x] Add personal challenge creation with deadline and countdown.
+- [x] Add rank progression from repeated proofs, challenge completions, and referrals.
+- [x] Add matched lifestyle opportunities surface without generic voucher marketplace behavior.
+- [x] Keep public copy Web2-first and sport-lifestyle-first.
+- [ ] Run build/typecheck. (Attempted; dependency install/build is blocked by registry access to @burnt-labs/abstraxion in this environment.)
+- [ ] Complete manual test checklist for auth, onboarding, dashboard CTA, proof simulation, badge awarding, challenges, leaderboard, and opportunities. (Manual browser pass pending because dependencies could not be installed.)
