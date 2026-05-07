@@ -3,7 +3,7 @@ import { Wordmark } from "@/components/Wordmark";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { Award, Dumbbell, Flag, LayoutTemplate, LogOut, Medal, Shield, Sparkles, Target, Trophy, UserRound } from "lucide-react";
+import { Award, Dumbbell, Flag, LayoutTemplate, LogOut, Medal, RefreshCcw, Shield, Sparkles, Target, Trophy, UserRound } from "lucide-react";
 import { useIsAdmin } from "@/lib/admin";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -19,7 +19,6 @@ import { VerifyLifestyleDialog } from "@/components/dashboard/VerifyLifestyleDia
 import { ChallengeCreatorDialog } from "@/components/dashboard/ChallengeCreatorDialog";
 import { getDemoState } from "@/lib/demoMode";
 import {
-  BADGE_TIER_MEANING,
   SPORT_INTERESTS,
   demoLeaderboard,
   getCountdown,
@@ -27,6 +26,7 @@ import {
   getRankScore,
   getSportLifestyleState,
   getSuggestedBadges,
+  resetSportLifestyleState,
   saveSportLifestyleState,
   type SportInterest,
   type SportLifestyleState,
@@ -81,11 +81,19 @@ const Dashboard = () => {
     setLifestyle(next);
   };
 
+  const resetPilotState = () => {
+    const fresh = resetSportLifestyleState();
+    setLifestyle(fresh);
+    toast.success("Sport lifestyle demo state reset.");
+  };
+
   const suggestedBadges = useMemo(() => getSuggestedBadges(lifestyle.selectedInterest), [lifestyle.selectedInterest]);
   const opportunities = useMemo(() => getMatchedOpportunities(lifestyle.selectedInterest), [lifestyle.selectedInterest]);
   const leaderboard = useMemo(() => demoLeaderboard(lifestyle), [lifestyle]);
   const rankScore = getRankScore(lifestyle);
   const earned = Object.entries(lifestyle.earnedBadges);
+  const primaryChallenge = lifestyle.challenges[0];
+  const primaryOpportunity = opportunities[0];
 
   if (loading) {
     return (
@@ -148,7 +156,7 @@ const Dashboard = () => {
                 Prove your lifestyle. Build your rank. Unlock opportunities.
               </h1>
               <p className="mt-3 text-sm md:text-base text-muted-foreground max-w-2xl">
-                Your Dashboard is now a Lifestyle Command Center: submit sport proof, progress badges, create personal challenges, and surface matched sport opportunities.
+                Start with one useful action: submit lifestyle proof or create one challenge. Deeper badges, opportunities, and leaderboard details live below.
               </p>
               <div className="mt-6 flex flex-col sm:flex-row gap-3">
                 <Button size="lg" className="bg-gradient-primary shadow-glow-primary" onClick={() => setVerifyOpen(true)}>
@@ -181,10 +189,13 @@ const Dashboard = () => {
         <section className="glass-strong rounded-3xl p-5 md:p-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
             <div>
-              <h2 className="font-display text-xl font-semibold">Choose your sport lifestyle interest</h2>
-              <p className="text-sm text-muted-foreground">This personalizes badge suggestions, proof types, challenges, rank context, and opportunities.</p>
+              <h2 className="font-display text-xl font-semibold">Focus your current sport lifestyle</h2>
+              <p className="text-sm text-muted-foreground">Keep the command center focused. Change this anytime to personalize proof, badges, challenges, and opportunities.</p>
             </div>
-            <Badge variant="secondary">Selected: {lifestyle.selectedInterest}</Badge>
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary">Selected: {lifestyle.selectedInterest}</Badge>
+              <Button variant="ghost" size="sm" onClick={resetPilotState}><RefreshCcw className="h-3.5 w-3.5 mr-1" />Reset</Button>
+            </div>
           </div>
           <div className="flex flex-wrap gap-2">
             {SPORT_INTERESTS.map((interest) => (
@@ -195,69 +206,63 @@ const Dashboard = () => {
           </div>
         </section>
 
-        <section className="grid lg:grid-cols-[1.15fr_0.85fr] gap-5">
-          <div className="glass-strong rounded-3xl p-5 md:p-6 space-y-4">
+        <section className="grid lg:grid-cols-3 gap-5">
+          <div className="glass-strong rounded-3xl p-5 md:p-6 lg:col-span-2 space-y-4">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <h2 className="font-display text-xl font-semibold">Suggested badges</h2>
-                <p className="text-sm text-muted-foreground">50 sport lifestyle badges support Bronze, Silver, Gold, Diamond, and Elite tiers.</p>
+                <h2 className="font-display text-xl font-semibold">Next best actions</h2>
+                <p className="text-sm text-muted-foreground">Three focused cards replace the old wall of information.</p>
               </div>
-              <Button variant="outline" size="sm" asChild><Link to="/badges">View all</Link></Button>
+              <Button variant="outline" size="sm" asChild><Link to="/badges">Open badges</Link></Button>
             </div>
-            <div className="grid md:grid-cols-2 gap-3">
-              {suggestedBadges.slice(0, 4).map((badge) => {
+            <div className="grid md:grid-cols-3 gap-3">
+              {suggestedBadges.slice(0, 3).map((badge) => {
                 const earnedBadge = lifestyle.earnedBadges[badge.id];
                 return (
                   <div key={badge.id} className="rounded-2xl border border-glass-border bg-background/40 p-4">
                     <div className="flex items-start justify-between gap-3">
                       <div>
+                        <Badge variant="outline" className="mb-2">Target {badge.tierIntent}</Badge>
                         <div className="text-sm font-semibold">{badge.name}</div>
                         <div className="text-xs text-muted-foreground mt-1">{badge.description}</div>
                       </div>
-                      <Badge variant={earnedBadge ? "default" : "outline"}>{earnedBadge?.tier ?? "Bronze"}</Badge>
                     </div>
                     <Progress value={earnedBadge?.progress ?? 0} className="h-2 mt-3" />
-                    <div className="text-[11px] text-muted-foreground mt-2">Proof: {badge.proofHint}</div>
+                    <div className="flex items-center justify-between gap-2 mt-2 text-[11px] text-muted-foreground">
+                      <span className="truncate">{badge.proofHint}</span>
+                      <Badge variant={earnedBadge ? "default" : "secondary"}>{earnedBadge?.tier ?? "Not started"}</Badge>
+                    </div>
                   </div>
                 );
               })}
-            </div>
-            <div className="grid sm:grid-cols-5 gap-2 text-xs">
-              {Object.entries(BADGE_TIER_MEANING).map(([tier, meaning]) => (
-                <div key={tier} className="rounded-2xl border border-border/50 p-3 bg-background/30">
-                  <div className="font-semibold">{tier}</div>
-                  <div className="text-muted-foreground mt-1">{meaning}</div>
-                </div>
-              ))}
             </div>
           </div>
 
           <div className="glass-strong rounded-3xl p-5 md:p-6 space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="font-display text-xl font-semibold">Active challenges</h2>
-                <p className="text-sm text-muted-foreground">Deadlines and countdowns keep lifestyle proof moving.</p>
+                <h2 className="font-display text-xl font-semibold">Main challenge</h2>
+                <p className="text-sm text-muted-foreground">One visible challenge keeps the Dashboard calm.</p>
               </div>
               <Button size="sm" className="bg-gradient-primary" onClick={() => setChallengeOpen(true)}>New</Button>
             </div>
-            <div className="space-y-3">
-              {lifestyle.challenges.slice(0, 3).map((challenge) => {
-                const pct = Math.min(100, Math.round((challenge.currentProgress / Math.max(1, challenge.target)) * 100));
-                return (
-                  <div key={challenge.id} className="rounded-2xl border border-glass-border bg-background/40 p-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <div className="text-sm font-semibold">{challenge.title}</div>
-                        <div className="text-xs text-muted-foreground">{challenge.sportType} · {challenge.targetMetric}</div>
-                      </div>
-                      <Badge variant="outline">{getCountdown(challenge.deadline)}</Badge>
+            {primaryChallenge ? (() => {
+              const pct = Math.min(100, Math.round((primaryChallenge.currentProgress / Math.max(1, primaryChallenge.target)) * 100));
+              return (
+                <div className="rounded-2xl border border-glass-border bg-background/40 p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <div className="text-sm font-semibold">{primaryChallenge.title}</div>
+                      <div className="text-xs text-muted-foreground">{primaryChallenge.sportType} · {primaryChallenge.targetMetric}</div>
                     </div>
-                    <Progress value={pct} className="h-2 mt-3" />
-                    <div className="text-xs text-muted-foreground mt-2">{challenge.currentProgress}/{challenge.target} by {challenge.deadline}</div>
+                    <Badge variant="outline">{getCountdown(primaryChallenge.deadline)}</Badge>
                   </div>
-                );
-              })}
-            </div>
+                  <Progress value={pct} className="h-2 mt-3" />
+                  <div className="text-xs text-muted-foreground mt-2">{primaryChallenge.currentProgress}/{primaryChallenge.target} by {primaryChallenge.deadline}</div>
+                </div>
+              );
+            })() : <Button variant="outline" onClick={() => setChallengeOpen(true)}>Create your first challenge</Button>}
+            <Button variant="ghost" size="sm" asChild><Link to="/challenges">View all challenges</Link></Button>
           </div>
         </section>
 
@@ -265,31 +270,30 @@ const Dashboard = () => {
           <div className="glass-strong rounded-3xl p-5 md:p-6 lg:col-span-2">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h2 className="font-display text-xl font-semibold">Lifestyle opportunities</h2>
-                <p className="text-sm text-muted-foreground">Perks and support matched to your sport identity; not a voucher marketplace.</p>
+                <h2 className="font-display text-xl font-semibold">Matched opportunity</h2>
+                <p className="text-sm text-muted-foreground">Show one high-quality match here; keep the full list in Opportunities.</p>
               </div>
-              <Button variant="outline" size="sm" asChild><Link to="/opportunities">Open</Link></Button>
+              <Button variant="outline" size="sm" asChild><Link to="/opportunities">Open all</Link></Button>
             </div>
-            <div className="grid md:grid-cols-2 gap-3">
-              {opportunities.slice(0, 4).map((opportunity) => (
-                <div key={opportunity.id} className="rounded-2xl border border-glass-border bg-background/40 p-4">
-                  <div className="flex items-center justify-between gap-2">
-                    <Badge variant="secondary">{opportunity.category}</Badge>
-                    <Badge variant="outline">{opportunity.status}</Badge>
-                  </div>
-                  <h3 className="font-semibold mt-3">{opportunity.title}</h3>
-                  <p className="text-xs text-muted-foreground mt-1">{opportunity.reason}</p>
-                  <div className="text-xs font-medium mt-3">Readiness: {opportunity.readiness}</div>
+            {primaryOpportunity && (
+              <div className="rounded-2xl border border-glass-border bg-background/40 p-4">
+                <div className="flex items-center justify-between gap-2">
+                  <Badge variant="secondary">{primaryOpportunity.category}</Badge>
+                  <Badge variant="outline">{primaryOpportunity.status}</Badge>
                 </div>
-              ))}
-            </div>
+                <h3 className="font-display text-xl font-semibold mt-3">{primaryOpportunity.title}</h3>
+                <p className="text-sm text-muted-foreground mt-1">{primaryOpportunity.reason}</p>
+                <div className="text-xs font-medium mt-3">Readiness: {primaryOpportunity.readiness}</div>
+                <p className="text-xs text-muted-foreground mt-2">Pilot match only — no guaranteed compensation, sponsorship, employment, or income is implied.</p>
+              </div>
+            )}
           </div>
 
           <div className="glass-strong rounded-3xl p-5 md:p-6">
             <h2 className="font-display text-xl font-semibold mb-1">Hall of Fame</h2>
-            <p className="text-sm text-muted-foreground mb-4">Demo rank is based on proof, badge tier progression, challenge completion, and referrals.</p>
+            <p className="text-sm text-muted-foreground mb-4">Secondary signal, based on proof, badge tier progression, challenge completion, and referrals.</p>
             <div className="space-y-2">
-              {leaderboard.map((entry) => (
+              {leaderboard.slice(0, 4).map((entry) => (
                 <div key={entry.name} className="rounded-2xl border border-glass-border bg-background/40 p-3 flex items-center gap-3">
                   <div className="h-9 w-9 rounded-xl bg-primary/10 text-primary grid place-items-center font-semibold">#{entry.rank}</div>
                   <div className="min-w-0 flex-1">
@@ -305,9 +309,9 @@ const Dashboard = () => {
 
         <section className="grid lg:grid-cols-[0.9fr_1.1fr] gap-5">
           <div className="glass-strong rounded-3xl p-5 md:p-6">
-            <h2 className="font-display text-xl font-semibold mb-3">Proof history</h2>
+            <h2 className="font-display text-xl font-semibold mb-3">Recent proof</h2>
             <div className="space-y-2">
-              {lifestyle.proofs.slice(0, 5).map((proof) => (
+              {lifestyle.proofs.slice(0, 3).map((proof) => (
                 <div key={proof.id} className="rounded-2xl border border-glass-border bg-background/40 p-3 flex items-center gap-3">
                   <Award className="h-4 w-4 text-primary" />
                   <div className="min-w-0 flex-1">
