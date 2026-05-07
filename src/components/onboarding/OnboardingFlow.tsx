@@ -56,8 +56,9 @@ export const OnboardingFlow = ({ profile, onSaved }: Props) => {
   const [avatar, setAvatar] = useState(avatarEmojiFromUrl(profile.avatar_url));
   const [interest, setInterest] = useState<SportInterest>(getSportLifestyleState().selectedInterest);
   const [saving, setSaving] = useState(false);
+  const [checkingUsername, setCheckingUsername] = useState(false);
 
-  const validateIdentity = () => {
+  const validateIdentityShape = () => {
     const clean = sanitize(username);
     if (clean.length < 3 || !USERNAME_RE.test(clean) || RESERVED_USERNAMES.has(clean)) {
       toast.error("Choose a valid username with at least 3 letters or numbers.");
@@ -70,8 +71,41 @@ export const OnboardingFlow = ({ profile, onSaved }: Props) => {
     return true;
   };
 
+  const checkUsernameAvailable = async () => {
+    const clean = sanitize(username);
+    if (profile.username === clean) return true;
+    setCheckingUsername(true);
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("username", clean)
+        .maybeSingle();
+      if (error) {
+        toast.error("Couldn't verify username availability", { description: "Please try again before continuing." });
+        return false;
+      }
+      if (data?.id && data.id !== profile.id) {
+        toast.error("Username already taken", { description: "Choose another public ID before continuing." });
+        return false;
+      }
+      return true;
+    } catch {
+      toast.error("Couldn't verify username availability", { description: "Please try again before continuing." });
+      return false;
+    } finally {
+      setCheckingUsername(false);
+    }
+  };
+
+  const validateIdentity = async () => validateIdentityShape() && await checkUsernameAvailable();
+
+  const continueToSport = async () => {
+    if (await validateIdentity()) setStep("sport");
+  };
+
   const finish = async () => {
-    if (!validateIdentity()) return;
+    if (!(await validateIdentity())) return;
     setSaving(true);
     const clean = sanitize(username) || (await generateDemoUsername(user?.email));
     const avatarUrl = avatarDataUrl(avatar);
@@ -83,10 +117,19 @@ export const OnboardingFlow = ({ profile, onSaved }: Props) => {
         .eq("id", profile.id)
         .select("id, username, display_name, avatar_url, bio, is_published")
         .single();
-      if (!error && data) onSaved(data as EditableProfile);
-      else onSaved(nextProfile);
-    } catch {
-      onSaved(nextProfile);
+      if (error) {
+        if (error.message.toLowerCase().includes("duplicate") || error.message.toLowerCase().includes("unique")) {
+          toast.error("Username already taken", { description: "Choose another public ID before opening the Dashboard." });
+          setStep("identity");
+          return;
+        }
+        throw error;
+      }
+      if (data) onSaved(data as EditableProfile);
+    } catch (error) {
+      toast.error("Couldn't save identity", { description: error instanceof Error ? error.message : "Please try again." });
+      setSaving(false);
+      return;
     }
 
     const lifestyle = getSportLifestyleState();
@@ -135,7 +178,10 @@ export const OnboardingFlow = ({ profile, onSaved }: Props) => {
                 </div>
               </div>
               <div className="mt-7 flex justify-end">
-                <Button onClick={() => validateIdentity() && setStep("sport")} className="bg-gradient-primary text-primary-foreground font-medium h-11 px-6">Continue <ArrowRight className="ml-1 h-4 w-4" /></Button>
+                <Button onClick={continueToSport} disabled={checkingUsername} className="bg-gradient-primary text-primary-foreground font-medium h-11 px-6">
+                  {checkingUsername ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : null}
+                  Continue <ArrowRight className="ml-1 h-4 w-4" />
+                </Button>
               </div>
             </>
           )}
@@ -155,8 +201,8 @@ export const OnboardingFlow = ({ profile, onSaved }: Props) => {
               </div>
               <div className="mt-7 flex items-center justify-between">
                 <Button type="button" variant="ghost" onClick={() => setStep("identity")} className="text-muted-foreground"><ArrowLeft className="h-4 w-4 mr-1" />Back</Button>
-                <Button type="button" onClick={finish} disabled={saving} className="bg-gradient-primary text-primary-foreground font-medium h-11 px-6 shadow-glow-primary glow-primary">
-                  {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Sparkles className="h-4 w-4 mr-1.5" />Open Dashboard</>}
+                <Button type="button" onClick={finish} disabled={saving || checkingUsername} className="bg-gradient-primary text-primary-foreground font-medium h-11 px-6 shadow-glow-primary glow-primary">
+                  {saving || checkingUsername ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Sparkles className="h-4 w-4 mr-1.5" />Open Dashboard</>}
                 </Button>
               </div>
             </>
