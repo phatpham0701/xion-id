@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, type ComponentType } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Loader2 } from "lucide-react";
@@ -8,8 +8,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { RequireAuth, RedirectIfAuthed } from "@/components/auth/RouteGuards";
 import { RequireAdmin } from "@/components/admin/AdminLayout";
-import Index from "./pages/Index.tsx";
 
+const Index = lazy(() => import("./pages/Index.tsx"));
 const AdminHome = lazy(() => import("./pages/admin/AdminHome.tsx"));
 const AdminUsers = lazy(() => import("./pages/admin/AdminUsers.tsx"));
 const AdminProfiles = lazy(() => import("./pages/admin/AdminProfiles.tsx"));
@@ -23,7 +23,7 @@ const AdminDemoControls = lazy(() => import("./pages/admin/AdminDemoControls.tsx
 const AdminFallback = () => (
   <div className="min-h-screen grid place-items-center"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
 );
-const lazyAdmin = (El: React.ComponentType) => (
+const lazyAdmin = (El: ComponentType) => (
   <RequireAdmin>
     <Suspense fallback={<AdminFallback />}><El /></Suspense>
   </RequireAdmin>
@@ -34,6 +34,7 @@ const Editor = lazy(() => import("./pages/Editor.tsx"));
 const Templates = lazy(() => import("./pages/Templates.tsx"));
 const BadgesAll = lazy(() => import("./pages/BadgesAll.tsx"));
 const RewardsBox = lazy(() => import("./pages/RewardsBox.tsx"));
+const Challenges = lazy(() => import("./pages/Challenges.tsx"));
 const TemplatePreview = lazy(() => import("./pages/TemplatePreview.tsx"));
 const Campaigns = lazy(() => import("./pages/Campaigns.tsx"));
 const PublicCampaign = lazy(() => import("./pages/PublicCampaign.tsx"));
@@ -105,6 +106,14 @@ function App() {
             <Route
               path="/rewards"
               element={<RequireAuth><RewardsBox /></RequireAuth>}
+            />
+            <Route
+              path="/opportunities"
+              element={<RequireAuth><RewardsBox /></RequireAuth>}
+            />
+            <Route
+              path="/challenges"
+              element={<RequireAuth><Challenges /></RequireAuth>}
             />
             {/* Admin (lazy + RequireAdmin) */}
             <Route path="/admin" element={lazyAdmin(AdminHome)} />
