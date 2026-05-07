@@ -1,6 +1,16 @@
-import type { SigningClient } from "@burnt-labs/abstraxion";
 import { supabase } from "@/integrations/supabase/client";
 import { XION_CONFIG } from "@/lib/xion";
+
+// Minimal SigningClient shape — full SDK is deferred for the pitch build.
+type SigningClient = {
+  sendTokens: (
+    sender: string,
+    recipient: string,
+    amount: { denom: string; amount: string }[],
+    fee: "auto" | unknown,
+    memo?: string,
+  ) => Promise<unknown>;
+};
 
 export const XION_DECIMALS = 6; // 1 XION = 1_000_000 uxion
 export const MAX_TIP_XION = 1000;

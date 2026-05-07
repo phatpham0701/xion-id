@@ -1,6 +1,19 @@
 import { useEffect, useRef } from "react";
-import { useAbstraxionAccount } from "@burnt-labs/abstraxion";
 import { toast } from "sonner";
+
+// Pitch-build stub: the full @burnt-labs/abstraxion SDK is intentionally not
+// installed (see src/main.tsx). This stub keeps the hook's API stable so
+// dependent UI compiles and runs in disconnected demo mode.
+const useAbstraxionAccount = () => ({
+  data: { bech32Address: "" as string | undefined },
+  isConnected: false,
+  isConnecting: false,
+  isLoading: false,
+  login: async () => {
+    throw new Error("XION wallet provider is not enabled in this build.");
+  },
+  logout: async () => {},
+});
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { getXionConfigError } from "@/lib/xion";
