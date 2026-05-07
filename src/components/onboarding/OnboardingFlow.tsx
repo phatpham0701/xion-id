@@ -109,7 +109,6 @@ export const OnboardingFlow = ({ profile, onSaved }: Props) => {
     setSaving(true);
     const clean = sanitize(username) || (await generateDemoUsername(user?.email));
     const avatarUrl = avatarDataUrl(avatar);
-    const nextProfile = { ...profile, username: clean, display_name: displayName.trim(), avatar_url: avatarUrl };
     try {
       const { data, error } = await supabase
         .from("profiles")
@@ -121,6 +120,7 @@ export const OnboardingFlow = ({ profile, onSaved }: Props) => {
         if (error.message.toLowerCase().includes("duplicate") || error.message.toLowerCase().includes("unique")) {
           toast.error("Username already taken", { description: "Choose another public ID before opening the Dashboard." });
           setStep("identity");
+          setSaving(false);
           return;
         }
         throw error;
