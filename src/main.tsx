@@ -1,4 +1,3 @@
-import { lazy, Suspense, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
@@ -27,54 +26,19 @@ window.addEventListener("error", (e) => {
 });
 
 /**
- * Pitch-safe loading rule:
+ * Foundation pitch mode:
  *
- * The Sport Lifestyle Engine pilot does not require live XION/Burnt provider
- * plumbing. Keep the heavy Abstraxion SDK completely out of the default first
- * paint unless the developer explicitly opts in with VITE_ENABLE_XION_PROVIDER.
+ * The current Sport Lifestyle Engine demo does not need live XION/Burnt provider
+ * plumbing. Keeping the heavy wallet SDK out of the default app shell makes the
+ * pitch build faster and removes registry/install fragility from the demo path.
  *
- * This preserves the existing integration path for later, but keeps Foundation
- * demo routes fast and avoids blocking the app on Burnt SDK/CSS during pitch.
+ * Reintroduce a dedicated provider shell later when the Foundation explicitly
+ * validates the XION/Burnt verification integration scope.
  */
-const ENABLE_XION_PROVIDER = import.meta.env.VITE_ENABLE_XION_PROVIDER === "true";
+if (import.meta.env.VITE_ENABLE_XION_PROVIDER === "true") {
+  // Soft notice only: the pitch build intentionally does not mount the provider.
+  // Avoid blocking the app or importing private/unstable SDK packages here.
+  console.info("XION provider flag detected; live provider is deferred for the post-pitch integration phase.");
+}
 
-const LazyXionProvider = lazy(async () => {
-  const [{ XION_CONFIG }, { AbstraxionProvider }] = await Promise.all([
-    import("@/lib/xion"),
-    import("@burnt-labs/abstraxion"),
-    import("@burnt-labs/ui/dist/index.css"),
-  ]);
-
-  const config = {
-    chainId: XION_CONFIG.chainId,
-    treasury: XION_CONFIG.treasury,
-    rpcUrl: XION_CONFIG.rpcUrl,
-    restUrl: XION_CONFIG.restUrl,
-    gasPrice: XION_CONFIG.gasPrice,
-    authentication: {
-      type: "auto" as const,
-      authAppUrl: XION_CONFIG.authAppUrl,
-    },
-  } as Parameters<typeof AbstraxionProvider>[0]["config"];
-
-                  
-  return {
-    default: ({ children }: { children: ReactNode }) => (
-      <AbstraxionProvider config={config}>{children}</AbstraxionProvider>
-    ),
-  };
-});
-
-const Root = () => {
-  if (!ENABLE_XION_PROVIDER) return <App />;
-
-  return (
-    <Suspense fallback={<App />}>
-      <LazyXionProvider>
-        <App />
-      </LazyXionProvider>
-    </Suspense>
-  );
-};
-
-createRoot(document.getElementById("root")!).render(<Root />);
+createRoot(document.getElementById("root")!).render(<App />);
