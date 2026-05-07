@@ -42,7 +42,9 @@ export default defineConfig(({ mode }) => ({
           // in the default vendor chunk so initialization order is guaranteed.
           // Only split heavy, independent libraries.
           if (id.includes("recharts") || id.includes("d3-")) return "charts";
-          if (id.includes("qrcode") || id.includes("qr-code")) return "qrcode";
+          // Only split the pure-JS qrcode generator. react-qr-code depends on
+          // React and must stay in the vendor chunk to avoid TDZ errors.
+          if (id.includes("/qrcode/") || id.includes("node_modules/qrcode")) return "qrcode";
           if (id.includes("@supabase")) return "supabase";
           return "vendor";
         },
