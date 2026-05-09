@@ -18,7 +18,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { logAdminAction } from "@/lib/admin";
 import { toast } from "@/hooks/use-toast";
-import { Search, ExternalLink, Star, StarOff } from "lucide-react";
+import { Search, ExternalLink, Star, StarOff, History } from "lucide-react";
 
 type ProfileRow = {
   id: string;
