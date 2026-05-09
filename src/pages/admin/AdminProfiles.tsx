@@ -18,7 +18,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { logAdminAction } from "@/lib/admin";
 import { toast } from "@/hooks/use-toast";
-import { Search, ExternalLink, Star, StarOff } from "lucide-react";
+import { Search, ExternalLink, Star, StarOff, History } from "lucide-react";
 
 type ProfileRow = {
   id: string;
@@ -138,6 +138,12 @@ const AdminProfiles = () => {
                 <Button size="sm" variant="outline" onClick={() => toggleFeature(r)}>
                   {r.is_featured ? <StarOff className="mr-1 h-3.5 w-3.5" /> : <Star className="mr-1 h-3.5 w-3.5" />}
                   {r.is_featured ? "Unfeature" : "Feature"}
+                </Button>
+                <Button asChild size="sm" variant="ghost">
+                  <Link to={`/admin/profiles/${r.id}/history`}>
+                    <History className="mr-1 h-3.5 w-3.5" />
+                    History
+                  </Link>
                 </Button>
               </div>
             </div>

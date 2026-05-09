@@ -14,6 +14,7 @@ const Index = lazy(() => import("./pages/Index.tsx"));
 const AdminHome = lazy(() => import("./pages/admin/AdminHome.tsx"));
 const AdminUsers = lazy(() => import("./pages/admin/AdminUsers.tsx"));
 const AdminProfiles = lazy(() => import("./pages/admin/AdminProfiles.tsx"));
+const AdminProfileHistory = lazy(() => import("./pages/admin/AdminProfileHistory.tsx"));
 const AdminBadges = lazy(() => import("./pages/admin/AdminBadges.tsx"));
 const AdminRewards = lazy(() => import("./pages/admin/AdminRewards.tsx"));
 const AdminCampaigns = lazy(() => import("./pages/admin/AdminCampaigns.tsx"));
@@ -121,6 +122,7 @@ function App() {
             <Route path="/admin" element={lazyAdmin(AdminHome)} />
             <Route path="/admin/users" element={lazyAdmin(AdminUsers)} />
             <Route path="/admin/profiles" element={lazyAdmin(AdminProfiles)} />
+            <Route path="/admin/profiles/:profileId/history" element={lazyAdmin(AdminProfileHistory)} />
             <Route path="/admin/badges" element={lazyAdmin(AdminBadges)} />
             <Route path="/admin/rewards" element={lazyAdmin(AdminRewards)} />
             <Route path="/admin/campaigns" element={lazyAdmin(AdminCampaigns)} />
