@@ -7,7 +7,7 @@
 - [x] Replace the generic sport badge card icon in `src/pages/BadgesAll.tsx` with `SportBadgeThumbnail`.
 - [x] Add the selected suggested badge thumbnail to `src/components/dashboard/VerifyLifestyleDialog.tsx`.
 - [x] Confirm `wallet_badges` / admin-issued badge inventory rendering remains unchanged.
-- [ ] Run `npm run build` and fix TypeScript/build errors.
+- [x] Run `npm run build` and fix TypeScript/build errors. CI run #41 passed Build app and Lint report.
 
 ## Manual test checklist
 - [ ] `/badges` renders all 50 sport badges.
