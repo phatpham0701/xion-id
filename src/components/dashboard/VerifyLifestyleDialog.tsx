@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { CheckCircle2, Sparkles } from "lucide-react";
+import { SportBadgeThumbnail } from "@/components/badges/SportBadgeThumbnail";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -124,7 +125,12 @@ export const VerifyLifestyleDialog = ({ open, onOpenChange, state, onStateChange
                 <Badge variant="secondary">Suggested badge</Badge>
                 <Sparkles className="h-4 w-4 text-primary" />
               </div>
-              <h3 className="font-display text-xl font-semibold">{selectedBadge.name}</h3>
+              <SportBadgeThumbnail
+                badge={selectedBadge}
+                earned={Boolean(state.earnedBadges[selectedBadge.id])}
+                progress={state.earnedBadges[selectedBadge.id]?.progress ?? 0}
+                size="md"
+              />
               <p className="text-sm text-muted-foreground">{selectedBadge.description}</p>
               <div className="rounded-2xl bg-background/60 p-3 text-sm">
                 <div className="font-medium">Proof hint</div>

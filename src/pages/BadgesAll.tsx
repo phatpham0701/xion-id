@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Award } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -8,6 +8,7 @@ import { BrandLogo } from "@/components/BrandLogo";
 import { Wordmark } from "@/components/Wordmark";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { SportBadgeThumbnail } from "@/components/badges/SportBadgeThumbnail";
 import { VerifyLifestyleDialog } from "@/components/dashboard/VerifyLifestyleDialog";
 import { BADGE_TIER_MEANING, SPORT_BADGES, getSportLifestyleState, type SportLifestyleState } from "@/lib/sportLifestyle";
 import { BADGE_LABELS, type BadgeKind } from "@/lib/badgeScanner";
@@ -94,18 +95,21 @@ const BadgesAll = () => {
             const earned = lifestyle.earnedBadges[sportBadge.id];
             return (
               <div key={sportBadge.id} className="rounded-3xl border border-glass-border bg-background/50 p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <Badge variant="outline" className="mb-2">{sportBadge.interest}</Badge>
-                    <h3 className="font-display font-semibold text-lg leading-tight">{sportBadge.name}</h3>
-                    <p className="text-sm text-muted-foreground mt-1">{sportBadge.description}</p>
-                  </div>
-                  <Award className="h-5 w-5 text-primary shrink-0" />
+                <SportBadgeThumbnail
+                  badge={sportBadge}
+                  earned={Boolean(earned)}
+                  progress={earned?.progress ?? 0}
+                  size="sm"
+                  className="mb-3"
+                />
+                <div className="space-y-2">
+                  <Badge variant="outline">{sportBadge.interest}</Badge>
+                  <p className="text-sm text-muted-foreground">{sportBadge.description}</p>
                 </div>
                 <Progress value={earned?.progress ?? 0} className="h-2 mt-4" />
-                <div className="flex items-center justify-between mt-2 text-xs">
+                <div className="flex items-center justify-between mt-2 text-xs gap-3">
                   <span className="text-muted-foreground">{sportBadge.proofHint}</span>
-                  <Badge variant={earned ? "default" : "secondary"}>{earned?.tier ?? "Bronze"}</Badge>
+                  <Badge variant={earned ? "default" : "secondary"}>{earned?.tier ?? sportBadge.tierIntent}</Badge>
                 </div>
               </div>
             );
