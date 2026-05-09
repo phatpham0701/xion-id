@@ -69,6 +69,27 @@
   <meta name="twitter:title" content="XIONID — Verify everything. One identity. Real proof.">
   <meta property="og:description" content="XIONID is your verifiable identity passport — earn badges, unlock rewards, and prove who you are across every app you love.">
   <meta name="twitter:description" content="XIONID is your verifiable identity passport — earn badges, unlock rewards, and prove who you are across every app you love.">
+  <script>
+    // Swallow noisy errors thrown by browser extensions (e.g. Keplr, MetaMask)
+    // that inject scripts into every page. These are unrelated to the app but
+    // would otherwise trigger the blank-screen / error overlay before React mounts.
+    (function () {
+      var isExtNoise = function (v) {
+        try {
+          var s = (v && v.stack) ? (v.message + "\n" + v.stack) : String(v == null ? "" : (v.message || v));
+          return /Extension context invalidated/i.test(s) || /chrome-extension:\/\//i.test(s) || /moz-extension:\/\//i.test(s);
+        } catch (_) { return false; }
+      };
+      window.addEventListener("unhandledrejection", function (e) {
+        if (isExtNoise(e.reason)) { e.preventDefault(); e.stopImmediatePropagation && e.stopImmediatePropagation(); }
+      }, true);
+      window.addEventListener("error", function (e) {
+        if ((e.filename && (e.filename.indexOf("chrome-extension://") === 0 || e.filename.indexOf("moz-extension://") === 0)) || isExtNoise(e.error || e.message)) {
+          e.preventDefault(); e.stopImmediatePropagation && e.stopImmediatePropagation();
+        }
+      }, true);
+    })();
+  </script>
 </head>
 
   <body style="margin:0;background:#071326;color:#f1f3f8;font-family:Manrope,system-ui,sans-serif;">
