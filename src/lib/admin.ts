@@ -159,7 +159,7 @@ export const logAdminAction = async (params: {
       action: params.action,
       target_type: params.targetType ?? undefined,
       target_id: params.targetId ?? undefined,
-      details: (params.details ?? {}) as Record<string, unknown>,
+      details: (params.details ?? {}) as never,
     }]);
 
     if (error) {
