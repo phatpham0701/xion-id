@@ -122,6 +122,7 @@ function App() {
             <Route path="/admin" element={lazyAdmin(AdminHome)} />
             <Route path="/admin/users" element={lazyAdmin(AdminUsers)} />
             <Route path="/admin/profiles" element={lazyAdmin(AdminProfiles)} />
+            <Route path="/admin/profiles/:profileId/history" element={lazyAdmin(AdminProfileHistory)} />
             <Route path="/admin/badges" element={lazyAdmin(AdminBadges)} />
             <Route path="/admin/rewards" element={lazyAdmin(AdminRewards)} />
             <Route path="/admin/campaigns" element={lazyAdmin(AdminCampaigns)} />
