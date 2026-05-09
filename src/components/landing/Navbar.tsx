@@ -103,39 +103,41 @@ const Navbar = () => {
         )}
         aria-hidden={!open}
       >
-        <nav
-          aria-label="Mobile navigation"
-          className="container flex flex-col gap-1 pb-4 pt-2"
-        >
-          {NAV_LINKS.map(({ label, href, external }) =>
-            external ? (
-              <a
-                key={label}
-                href={href}
-                className="rounded-lg px-3 py-2.5 text-sm text-foreground/80 hover:bg-white/5 hover:text-foreground transition-colors"
-                onClick={() => setOpen(false)}
-              >
-                {label}
-              </a>
-            ) : (
-              <Link
-                key={label}
-                to={href}
-                className="rounded-lg px-3 py-2.5 text-sm text-foreground/80 hover:bg-white/5 hover:text-foreground transition-colors"
-                onClick={() => setOpen(false)}
-              >
-                {label}
-              </Link>
-            )
-          )}
-          <Link
-            to="/auth"
-            className="rounded-lg px-3 py-2.5 text-sm text-foreground/80 hover:bg-white/5 hover:text-foreground transition-colors"
-            onClick={() => setOpen(false)}
+        {open && (
+          <nav
+            aria-label="Mobile navigation"
+            className="container flex flex-col gap-1 pb-4 pt-2"
           >
-            Sign in
-          </Link>
-        </nav>
+            {NAV_LINKS.map(({ label, href, external }) =>
+              external ? (
+                <a
+                  key={label}
+                  href={href}
+                  className="rounded-lg px-3 py-2.5 text-sm text-foreground/80 hover:bg-white/5 hover:text-foreground transition-colors"
+                  onClick={() => setOpen(false)}
+                >
+                  {label}
+                </a>
+              ) : (
+                <Link
+                  key={label}
+                  to={href}
+                  className="rounded-lg px-3 py-2.5 text-sm text-foreground/80 hover:bg-white/5 hover:text-foreground transition-colors"
+                  onClick={() => setOpen(false)}
+                >
+                  {label}
+                </Link>
+              )
+            )}
+            <Link
+              to="/auth"
+              className="rounded-lg px-3 py-2.5 text-sm text-foreground/80 hover:bg-white/5 hover:text-foreground transition-colors"
+              onClick={() => setOpen(false)}
+            >
+              Sign in
+            </Link>
+          </nav>
+        )}
       </div>
     </header>
   );

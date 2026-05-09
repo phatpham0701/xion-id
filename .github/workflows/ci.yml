@@ -32,6 +32,10 @@ jobs:
 
       - name: Test
         run: npm run test
+        env:
+          VITE_SUPABASE_URL: https://placeholder.supabase.co
+          VITE_SUPABASE_PUBLISHABLE_KEY: placeholder-anon-key
+          VITE_ENABLE_XION_PROVIDER: "false"
 
       - name: Build
         run: npm run build
