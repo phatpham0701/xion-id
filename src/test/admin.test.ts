@@ -1,49 +1,81 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect } from "vitest";
+import { parseAdminEmails, isConfiguredAdminEmail } from "@/lib/admin";
 
 // ---------------------------------------------------------------------------
-// isDemoAdminEmail — tested via the VITE_ADMIN_EMAILS env path.
-// We import the module after setting up the env mock so the module-level
-// ADMIN_EMAILS constant picks up the test value.
+// parseAdminEmails
 // ---------------------------------------------------------------------------
-
-describe("VITE_ADMIN_EMAILS env parsing", () => {
-  it("empty env produces no allowlist (falls back to user_roles only)", async () => {
-    vi.stubEnv("VITE_ADMIN_EMAILS", "");
-    // Re-import the module so the constant is re-evaluated with the stub.
-    const mod = await import("@/lib/admin?v=empty");
-    // The module doesn't export ADMIN_EMAILS directly, so we verify the
-    // VITE_ADMIN_EMAILS value itself is parsed correctly.
-    const emails = (import.meta.env.VITE_ADMIN_EMAILS ?? "")
-      .split(",")
-      .map((e: string) => e.toLowerCase().trim())
-      .filter(Boolean);
-    expect(emails).toHaveLength(0);
-    vi.unstubAllEnvs();
+describe("parseAdminEmails", () => {
+  it("returns empty list for undefined", () => {
+    expect(parseAdminEmails(undefined)).toEqual([]);
   });
 
-  it("comma-separated env is split and trimmed correctly", () => {
-    const raw = "alice@example.com , BOB@EXAMPLE.COM, charlie@example.com";
-    const emails = raw.split(",").map((e) => e.toLowerCase().trim()).filter(Boolean);
-    expect(emails).toEqual(["alice@example.com", "bob@example.com", "charlie@example.com"]);
+  it("returns empty list for null", () => {
+    expect(parseAdminEmails(null)).toEqual([]);
   });
 
-  it("single email env works", () => {
-    const raw = "admin@example.com";
-    const emails = raw.split(",").map((e) => e.toLowerCase().trim()).filter(Boolean);
-    expect(emails).toEqual(["admin@example.com"]);
+  it("returns empty list for empty string", () => {
+    expect(parseAdminEmails("")).toEqual([]);
   });
 
-  it("env with only whitespace produces empty list", () => {
-    const raw = "   ";
-    const emails = raw.split(",").map((e) => e.toLowerCase().trim()).filter(Boolean);
-    expect(emails).toHaveLength(0);
+  it("returns empty list for whitespace-only string", () => {
+    expect(parseAdminEmails("   ")).toEqual([]);
+  });
+
+  it("parses a single email", () => {
+    expect(parseAdminEmails("admin@example.com")).toEqual(["admin@example.com"]);
+  });
+
+  it("parses comma-separated emails, trimming whitespace and lowercasing", () => {
+    expect(
+      parseAdminEmails("alice@example.com , BOB@EXAMPLE.COM, charlie@example.com"),
+    ).toEqual(["alice@example.com", "bob@example.com", "charlie@example.com"]);
+  });
+
+  it("skips blank entries between commas", () => {
+    expect(parseAdminEmails("a@a.com,,b@b.com")).toEqual(["a@a.com", "b@b.com"]);
   });
 });
 
 // ---------------------------------------------------------------------------
-// AuditAction type exhaustiveness — ensure all expected actions are present.
+// isConfiguredAdminEmail
 // ---------------------------------------------------------------------------
-describe("AuditAction type values", () => {
+describe("isConfiguredAdminEmail", () => {
+  const emails = ["alice@example.com", "bob@example.com"];
+
+  it("returns false for undefined email", () => {
+    expect(isConfiguredAdminEmail(undefined, emails)).toBe(false);
+  });
+
+  it("returns false for null email", () => {
+    expect(isConfiguredAdminEmail(null, emails)).toBe(false);
+  });
+
+  it("returns false when adminEmails list is empty", () => {
+    expect(isConfiguredAdminEmail("alice@example.com", [])).toBe(false);
+  });
+
+  it("returns true for an email in the list", () => {
+    expect(isConfiguredAdminEmail("alice@example.com", emails)).toBe(true);
+  });
+
+  it("is case-insensitive", () => {
+    expect(isConfiguredAdminEmail("ALICE@EXAMPLE.COM", emails)).toBe(true);
+  });
+
+  it("trims whitespace before matching", () => {
+    expect(isConfiguredAdminEmail("  alice@example.com  ", emails)).toBe(true);
+  });
+
+  it("returns false for an email not in the list", () => {
+    expect(isConfiguredAdminEmail("charlie@example.com", emails)).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// AuditAction type exhaustiveness — compile-time guard.
+// If AuditAction grows, update this list and the count below.
+// ---------------------------------------------------------------------------
+describe("AuditAction exhaustiveness", () => {
   const EXPECTED_ACTIONS = [
     "role.grant", "role.revoke",
     "profile.update", "profile.publish", "profile.feature", "profile.suspend",
@@ -53,13 +85,11 @@ describe("AuditAction type values", () => {
     "health.check",
   ] as const;
 
-  it("has the correct number of audit actions (17)", () => {
-    // This acts as a compile-time guard: if AuditAction grows, tests will break
-    // and the developer will know to update this list.
+  it("has exactly 17 actions", () => {
     expect(EXPECTED_ACTIONS).toHaveLength(17);
   });
 
-  it("all actions are non-empty strings with a dot separator", () => {
+  it("every action has a dot-separated lowercase format", () => {
     for (const action of EXPECTED_ACTIONS) {
       expect(action).toMatch(/^[a-z_]+\.[a-z_]+$/);
     }
@@ -67,7 +97,7 @@ describe("AuditAction type values", () => {
 });
 
 // ---------------------------------------------------------------------------
-// AdminRoleState shape
+// AdminRoleState default shape
 // ---------------------------------------------------------------------------
 describe("AdminRoleState shape", () => {
   it("default state has loading=true and isAdmin=false", () => {
