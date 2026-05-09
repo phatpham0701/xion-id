@@ -8,6 +8,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { RequireAuth, RedirectIfAuthed } from "@/components/auth/RouteGuards";
 import { RequireAdmin } from "@/components/admin/AdminLayout";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 const Index = lazy(() => import("./pages/Index.tsx"));
 const AdminHome = lazy(() => import("./pages/admin/AdminHome.tsx"));
@@ -56,6 +57,7 @@ function App() {
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
+          <ErrorBoundary>
           <Suspense fallback={<PageFallback />}>
           <Routes>
             <Route path="/" element={<Index />} />
@@ -135,6 +137,7 @@ function App() {
             <Route path="*" element={<NotFound />} />
           </Routes>
           </Suspense>
+          </ErrorBoundary>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

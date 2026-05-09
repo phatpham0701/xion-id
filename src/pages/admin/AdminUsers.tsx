@@ -76,8 +76,8 @@ const AdminUsers = () => {
       }
       await load();
       toast({ title: "Role updated" });
-    } catch (e: any) {
-      toast({ title: "Failed", description: e.message, variant: "destructive" });
+    } catch (e: unknown) {
+      toast({ title: "Failed", description: (e as Error).message, variant: "destructive" });
     } finally {
       setBusy(null);
     }

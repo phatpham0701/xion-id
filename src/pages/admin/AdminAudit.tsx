@@ -10,7 +10,7 @@ type Row = {
   action: string;
   target_type: string | null;
   target_id: string | null;
-  details: any;
+  details: Record<string, unknown>;
   created_at: string;
 };
 

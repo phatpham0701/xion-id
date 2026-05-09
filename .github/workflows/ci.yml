@@ -11,25 +11,36 @@ permissions:
 
 jobs:
   ci:
-    name: Build and lint
+    name: Lint · Test · Build
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: npm
 
       - name: Install dependencies
-        run: npm install --legacy-peer-deps
+        run: npm ci --legacy-peer-deps
 
-      - name: Build app
-        run: npm run build
-
-      - name: Lint report
+      - name: Lint
         run: npm run lint
-        continue-on-error: true
+
+      - name: Test
+        run: npm run test
+        env:
+          VITE_SUPABASE_URL: https://placeholder.supabase.co
+          VITE_SUPABASE_PUBLISHABLE_KEY: placeholder-anon-key
+          VITE_ENABLE_XION_PROVIDER: "false"
+
+      - name: Build
+        run: npm run build
+        env:
+          # Provide stub values so Vite does not throw on missing env vars during CI build.
+          VITE_SUPABASE_URL: https://placeholder.supabase.co
+          VITE_SUPABASE_PUBLISHABLE_KEY: placeholder-anon-key
+          VITE_ENABLE_XION_PROVIDER: "false"
