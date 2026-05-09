@@ -94,8 +94,8 @@ const AdminProfiles = () => {
       toast({ title: "Profile updated" });
       setEditing(null);
       load();
-    } catch (e: any) {
-      toast({ title: "Failed", description: e.message, variant: "destructive" });
+    } catch (e: unknown) {
+      toast({ title: "Failed", description: (e as Error).message, variant: "destructive" });
     } finally {
       setSaving(false);
     }

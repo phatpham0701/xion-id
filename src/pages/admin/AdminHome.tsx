@@ -22,7 +22,7 @@ type AuditRow = {
   created_at: string;
 };
 
-const Stat = ({ label, value, icon: Icon, to }: { label: string; value: number | string; icon: any; to: string }) => (
+const Stat = ({ label, value, icon: Icon, to }: { label: string; value: number | string; icon: React.ComponentType<{ className?: string }>; to: string }) => (
   <Link to={to} className="group">
     <Card className="p-5 transition hover:shadow-md hover:border-primary/40">
       <div className="flex items-center justify-between">
@@ -55,7 +55,7 @@ const AdminHome = () => {
       ]);
       setStats({
         users: profiles.count ?? 0,
-        profiles: profiles.data?.filter((p: any) => p.is_published).length ?? 0,
+        profiles: profiles.data?.filter((p: { is_published?: boolean | null }) => p.is_published).length ?? 0,
         badges: badges.count ?? 0,
         rewardsClaimed: tipsClaim.count ?? 0,
         campaigns: 0,

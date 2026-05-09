@@ -18,7 +18,7 @@ type Props = {
 
 type Step = "identity" | "sport";
 
-const USERNAME_RE = /^[a-zA-Z0-9_.\-]+$/;
+const USERNAME_RE = /^[a-zA-Z0-9_.-]+$/;
 const AVATARS = ["🏃", "🏋️", "🚴", "🏊", "🧘", "🥇", "⚡", "🛡️"];
 const avatarDataUrl = (emoji: string) =>
   `data:image/svg+xml;utf8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128"><rect width="128" height="128" rx="28" fill="#1f1b4d"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="64">${emoji}</text></svg>`)}`;
@@ -28,7 +28,7 @@ const avatarEmojiFromUrl = (value?: string | null) => {
   return found ?? AVATARS[0];
 };
 
-const sanitize = (raw: string): string => raw.toLowerCase().replace(/[^a-z0-9_.\-]/g, "").slice(0, 20);
+const sanitize = (raw: string): string => raw.toLowerCase().replace(/[^a-z0-9_.-]/g, "").slice(0, 20);
 
 const generateDemoUsername = async (email?: string | null): Promise<string> => {
   const prefix = email ? sanitize(email.split("@")[0]) : "";
