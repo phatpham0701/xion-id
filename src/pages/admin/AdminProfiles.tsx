@@ -139,6 +139,12 @@ const AdminProfiles = () => {
                   {r.is_featured ? <StarOff className="mr-1 h-3.5 w-3.5" /> : <Star className="mr-1 h-3.5 w-3.5" />}
                   {r.is_featured ? "Unfeature" : "Feature"}
                 </Button>
+                <Button asChild size="sm" variant="ghost">
+                  <Link to={`/admin/profiles/${r.id}/history`}>
+                    <History className="mr-1 h-3.5 w-3.5" />
+                    History
+                  </Link>
+                </Button>
               </div>
             </div>
           ))}
