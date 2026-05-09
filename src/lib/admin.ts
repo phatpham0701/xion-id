@@ -2,7 +2,12 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
-const ADMIN_EMAILS = ["phatpham0701@gmail.com"];
+// Comma-separated admin emails from env (e.g. "alice@example.com,bob@example.com").
+// Falls back to empty list so user_roles table is the sole authority in production.
+const ADMIN_EMAILS: string[] = (import.meta.env.VITE_ADMIN_EMAILS ?? "")
+  .split(",")
+  .map((e: string) => e.toLowerCase().trim())
+  .filter(Boolean);
 
 export type AdminRoleState = {
   loading: boolean;
@@ -10,7 +15,7 @@ export type AdminRoleState = {
 };
 
 function isDemoAdminEmail(email?: string | null) {
-  if (!email) return false;
+  if (!email || ADMIN_EMAILS.length === 0) return false;
   return ADMIN_EMAILS.includes(email.toLowerCase().trim());
 }
 
@@ -18,7 +23,7 @@ function isDemoAdminEmail(email?: string | null) {
  * Returns whether the currently signed-in user has admin access.
  *
  * Admin access is granted by:
- * 1. Demo-safe email allowlist for Paulus.
+ * 1. VITE_ADMIN_EMAILS env var allowlist (demo/dev shortcut).
  * 2. Production-ready fallback via user_roles table.
  */
 export const useIsAdmin = (): AdminRoleState => {

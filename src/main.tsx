@@ -2,6 +2,17 @@ import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
 
+// Warn at startup when required Supabase env vars are absent.
+// This surfaces misconfigurations early (blank screen would otherwise give no hint).
+const REQUIRED_ENV = ["VITE_SUPABASE_URL", "VITE_SUPABASE_PUBLISHABLE_KEY"] as const;
+const missingEnv = REQUIRED_ENV.filter((key) => !import.meta.env[key]);
+if (missingEnv.length > 0) {
+  console.warn(
+    `[XIONID] Missing required environment variables: ${missingEnv.join(", ")}.\n` +
+    "Copy .env.example to .env and fill in the Supabase values."
+  );
+}
+
 // XIONID is dark-mode by default — ensure `dark:` utilities apply consistently across the app.
 document.documentElement.classList.add("dark");
 document.documentElement.style.colorScheme = "dark";
