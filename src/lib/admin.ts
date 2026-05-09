@@ -137,7 +137,8 @@ export type AuditAction =
   | "reward.activate"
   | "campaign.feature"
   | "campaign.status"
-  | "health.check";
+  | "health.check"
+  | "profile.restore";
 
 export const logAdminAction = async (params: {
   action: AuditAction;
