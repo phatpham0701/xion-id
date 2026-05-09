@@ -130,6 +130,45 @@ export type Database = {
           },
         ]
       }
+      profile_history: {
+        Row: {
+          actor_email: string | null
+          actor_id: string | null
+          after: Json | null
+          before: Json | null
+          changed_keys: string[]
+          created_at: string
+          event: string
+          id: string
+          profile_id: string
+          source: string
+        }
+        Insert: {
+          actor_email?: string | null
+          actor_id?: string | null
+          after?: Json | null
+          before?: Json | null
+          changed_keys?: string[]
+          created_at?: string
+          event: string
+          id?: string
+          profile_id: string
+          source?: string
+        }
+        Update: {
+          actor_email?: string | null
+          actor_id?: string | null
+          after?: Json | null
+          before?: Json | null
+          changed_keys?: string[]
+          created_at?: string
+          event?: string
+          id?: string
+          profile_id?: string
+          source?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -285,6 +324,16 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      log_profile_event: {
+        Args: {
+          _after: Json
+          _before: Json
+          _event: string
+          _profile_id: string
+          _source: string
+        }
+        Returns: string
       }
     }
     Enums: {

@@ -1,65 +1,70 @@
-# XionID — Roadmap & Status
 
-## ✅ Completed
+## Mục tiêu
+Tạo trang lịch sử thay đổi cho từng `profile`: ai sửa, sự kiện gì, lúc nào, diff nội dung — và cho phép admin khôi phục về một version cụ thể.
 
-### Step 1 — XION wallet connection (Abstraxion)
-- `AbstraxionProvider` configured with treasury fallback + iframe-aware connect.
-- `useXionWallet` hook + `WalletCard` syncs `xion_address` to `profiles`.
+## 1. Database (migration)
 
-### Step 2 — On-chain Tip Jar (gasless)
-- `tip_jar` block + `LiveTipJarBlock` (visitor signs, treasury pays gas).
-- `tips` table + `TipAnalyticsCard` (totals + recent tippers, skeleton loaders).
+Tạo bảng `profile_history` để snapshot mọi thay đổi:
 
-### Step 3 — NFT Gallery on-chain
-- `nft_gallery` block + `LiveNftGalleryBlock`.
-- CW721 client over LCD smart-query, IPFS → HTTP rewrite.
+```text
+profile_history
+├─ id              uuid pk
+├─ profile_id     uuid (ref profiles.id)
+├─ actor_id       uuid  (auth.uid() lúc đổi, nullable)
+├─ actor_email    text  (snapshot)
+├─ event          text  ('insert' | 'update' | 'delete' | 'restore' | 'demo_seed')
+├─ source         text  ('user' | 'admin' | 'trigger' | 'demo')
+├─ before         jsonb (toàn bộ row trước đó, null khi insert)
+├─ after          jsonb (toàn bộ row sau đó, null khi delete)
+├─ changed_keys   text[] (các cột đổi giá trị)
+└─ created_at     timestamptz default now()
+```
 
-### Step 4 — Wallet history + auto badges
-- `badgeScanner` queries LCD `cosmos/tx/v1beta1/txs`.
-- `BadgesCard` + `PublicBadgesStrip`.
+- Index: `(profile_id, created_at desc)`
+- RLS: chỉ admin (`has_role(auth.uid(),'admin')`) đọc; insert qua trigger `SECURITY DEFINER`.
 
-### Step 5 — Server-side tip verifier ✅ (NEW)
-- Edge function `verify-tip`:
-  - Validates tx via XION LCD: `MsgSend` only, recipient = profile.xion_address, denom `uxion`, code = 0, amount within sane bounds.
-  - Writes `tips` with **service role** (bypasses RLS).
-  - Idempotent on unique `tx_hash`; returns `verified | already_recorded | pending`.
-  - In-memory IP rate limit (20 req/min).
-- Migration: dropped public INSERT policy on `tips`. Clients can no longer spoof tips. Indexes added for `(profile_id, created_at)` and `tx_hash`.
-- Frontend: `verifyAndRecordTip` replaces client INSERT, with one background retry after 8s if LCD hasn't indexed yet.
-- Analytics: tip success now logs `tip_sent` (whitelisted event type).
+Trigger `profiles_audit_trg` AFTER INSERT/UPDATE/DELETE → ghi 1 dòng vào `profile_history`. Tính `changed_keys` bằng cách so từng key giữa `OLD` và `NEW` (json).
 
-### Security hardening
-- Linter: 0 warnings.
-- Avatars bucket: public-by-object only.
-- `analytics_events`: whitelisted event types.
-- `has_role`: EXECUTE revoked from anon/authenticated.
-- `tips`: server-only writes.
+## 2. Backend hook cho sự kiện ngoài DB
 
----
+- `src/lib/demoMode.ts` "Seed Paulus" hiện ghi đè state local trên trình duyệt → **không** ảnh hưởng DB. Để vẫn xuất hiện trong history, thêm hàm `logProfileEvent(profileId, event, before, after)` (insert vào `profile_history` qua RPC `SECURITY DEFINER` chỉ cho admin) và gọi trong `AdminDemoControls` khi seed/reset.
 
-## 🟡 Recommended next
+## 3. UI — trang `/admin/profiles/:profileId/history`
 
-### Step 6 — XION token-gated content
-- New block `gated_link` with config `{ url, requirement: { type: 'token' | 'nft' | 'badge', contract?, minBalance?, kind? } }`.
-- Client checks CW20/CW721/`wallet_badges` and reveals CTA.
+Trong `src/pages/admin/`:
+- `AdminProfileHistory.tsx`
+  - Header: avatar + `@username` + nút "Back to profile".
+  - Bảng/timeline các bản ghi `profile_history` (mới → cũ): thời gian, actor (email), event, badge nguồn (user/admin/demo), danh sách `changed_keys`.
+  - Click 1 dòng → mở `Sheet` với **diff view**: hiển thị từng key trong `changed_keys` ở dạng 2 cột "Trước / Sau" (text bình thường; với `theme`/`settings` jsonb thì pretty-print + highlight key đổi).
+  - Nút **"Restore this version"** (chỉ hiện cho event có `before` hoặc `after`):
+    - Confirm dialog.
+    - Gọi `supabase.from('profiles').update(snapshot).eq('id', profileId)` với snapshot là `after` (hoặc `before` nếu user muốn về trạng thái trước đó).
+    - Trigger sẽ tự ghi 1 dòng `event='restore'`.
+    - Ghi `admin_audit_logs` với action mới `profile.restore`.
 
-### Step 7 — Public showcase feed + leaderboards
-- `/explore`, `/leaderboard/tippers`, `/leaderboard/og`.
+Thêm link "View history" trong `AdminProfiles.tsx` ở mỗi row, và route mới trong `App.tsx` (bọc bởi `RequireAdmin`).
 
-### Step 8 — Custom domain (Pro perk).
+## 4. Lib helper
 
-### Step 9 — Pro tier billing (Stripe edge function).
+- `src/lib/profileHistory.ts`
+  - `fetchProfileHistory(profileId)`
+  - `computeDiff(before, after)` → `{ key, before, after }[]`
+  - `restoreProfileSnapshot(profileId, snapshot)`
 
----
+## 5. Types & audit action
 
-## 🔒 RLS posture
+- `src/lib/admin.ts` → thêm `'profile.restore'` vào `AuditAction`.
+- `src/integrations/supabase/types.ts` sẽ tự regenerate sau migration.
 
-| Table | SELECT | INSERT | UPDATE | DELETE | Notes |
-|---|---|---|---|---|---|
-| `profiles` | public | own | own | own | username trigger |
-| `blocks` | public | owner | owner | owner | |
-| `tips` | public | **server only** | denied | denied | verified by `verify-tip` edge function |
-| `wallet_badges` | public | owner | owner | owner | unique (profile_id, kind) |
-| `analytics_events` | profile owner | anon+authed (whitelisted event_type) | denied | denied | append-only |
-| `user_roles` | own row | admin | admin | admin | escalation-safe |
-| `storage.objects` (avatars) | by-object | own folder | own folder | own folder | |
+## 6. Test thủ công
+
+1. Sửa display_name của 1 profile → xuất hiện 1 dòng `update` với `changed_keys=['display_name']`, diff đúng.
+2. Vào `/admin/demo` bấm Seed Paulus → xuất hiện dòng `demo_seed` (source=`demo`).
+3. Bấm Restore ở 1 version cũ → profile rollback, có dòng mới `event='restore'`.
+4. Non-admin truy cập trang → bị `RequireAdmin` chặn.
+
+## Giới hạn đã biết
+
+- Diff jsonb hiển thị dạng pretty JSON, không phải word-level diff.
+- History chỉ tính từ thời điểm bật trigger trở đi (không khôi phục được thay đổi trước migration).
+- "Demo seed" chỉ được log nếu thao tác qua `AdminDemoControls`; sửa tay `localStorage` không ghi nhận.
