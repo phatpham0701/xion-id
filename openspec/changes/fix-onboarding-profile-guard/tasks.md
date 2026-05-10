@@ -1,46 +1,89 @@
 # Tasks — fix-onboarding-profile-guard
 
-## Status: Investigation complete. Pending approval to implement.
+## Status: Implemented in PR #19.
 
 ---
 
-## T1 — Code fix (Dashboard.tsx)
+## T1 — Code fix (Dashboard.tsx) ✅
 
 **File:** `src/pages/Dashboard.tsx`
 
-1. Change onboarding gate on line 115 from `if (!demoOnboarded)` to `if (!profile.username)`.
-2. Remove the `demoOnboarded` useState declaration (line 44).
-3. Remove the `useEffect` that refreshes `demoOnboarded` (lines 47–51).
-4. Remove the `getDemoState` import on line 20 if it becomes unused after the above removals.
-
-No other files require changes.
-
----
-
-## T2 — Tests
-
-Add tests in `src/test/` (or alongside the component) covering:
-
-1. **New user gate**: Dashboard renders `OnboardingFlow` when `profile.username` is null/empty.
-2. **Existing user guard**: Dashboard does NOT render `OnboardingFlow` when `profile.username` is set, regardless of `getDemoState().onboarded` value.
-3. **Post-onboarding guard**: After `OnboardingFlow` calls `onSaved` with a profile that has a username, the Dashboard switches to the main view without re-rendering OnboardingFlow.
+1. ✅ Changed onboarding gate from `if (!demoOnboarded)` to `if (needsOnboarding(profile))`.
+2. ✅ Removed the `demoOnboarded` useState declaration.
+3. ✅ Removed the `useEffect` that refreshed `demoOnboarded` from demo localStorage.
+4. ✅ Removed the `getDemoState` import (replaced with `needsOnboarding` from `@/lib/onboarding`).
+5. ✅ Sport lifestyle state and its `xionid:sport-lifestyle:change` listener preserved.
 
 ---
 
-## T3 — Manual smoke checklist
+## T2 — Onboarding helper ✅
 
-- [ ] **New user flow**: Sign up with a fresh account → Dashboard shows OnboardingFlow → complete it → dashboard main view appears → refresh: OnboardingFlow does NOT reappear.
-- [ ] **Existing user — incognito**: Sign in as an existing user (username set) in an incognito window (localStorage empty) → Dashboard loads directly to main view, no OnboardingFlow.
-- [ ] **Existing user — after demo reset**: Admin resets demo state via `/admin/demo` → existing user reloads `/dashboard` → main view, no OnboardingFlow.
-- [ ] **Existing user — avatar preserved**: Existing user with a real avatar visits dashboard in incognito → avatar is not overwritten in the DB.
-- [ ] **Username preserved**: Existing user's username, display_name remain unchanged after a fresh browser session.
-- [ ] **Sign-out → re-login**: Existing user signs out, signs back in → main dashboard (not OnboardingFlow).
-- [ ] **Admin demo controls**: `/admin/demo` reset still works; localStorage demo state resets correctly; demo badge/rewards/campaign state resets correctly.
-- [ ] **ProfileEditorCard edits**: display_name and bio edits from the main dashboard still save correctly.
+**File:** `src/lib/onboarding.ts` (new)
+
+- `hasCompleteProfile(profile)` — returns true when profile exists and username is non-empty/non-whitespace.
+- `needsOnboarding(profile)` — returns true only when profile exists but username is missing/empty; returns false for null/undefined profile (missing-data state handled by Dashboard's own fallback).
+- No dependency on demoMode, localStorage, getDemoState, or completeDemoOnboarding.
+
+---
+
+## T3 — Tests ✅
+
+**File:** `src/test/onboarding.test.ts` (new)
+
+Covers:
+- `hasCompleteProfile` with username / empty / whitespace / null / null-profile / undefined-profile
+- `needsOnboarding` with username / empty / whitespace / null / null-profile / undefined-profile
+- `needsOnboarding` with localStorage stubbed to empty — proves isolation from demo state
+
+---
+
+## T4 — demoOnboarded routing dependency removed ✅
+
+The `demoOnboarded` localStorage gate is completely gone from the Dashboard
+routing path. `completeDemoOnboarding()` in `OnboardingFlow.tsx` still fires
+after onboarding (harmless for demo analytics) but no longer controls routing.
+
+---
+
+## T5 — Optional: Navbar auth-awareness ✅
+
+**File:** `src/components/landing/Navbar.tsx`
+
+- Authenticated users on the homepage now see a "Dashboard" CTA instead of
+  "Sign in" / "Get started", routing to `/dashboard` on both desktop and mobile.
+- Unauthenticated users see the original "Sign in" / "Get started" → `/auth`.
+- No visual redesign; existing CSS classes preserved.
+
+---
+
+## T6 — Build / lint / test ✅
+
+Run before merge:
+
+```
+npm run lint
+npm test
+npm run build
+```
+
+---
+
+## Manual smoke checklist
+
+- [ ] Existing user with username signs in in incognito (localStorage empty) → dashboard main view, no OnboardingFlow.
+- [ ] Existing user after admin demo reset → dashboard main view, no OnboardingFlow.
+- [ ] Existing profile username / display_name / avatar_url unchanged after fresh browser session.
+- [ ] Existing user signs out and signs back in → dashboard main view, no OnboardingFlow.
+- [ ] New user with null username → OnboardingFlow still appears.
+- [ ] New user completes onboarding → username set → dashboard main view.
+- [ ] Refresh after onboarding → OnboardingFlow does not reappear.
+- [ ] Logged-in user visiting homepage → sees "Dashboard" CTA, not "Sign in".
+- [ ] Logged-in user clicks "Dashboard" CTA → routes to /dashboard (not /auth).
+- [ ] Logged-out user visiting homepage → sees "Sign in" and "Get started" → /auth.
 
 ---
 
 ## Known Limitations
 
-- This fix does not prevent OnboardingFlow from running if a user manually clears their `username` in the DB (edge case — not a known user path).
-- The demo `onboarded` flag in localStorage remains and is still written by `completeDemoOnboarding()`. It is now harmless to routing but could be cleaned up in a follow-up pass (out of scope).
+- If a user manually clears their `username` column in the DB (not a product-accessible path), they would re-enter OnboardingFlow. This is the correct behavior.
+- The demo `onboarded` flag in localStorage is still written by `completeDemoOnboarding()` (called in `OnboardingFlow.finish()`). It is now harmless to routing but could be cleaned up in a separate pass if desired.

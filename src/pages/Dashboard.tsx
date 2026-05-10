@@ -17,7 +17,7 @@ import { OnboardingFlow } from "@/components/onboarding/OnboardingFlow";
 import { ProfileSummary } from "@/components/dashboard/ProfileSummary";
 import { VerifyLifestyleDialog } from "@/components/dashboard/VerifyLifestyleDialog";
 import { ChallengeCreatorDialog } from "@/components/dashboard/ChallengeCreatorDialog";
-import { getDemoState } from "@/lib/demoMode";
+import { needsOnboarding } from "@/lib/onboarding";
 import {
   SPORT_INTERESTS,
   demoLeaderboard,
@@ -41,14 +41,7 @@ const Dashboard = () => {
   const [shareOpen, setShareOpen] = useState(false);
   const [verifyOpen, setVerifyOpen] = useState(false);
   const [challengeOpen, setChallengeOpen] = useState(false);
-  const [demoOnboarded, setDemoOnboarded] = useState<boolean>(() => getDemoState().onboarded);
   const [lifestyle, setLifestyle] = useState<SportLifestyleState>(() => getSportLifestyleState());
-
-  useEffect(() => {
-    const refresh = () => setDemoOnboarded(getDemoState().onboarded);
-    window.addEventListener("xionid:demo:change", refresh);
-    return () => window.removeEventListener("xionid:demo:change", refresh);
-  }, []);
 
   useEffect(() => {
     const refresh = () => setLifestyle(getSportLifestyleState());
@@ -112,7 +105,7 @@ const Dashboard = () => {
     );
   }
 
-  if (!demoOnboarded) {
+  if (needsOnboarding(profile)) {
     return <OnboardingFlow profile={profile} onSaved={setProfile} />;
   }
 
