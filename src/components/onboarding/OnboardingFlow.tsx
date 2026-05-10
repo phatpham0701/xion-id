@@ -9,6 +9,8 @@ import { Input } from "@/components/ui/input";
 import { RESERVED_USERNAMES } from "@/lib/brand";
 import { completeDemoOnboarding } from "@/lib/demoMode";
 import { SPORT_INTERESTS, getSportLifestyleState, saveSportLifestyleState, type SportInterest } from "@/lib/sportLifestyle";
+import { getOnboardingAvatarIdFromUrl, getOnboardingAvatarUrl } from "@/lib/onboardingAvatars";
+import { AvatarPicker } from "@/components/onboarding/AvatarPicker";
 import type { EditableProfile } from "@/components/dashboard/ProfileEditorCard";
 
 type Props = {
@@ -19,15 +21,6 @@ type Props = {
 type Step = "identity" | "sport";
 
 const USERNAME_RE = /^[a-zA-Z0-9_.-]+$/;
-const AVATARS = ["🏃", "🏋️", "🚴", "🏊", "🧘", "🥇", "⚡", "🛡️"];
-const avatarDataUrl = (emoji: string) =>
-  `data:image/svg+xml;utf8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128"><rect width="128" height="128" rx="28" fill="#1f1b4d"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="64">${emoji}</text></svg>`)}`;
-const avatarEmojiFromUrl = (value?: string | null) => {
-  if (!value) return AVATARS[0];
-  const found = AVATARS.find((item) => value.includes(encodeURIComponent(item)) || value.includes(item));
-  return found ?? AVATARS[0];
-};
-
 const sanitize = (raw: string): string => raw.toLowerCase().replace(/[^a-z0-9_.-]/g, "").slice(0, 20);
 
 const generateDemoUsername = async (email?: string | null): Promise<string> => {
@@ -53,7 +46,7 @@ export const OnboardingFlow = ({ profile, onSaved }: Props) => {
   const [step, setStep] = useState<Step>("identity");
   const [username, setUsername] = useState(profile.username ?? "");
   const [displayName, setDisplayName] = useState(profile.display_name ?? user?.user_metadata?.full_name ?? "");
-  const [avatar, setAvatar] = useState(avatarEmojiFromUrl(profile.avatar_url));
+  const [avatarId, setAvatarId] = useState(getOnboardingAvatarIdFromUrl(profile.avatar_url));
   const [interest, setInterest] = useState<SportInterest>(getSportLifestyleState().selectedInterest);
   const [saving, setSaving] = useState(false);
   const [checkingUsername, setCheckingUsername] = useState(false);
@@ -108,7 +101,7 @@ export const OnboardingFlow = ({ profile, onSaved }: Props) => {
     if (!(await validateIdentity())) return;
     setSaving(true);
     const clean = sanitize(username) || (await generateDemoUsername(user?.email));
-    const avatarUrl = avatarDataUrl(avatar);
+    const avatarUrl = getOnboardingAvatarUrl(avatarId);
     try {
       const { data, error } = await supabase
         .from("profiles")
@@ -168,13 +161,8 @@ export const OnboardingFlow = ({ profile, onSaved }: Props) => {
                   </div>
                 </div>
                 <div>
-                  <div className="text-sm font-medium mb-2">Avatar</div>
-                  <div className="flex flex-wrap gap-2">
-                    {AVATARS.map((item) => (
-                      <button key={item} type="button" onClick={() => setAvatar(item)} className={`h-12 w-12 rounded-2xl border text-2xl ${avatar === item ? "border-primary bg-primary/10" : "border-glass-border bg-background/40"}`}>{item}</button>
-                    ))}
-                  </div>
-                  <div className="mt-3 rounded-2xl border border-dashed border-primary/30 bg-primary/5 p-3 text-sm text-muted-foreground">Optional AI/3D avatar: placeholder only for this pilot, so it will not block completion.</div>
+                  <div className="mb-2 text-sm font-medium">Avatar</div>
+                  <AvatarPicker value={avatarId} onChange={setAvatarId} />
                 </div>
               </div>
               <div className="mt-7 flex justify-end">
