@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X } from "lucide-react";
+import { LogOut, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Wordmark } from "@/components/Wordmark";
 import { BrandLogo } from "@/components/BrandLogo";
@@ -18,7 +18,12 @@ const mobileLinkClass =
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
+    setOpen(false);
+  };
 
   return (
     <header role="banner" className="fixed top-0 inset-x-0 z-50">
@@ -66,13 +71,18 @@ const Navbar = () => {
         {/* Desktop CTAs */}
         <div className="hidden sm:flex items-center gap-2">
           {user ? (
-            <Button
-              size="sm"
-              className="bg-gradient-primary text-primary-foreground hover:opacity-90 transition-opacity font-semibold"
-              asChild
-            >
-              <Link to="/dashboard" aria-label="Go to your XIONID dashboard">Dashboard</Link>
-            </Button>
+            <>
+              <Button
+                size="sm"
+                className="bg-gradient-primary text-primary-foreground hover:opacity-90 transition-opacity font-semibold"
+                asChild
+              >
+                <Link to="/dashboard" aria-label="Go to your XIONID dashboard">Dashboard</Link>
+              </Button>
+              <Button variant="ghost" size="sm" onClick={handleSignOut} aria-label="Sign out of XIONID">
+                <LogOut className="h-3.5 w-3.5 mr-1.5" /> Sign out
+              </Button>
+            </>
           ) : (
             <>
               <Button variant="ghost" size="sm" asChild>
@@ -89,15 +99,35 @@ const Navbar = () => {
           )}
         </div>
 
-        {/* Mobile: CTA + hamburger */}
+        {/* Mobile: auth CTAs + hamburger */}
         <div className="flex sm:hidden items-center gap-2">
-          <Button
-            size="sm"
-            className="bg-gradient-primary text-primary-foreground hover:opacity-90 transition-opacity font-semibold"
-            asChild
-          >
-            <Link to={user ? "/dashboard" : "/auth"}>{user ? "Dashboard" : "Get started"}</Link>
-          </Button>
+          {user ? (
+            <>
+              <Button
+                size="sm"
+                className="bg-gradient-primary text-primary-foreground hover:opacity-90 transition-opacity font-semibold"
+                asChild
+              >
+                <Link to="/dashboard">Dashboard</Link>
+              </Button>
+              <Button variant="ghost" size="sm" onClick={handleSignOut} className="px-3">
+                Sign out
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button variant="ghost" size="sm" asChild className="px-3">
+                <Link to="/auth" aria-label="Sign in to XIONID">Sign in</Link>
+              </Button>
+              <Button
+                size="sm"
+                className="bg-gradient-primary text-primary-foreground hover:opacity-90 transition-opacity font-semibold px-3"
+                asChild
+              >
+                <Link to="/auth" aria-label="Get started with XIONID">Get started</Link>
+              </Button>
+            </>
+          )}
           <Button
             variant="ghost"
             size="icon"
