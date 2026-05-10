@@ -174,12 +174,15 @@ export const ProfileEditorCard = ({ profile, onChange, onShare }: Props) => {
   };
 
   const saveBuiltInAvatar = async () => {
+    if (!user) return;
+
     setSavingAvatar(true);
     try {
       const { data, error } = await supabase
         .from("profiles")
         .update({ avatar_url: getOnboardingAvatarUrl(selectedAvatarId) })
         .eq("id", profile.id)
+        .eq("user_id", user.id)
         .select("id, username, display_name, avatar_url, bio, is_published")
         .single();
       if (error) throw error;
