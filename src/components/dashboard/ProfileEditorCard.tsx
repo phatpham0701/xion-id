@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { Camera, Check, Copy, ExternalLink, Eye, Globe, Loader2, Pencil, Save, Share2 } from "lucide-react";
+import { AlertTriangle, Camera, Check, Copy, ExternalLink, Eye, Globe, Loader2, Pencil, Save, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -9,6 +9,17 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export type EditableProfile = {
   id: string;
@@ -37,6 +48,7 @@ export const ProfileEditorCard = ({ profile, onChange, onShare }: Props) => {
   });
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [resetting, setResetting] = useState(false);
 
   useEffect(() => {
     setDraft({ display_name: profile.display_name ?? "", bio: profile.bio ?? "" });
@@ -69,6 +81,34 @@ export const ProfileEditorCard = ({ profile, onChange, onShare }: Props) => {
       toast.error("Couldn't save", { description: err instanceof Error ? err.message : "Try again" });
     } finally {
       setSaving(false);
+    }
+  };
+
+  const resetAccount = async () => {
+    if (!user) return;
+    setResetting(true);
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .update({
+          username: null,
+          display_name: null,
+          avatar_url: null,
+          bio: null,
+          is_published: false,
+        })
+        .eq("id", profile.id)
+        .eq("user_id", user.id)
+        .select("id, username, display_name, avatar_url, bio, is_published")
+        .single();
+
+      if (error) throw error;
+      toast.success("Account reset", { description: "You can set up your profile again." });
+      onChange(data as EditableProfile);
+    } catch (err) {
+      toast.error("Couldn't reset account", { description: err instanceof Error ? err.message : "Try again" });
+    } finally {
+      setResetting(false);
     }
   };
 
@@ -251,6 +291,50 @@ export const ProfileEditorCard = ({ profile, onChange, onShare }: Props) => {
               Preview
             </a>
           </Button>
+        </div>
+      </div>
+
+      {/* Danger zone */}
+      <div className="mt-6 rounded-3xl border border-destructive/40 bg-destructive/10 p-4">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-3">
+            <div className="mt-0.5 rounded-2xl bg-destructive/15 p-2 text-destructive">
+              <AlertTriangle className="h-4 w-4" />
+            </div>
+            <div>
+              <div className="text-sm font-semibold text-destructive">Danger zone</div>
+              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                Reset profile identity fields and return this account to onboarding. This does not delete the login account, admin role, or issued badge records.
+              </p>
+            </div>
+          </div>
+
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive" disabled={resetting}>
+                {resetting ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : null}
+                Reset account
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Reset this account?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will clear the profile username, display name, avatar, bio, and public visibility. After confirmation, this account will return to onboarding. Issued badges, admin role, and the login account will not be deleted.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel disabled={resetting}>No, keep account</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={resetAccount}
+                  disabled={resetting}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                >
+                  Yes, reset account
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </div>
     </div>
