@@ -13,6 +13,9 @@ const NAV_LINKS = [
   { label: "Demo", href: "/auth", external: false },
 ] as const;
 
+const mobileLinkClass =
+  "rounded-2xl px-4 py-3 text-sm font-medium text-foreground/90 hover:bg-white/10 hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+
 const Navbar = () => {
   const [open, setOpen] = useState(false);
   const { user } = useAuth();
@@ -102,6 +105,7 @@ const Navbar = () => {
             aria-expanded={open}
             aria-controls="mobile-nav"
             onClick={() => setOpen((v) => !v)}
+            className="bg-secondary text-secondary-foreground hover:bg-secondary/90 shadow-lg shadow-secondary/20"
           >
             {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
@@ -109,25 +113,21 @@ const Navbar = () => {
       </div>
 
       {/* Mobile dropdown */}
-      <div
-        id="mobile-nav"
-        className={cn(
-          "sm:hidden overflow-hidden transition-all duration-200 ease-in-out",
-          open ? "max-h-64 border-b border-glass-border" : "max-h-0"
-        )}
-        aria-hidden={!open}
-      >
-        {open && (
+      {open && (
+        <div
+          id="mobile-nav"
+          className="sm:hidden absolute right-4 top-16 z-[60] w-[min(calc(100vw-2rem),20rem)] origin-top-right rounded-3xl border border-glass-border bg-background/95 p-2 shadow-2xl shadow-black/30 backdrop-blur-2xl animate-in fade-in-0 zoom-in-95 slide-in-from-top-2 duration-200"
+        >
           <nav
             aria-label="Mobile navigation"
-            className="container flex flex-col gap-1 pb-4 pt-2"
+            className="flex flex-col gap-1"
           >
             {NAV_LINKS.map(({ label, href, external }) =>
               external ? (
                 <a
                   key={label}
                   href={href}
-                  className="rounded-lg px-3 py-2.5 text-sm text-foreground/80 hover:bg-white/5 hover:text-foreground transition-colors"
+                  className={mobileLinkClass}
                   onClick={() => setOpen(false)}
                 >
                   {label}
@@ -136,7 +136,7 @@ const Navbar = () => {
                 <Link
                   key={label}
                   to={href}
-                  className="rounded-lg px-3 py-2.5 text-sm text-foreground/80 hover:bg-white/5 hover:text-foreground transition-colors"
+                  className={mobileLinkClass}
                   onClick={() => setOpen(false)}
                 >
                   {label}
@@ -146,7 +146,7 @@ const Navbar = () => {
             {user ? (
               <Link
                 to="/dashboard"
-                className="rounded-lg px-3 py-2.5 text-sm text-foreground/80 hover:bg-white/5 hover:text-foreground transition-colors"
+                className={cn(mobileLinkClass, "bg-primary/10 text-primary")}
                 onClick={() => setOpen(false)}
               >
                 Dashboard
@@ -154,15 +154,15 @@ const Navbar = () => {
             ) : (
               <Link
                 to="/auth"
-                className="rounded-lg px-3 py-2.5 text-sm text-foreground/80 hover:bg-white/5 hover:text-foreground transition-colors"
+                className={cn(mobileLinkClass, "bg-primary/10 text-primary")}
                 onClick={() => setOpen(false)}
               >
                 Sign in
               </Link>
             )}
           </nav>
-        )}
-      </div>
+        </div>
+      )}
     </header>
   );
 };
