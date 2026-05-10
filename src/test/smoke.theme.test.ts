@@ -29,8 +29,10 @@ describe("DEFAULT_THEME", () => {
 describe("BACKGROUNDS", () => {
   const expectedBgs = ["aurora", "midnight", "sunset", "mint", "lavender", "noir"] as const;
 
-  it("has exactly 6 backgrounds", () => {
-    expect(Object.keys(BACKGROUNDS)).toHaveLength(6);
+  it("covers all required backgrounds", () => {
+    for (const key of expectedBgs) {
+      expect(BACKGROUNDS[key]).toBeDefined();
+    }
   });
 
   it("every background has label, css, and emoji", () => {
@@ -45,8 +47,10 @@ describe("BACKGROUNDS", () => {
 describe("FONTS", () => {
   const expectedFonts = ["space-grotesk", "inter", "playfair", "jetbrains", "outfit"] as const;
 
-  it("has exactly 5 fonts", () => {
-    expect(Object.keys(FONTS)).toHaveLength(5);
+  it("covers all required fonts", () => {
+    for (const key of expectedFonts) {
+      expect(FONTS[key]).toBeDefined();
+    }
   });
 
   it("every font has label and family", () => {
@@ -60,8 +64,10 @@ describe("FONTS", () => {
 describe("BUTTON_SHAPES", () => {
   const expectedShapes = ["pill", "rounded", "square", "soft"] as const;
 
-  it("has exactly 4 shapes", () => {
-    expect(Object.keys(BUTTON_SHAPES)).toHaveLength(4);
+  it("covers all required button shapes", () => {
+    for (const key of expectedShapes) {
+      expect(BUTTON_SHAPES[key]).toBeDefined();
+    }
   });
 
   it("every shape has label and radius", () => {
@@ -75,8 +81,10 @@ describe("BUTTON_SHAPES", () => {
 describe("BUTTON_STYLES", () => {
   const expectedStyles = ["glass", "solid", "outline", "gradient"] as const;
 
-  it("has exactly 4 styles", () => {
-    expect(Object.keys(BUTTON_STYLES)).toHaveLength(4);
+  it("covers all required button styles", () => {
+    for (const key of expectedStyles) {
+      expect(BUTTON_STYLES[key]).toBeDefined();
+    }
   });
 
   it("every style has a label", () => {

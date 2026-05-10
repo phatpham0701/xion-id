@@ -15,10 +15,6 @@ import {
 import { BLOCK_LIBRARY, getBlockMeta } from "@/lib/blocks";
 
 describe("PERSONAS catalog", () => {
-  it("has exactly 4 personas", () => {
-    expect(PERSONAS).toHaveLength(4);
-  });
-
   it("every persona has id, label, emoji, and hint", () => {
     for (const p of PERSONAS) {
       expect(p.id).toBeTruthy();

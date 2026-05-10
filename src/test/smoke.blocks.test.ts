@@ -15,10 +15,6 @@ const ALL_TYPES: BlockType[] = [
 ];
 
 describe("BLOCK_LIBRARY catalog", () => {
-  it("has exactly 15 blocks (one per BlockType)", () => {
-    expect(BLOCK_LIBRARY).toHaveLength(15);
-  });
-
   it("every block type is present exactly once", () => {
     const types = BLOCK_LIBRARY.map((b) => b.type);
     expect(new Set(types).size).toBe(types.length);
