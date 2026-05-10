@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Wordmark } from "@/components/Wordmark";
 import { BrandLogo } from "@/components/BrandLogo";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
 
 const NAV_LINKS = [
   { label: "Product", href: "#product", external: true },
@@ -14,6 +15,7 @@ const NAV_LINKS = [
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
+  const { user } = useAuth();
 
   return (
     <header role="banner" className="fixed top-0 inset-x-0 z-50">
@@ -60,16 +62,28 @@ const Navbar = () => {
 
         {/* Desktop CTAs */}
         <div className="hidden sm:flex items-center gap-2">
-          <Button variant="ghost" size="sm" asChild>
-            <Link to="/auth" aria-label="Sign in to XIONID">Sign in</Link>
-          </Button>
-          <Button
-            size="sm"
-            className="bg-gradient-primary text-primary-foreground hover:opacity-90 transition-opacity font-semibold"
-            asChild
-          >
-            <Link to="/auth" aria-label="Get started with XIONID">Get started</Link>
-          </Button>
+          {user ? (
+            <Button
+              size="sm"
+              className="bg-gradient-primary text-primary-foreground hover:opacity-90 transition-opacity font-semibold"
+              asChild
+            >
+              <Link to="/dashboard" aria-label="Go to your XIONID dashboard">Dashboard</Link>
+            </Button>
+          ) : (
+            <>
+              <Button variant="ghost" size="sm" asChild>
+                <Link to="/auth" aria-label="Sign in to XIONID">Sign in</Link>
+              </Button>
+              <Button
+                size="sm"
+                className="bg-gradient-primary text-primary-foreground hover:opacity-90 transition-opacity font-semibold"
+                asChild
+              >
+                <Link to="/auth" aria-label="Get started with XIONID">Get started</Link>
+              </Button>
+            </>
+          )}
         </div>
 
         {/* Mobile: CTA + hamburger */}
@@ -79,7 +93,7 @@ const Navbar = () => {
             className="bg-gradient-primary text-primary-foreground hover:opacity-90 transition-opacity font-semibold"
             asChild
           >
-            <Link to="/auth">Get started</Link>
+            <Link to={user ? "/dashboard" : "/auth"}>{user ? "Dashboard" : "Get started"}</Link>
           </Button>
           <Button
             variant="ghost"
@@ -129,13 +143,23 @@ const Navbar = () => {
                 </Link>
               )
             )}
-            <Link
-              to="/auth"
-              className="rounded-lg px-3 py-2.5 text-sm text-foreground/80 hover:bg-white/5 hover:text-foreground transition-colors"
-              onClick={() => setOpen(false)}
-            >
-              Sign in
-            </Link>
+            {user ? (
+              <Link
+                to="/dashboard"
+                className="rounded-lg px-3 py-2.5 text-sm text-foreground/80 hover:bg-white/5 hover:text-foreground transition-colors"
+                onClick={() => setOpen(false)}
+              >
+                Dashboard
+              </Link>
+            ) : (
+              <Link
+                to="/auth"
+                className="rounded-lg px-3 py-2.5 text-sm text-foreground/80 hover:bg-white/5 hover:text-foreground transition-colors"
+                onClick={() => setOpen(false)}
+              >
+                Sign in
+              </Link>
+            )}
           </nav>
         )}
       </div>
