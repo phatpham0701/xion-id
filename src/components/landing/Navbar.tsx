@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { LogOut, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Wordmark } from "@/components/Wordmark";
 import { BrandLogo } from "@/components/BrandLogo";
@@ -18,12 +18,7 @@ const mobileLinkClass =
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
-  const { user, signOut } = useAuth();
-
-  const handleSignOut = async () => {
-    await signOut();
-    setOpen(false);
-  };
+  const { user } = useAuth();
 
   return (
     <header role="banner" className="fixed top-0 inset-x-0 z-50">
@@ -71,18 +66,13 @@ const Navbar = () => {
         {/* Desktop CTAs */}
         <div className="hidden sm:flex items-center gap-2">
           {user ? (
-            <>
-              <Button
-                size="sm"
-                className="bg-gradient-primary text-primary-foreground hover:opacity-90 transition-opacity font-semibold"
-                asChild
-              >
-                <Link to="/dashboard" aria-label="Go to your XIONID dashboard">Dashboard</Link>
-              </Button>
-              <Button variant="ghost" size="sm" onClick={handleSignOut} aria-label="Sign out of XIONID">
-                <LogOut className="h-3.5 w-3.5 mr-1.5" /> Sign out
-              </Button>
-            </>
+            <Button
+              size="sm"
+              className="bg-gradient-primary text-primary-foreground hover:opacity-90 transition-opacity font-semibold"
+              asChild
+            >
+              <Link to="/dashboard" aria-label="Go to your XIONID dashboard">Dashboard</Link>
+            </Button>
           ) : (
             <>
               <Button variant="ghost" size="sm" asChild>
@@ -99,35 +89,15 @@ const Navbar = () => {
           )}
         </div>
 
-        {/* Mobile: auth CTAs + hamburger */}
+        {/* Mobile: CTA + hamburger */}
         <div className="flex sm:hidden items-center gap-2">
-          {user ? (
-            <>
-              <Button
-                size="sm"
-                className="bg-gradient-primary text-primary-foreground hover:opacity-90 transition-opacity font-semibold"
-                asChild
-              >
-                <Link to="/dashboard">Dashboard</Link>
-              </Button>
-              <Button variant="ghost" size="sm" onClick={handleSignOut} className="px-3">
-                Sign out
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button variant="ghost" size="sm" asChild className="px-3">
-                <Link to="/auth" aria-label="Sign in to XIONID">Sign in</Link>
-              </Button>
-              <Button
-                size="sm"
-                className="bg-gradient-primary text-primary-foreground hover:opacity-90 transition-opacity font-semibold px-3"
-                asChild
-              >
-                <Link to="/auth" aria-label="Get started with XIONID">Get started</Link>
-              </Button>
-            </>
-          )}
+          <Button
+            size="sm"
+            className="bg-gradient-primary text-primary-foreground hover:opacity-90 transition-opacity font-semibold"
+            asChild
+          >
+            <Link to={user ? "/dashboard" : "/auth"}>{user ? "Dashboard" : "Get started"}</Link>
+          </Button>
           <Button
             variant="ghost"
             size="icon"
@@ -143,58 +113,56 @@ const Navbar = () => {
       </div>
 
       {/* Mobile dropdown */}
-      <div
-        id="mobile-nav"
-        className={cn(
-          "sm:hidden absolute right-4 top-16 z-[60] w-[min(calc(100vw-2rem),20rem)] origin-top-right rounded-3xl border border-glass-border bg-background/95 p-2 shadow-2xl shadow-black/30 backdrop-blur-2xl transition-all duration-200 ease-out",
-          open ? "pointer-events-auto translate-y-0 scale-100 opacity-100" : "pointer-events-none -translate-y-2 scale-95 opacity-0"
-        )}
-        aria-hidden={!open}
-      >
-        <nav
-          aria-label="Mobile navigation"
-          className="flex flex-col gap-1"
+      {open && (
+        <div
+          id="mobile-nav"
+          className="sm:hidden absolute right-4 top-16 z-[60] w-[min(calc(100vw-2rem),20rem)] origin-top-right rounded-3xl border border-glass-border bg-background/95 p-2 shadow-2xl shadow-black/30 backdrop-blur-2xl animate-in fade-in-0 zoom-in-95 slide-in-from-top-2 duration-200"
         >
-          {NAV_LINKS.map(({ label, href, external }) =>
-            external ? (
-              <a
-                key={label}
-                href={href}
-                className={mobileLinkClass}
+          <nav
+            aria-label="Mobile navigation"
+            className="flex flex-col gap-1"
+          >
+            {NAV_LINKS.map(({ label, href, external }) =>
+              external ? (
+                <a
+                  key={label}
+                  href={href}
+                  className={mobileLinkClass}
+                  onClick={() => setOpen(false)}
+                >
+                  {label}
+                </a>
+              ) : (
+                <Link
+                  key={label}
+                  to={href}
+                  className={mobileLinkClass}
+                  onClick={() => setOpen(false)}
+                >
+                  {label}
+                </Link>
+              )
+            )}
+            {user ? (
+              <Link
+                to="/dashboard"
+                className={cn(mobileLinkClass, "bg-primary/10 text-primary")}
                 onClick={() => setOpen(false)}
               >
-                {label}
-              </a>
+                Dashboard
+              </Link>
             ) : (
               <Link
-                key={label}
-                to={href}
-                className={mobileLinkClass}
+                to="/auth"
+                className={cn(mobileLinkClass, "bg-primary/10 text-primary")}
                 onClick={() => setOpen(false)}
               >
-                {label}
+                Sign in
               </Link>
-            )
-          )}
-          {user ? (
-            <Link
-              to="/dashboard"
-              className={cn(mobileLinkClass, "bg-primary/10 text-primary")}
-              onClick={() => setOpen(false)}
-            >
-              Dashboard
-            </Link>
-          ) : (
-            <Link
-              to="/auth"
-              className={cn(mobileLinkClass, "bg-primary/10 text-primary")}
-              onClick={() => setOpen(false)}
-            >
-              Sign in
-            </Link>
-          )}
-        </nav>
-      </div>
+            )}
+          </nav>
+        </div>
+      )}
     </header>
   );
 };
