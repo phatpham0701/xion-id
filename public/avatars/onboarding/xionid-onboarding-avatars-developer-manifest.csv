@@ -1,0 +1,25 @@
+avatar_id,sort_order,slug,category,gender_variant,filename,src,ui_label,ui_subtitle,is_default,tagline_key
+runner-male,1,runner,Runner,male,xionid-avatar-runner-male.webp,/avatars/onboarding/xionid-avatar-runner-male.webp,Runner,Endurance signal,true,onboarding.avatar.runner-male
+runner-female,2,runner,Runner,female,xionid-avatar-runner-female.webp,/avatars/onboarding/xionid-avatar-runner-female.webp,Runner,Endurance signal,false,onboarding.avatar.runner-female
+strength-male,3,strength,Strength,male,xionid-avatar-strength-male.webp,/avatars/onboarding/xionid-avatar-strength-male.webp,Strength,Discipline signal,false,onboarding.avatar.strength-male
+strength-female,4,strength,Strength,female,xionid-avatar-strength-female.webp,/avatars/onboarding/xionid-avatar-strength-female.webp,Strength,Discipline signal,false,onboarding.avatar.strength-female
+cyclist-male,5,cyclist,Cyclist,male,xionid-avatar-cyclist-male.webp,/avatars/onboarding/xionid-avatar-cyclist-male.webp,Cyclist,Aerobic engine,false,onboarding.avatar.cyclist-male
+cyclist-female,6,cyclist,Cyclist,female,xionid-avatar-cyclist-female.webp,/avatars/onboarding/xionid-avatar-cyclist-female.webp,Cyclist,Aerobic engine,false,onboarding.avatar.cyclist-female
+swimmer-male,7,swimmer,Swimmer,male,xionid-avatar-swimmer-male.webp,/avatars/onboarding/xionid-avatar-swimmer-male.webp,Swimmer,Water discipline,false,onboarding.avatar.swimmer-male
+swimmer-female,8,swimmer,Swimmer,female,xionid-avatar-swimmer-female.webp,/avatars/onboarding/xionid-avatar-swimmer-female.webp,Swimmer,Water discipline,false,onboarding.avatar.swimmer-female
+recovery-male,9,recovery,Recovery,male,xionid-avatar-recovery-male.webp,/avatars/onboarding/xionid-avatar-recovery-male.webp,Recovery,Calm consistency,false,onboarding.avatar.recovery-male
+recovery-female,10,recovery,Recovery,female,xionid-avatar-recovery-female.webp,/avatars/onboarding/xionid-avatar-recovery-female.webp,Recovery,Calm consistency,false,onboarding.avatar.recovery-female
+hybrid-male,11,hybrid,Hybrid,male,xionid-avatar-hybrid-male.webp,/avatars/onboarding/xionid-avatar-hybrid-male.webp,Hybrid,Multi-sport identity,false,onboarding.avatar.hybrid-male
+hybrid-female,12,hybrid,Hybrid,female,xionid-avatar-hybrid-female.webp,/avatars/onboarding/xionid-avatar-hybrid-female.webp,Hybrid,Multi-sport identity,false,onboarding.avatar.hybrid-female
+wellness-male,13,wellness,Wellness,male,xionid-avatar-wellness-male.webp,/avatars/onboarding/xionid-avatar-wellness-male.webp,Wellness,Longevity rhythm,false,onboarding.avatar.wellness-male
+wellness-female,14,wellness,Wellness,female,xionid-avatar-wellness-female.webp,/avatars/onboarding/xionid-avatar-wellness-female.webp,Wellness,Longevity rhythm,false,onboarding.avatar.wellness-female
+gear-male,15,gear,Gear,male,xionid-avatar-gear-male.webp,/avatars/onboarding/xionid-avatar-gear-male.webp,Gear,Equipment lifestyle,false,onboarding.avatar.gear-male
+gear-female,16,gear,Gear,female,xionid-avatar-gear-female.webp,/avatars/onboarding/xionid-avatar-gear-female.webp,Gear,Equipment lifestyle,false,onboarding.avatar.gear-female
+nutrition-male,17,nutrition,Nutrition,male,xionid-avatar-nutrition-male.webp,/avatars/onboarding/xionid-avatar-nutrition-male.webp,Nutrition,Recovery stack,false,onboarding.avatar.nutrition-male
+nutrition-female,18,nutrition,Nutrition,female,xionid-avatar-nutrition-female.webp,/avatars/onboarding/xionid-avatar-nutrition-female.webp,Nutrition,Recovery stack,false,onboarding.avatar.nutrition-female
+creator-male,19,creator,Creator,male,xionid-avatar-creator-male.webp,/avatars/onboarding/xionid-avatar-creator-male.webp,Creator,Lifestyle media,false,onboarding.avatar.creator-male
+creator-female,20,creator,Creator,female,xionid-avatar-creator-female.webp,/avatars/onboarding/xionid-avatar-creator-female.webp,Creator,Lifestyle media,false,onboarding.avatar.creator-female
+community-male,21,community,Community,male,xionid-avatar-community-male.webp,/avatars/onboarding/xionid-avatar-community-male.webp,Community,Club leadership,false,onboarding.avatar.community-male
+community-female,22,community,Community,female,xionid-avatar-community-female.webp,/avatars/onboarding/xionid-avatar-community-female.webp,Community,Club leadership,false,onboarding.avatar.community-female
+elite-male,23,elite,Elite,male,xionid-avatar-elite-male.webp,/avatars/onboarding/xionid-avatar-elite-male.webp,Elite,Ambassador rank,false,onboarding.avatar.elite-male
+elite-female,24,elite,Elite,female,xionid-avatar-elite-female.webp,/avatars/onboarding/xionid-avatar-elite-female.webp,Elite,Ambassador rank,false,onboarding.avatar.elite-female

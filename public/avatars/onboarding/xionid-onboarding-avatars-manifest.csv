@@ -1,0 +1,25 @@
+filename,category,gender_variant,ui_label,ui_subtitle,intended_use
+xionid-avatar-runner-male.webp,Runner,male,Runner,Endurance signal,XIONID onboarding avatar picker
+xionid-avatar-runner-female.webp,Runner,female,Runner,Endurance signal,XIONID onboarding avatar picker
+xionid-avatar-strength-male.webp,Strength,male,Strength,Discipline signal,XIONID onboarding avatar picker
+xionid-avatar-strength-female.webp,Strength,female,Strength,Discipline signal,XIONID onboarding avatar picker
+xionid-avatar-cyclist-male.webp,Cyclist,male,Cyclist,Aerobic engine,XIONID onboarding avatar picker
+xionid-avatar-cyclist-female.webp,Cyclist,female,Cyclist,Aerobic engine,XIONID onboarding avatar picker
+xionid-avatar-swimmer-male.webp,Swimmer,male,Swimmer,Water discipline,XIONID onboarding avatar picker
+xionid-avatar-swimmer-female.webp,Swimmer,female,Swimmer,Water discipline,XIONID onboarding avatar picker
+xionid-avatar-recovery-male.webp,Recovery,male,Recovery,Calm consistency,XIONID onboarding avatar picker
+xionid-avatar-recovery-female.webp,Recovery,female,Recovery,Calm consistency,XIONID onboarding avatar picker
+xionid-avatar-hybrid-male.webp,Hybrid,male,Hybrid,Multi-sport identity,XIONID onboarding avatar picker
+xionid-avatar-hybrid-female.webp,Hybrid,female,Hybrid,Multi-sport identity,XIONID onboarding avatar picker
+xionid-avatar-wellness-male.webp,Wellness,male,Wellness,Longevity rhythm,XIONID onboarding avatar picker
+xionid-avatar-wellness-female.webp,Wellness,female,Wellness,Longevity rhythm,XIONID onboarding avatar picker
+xionid-avatar-gear-male.webp,Gear,male,Gear,Equipment lifestyle,XIONID onboarding avatar picker
+xionid-avatar-gear-female.webp,Gear,female,Gear,Equipment lifestyle,XIONID onboarding avatar picker
+xionid-avatar-nutrition-male.webp,Nutrition,male,Nutrition,Recovery stack,XIONID onboarding avatar picker
+xionid-avatar-nutrition-female.webp,Nutrition,female,Nutrition,Recovery stack,XIONID onboarding avatar picker
+xionid-avatar-creator-male.webp,Creator,male,Creator,Lifestyle media,XIONID onboarding avatar picker
+xionid-avatar-creator-female.webp,Creator,female,Creator,Lifestyle media,XIONID onboarding avatar picker
+xionid-avatar-community-male.webp,Community,male,Community,Club leadership,XIONID onboarding avatar picker
+xionid-avatar-community-female.webp,Community,female,Community,Club leadership,XIONID onboarding avatar picker
+xionid-avatar-elite-male.webp,Elite,male,Elite,Ambassador rank,XIONID onboarding avatar picker
+xionid-avatar-elite-female.webp,Elite,female,Elite,Ambassador rank,XIONID onboarding avatar picker
