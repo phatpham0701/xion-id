@@ -6,5 +6,5 @@
 - [x] Add click-to-filter tier cards.
 - [x] Add selected badge spotlight modal.
 - [x] Preserve verify dialog.
-- [x] Run lint/test/build. (Attempted; blocked because dependencies/CLIs are missing and `npm install` cannot fetch `@testing-library/dom` from the registry with HTTP 403.)
-- [x] Manual smoke checklist. (Static review only; browser smoke and screenshot were blocked because dependencies/CLIs are missing and `npm install` is blocked by registry HTTP 403.)
+- [x] Run lint/test/build. (GitHub CI has run lint, test, and build successfully.)
+- [ ] Manual smoke checklist. (Pending live browser smoke and screenshot verification.)
