@@ -1,0 +1,412 @@
+{
+  "summary": {
+    "total_files": 50,
+    "total_original_size_mb": 115.49,
+    "total_optimized_size_mb": 6.23,
+    "overall_reduction_pct": 94.6,
+    "files_over_500kb": 0
+  },
+  "details": [
+    {
+      "filename": "xionid-badge-cycling-bronze.webp",
+      "original_size_kb": 2406.67,
+      "optimized_size_kb": 139.68,
+      "original_dims": "1254x1254",
+      "optimized_dims": "768x768",
+      "size_reduction_pct": 94.2
+    },
+    {
+      "filename": "xionid-badge-cycling-diamond.webp",
+      "original_size_kb": 2274.33,
+      "optimized_size_kb": 117.58,
+      "original_dims": "1254x1254",
+      "optimized_dims": "768x768",
+      "size_reduction_pct": 94.8
+    },
+    {
+      "filename": "xionid-badge-cycling-elite.webp",
+      "original_size_kb": 2443.96,
+      "optimized_size_kb": 150.14,
+      "original_dims": "1254x1254",
+      "optimized_dims": "768x768",
+      "size_reduction_pct": 93.9
+    },
+    {
+      "filename": "xionid-badge-cycling-gold.webp",
+      "original_size_kb": 2379.48,
+      "optimized_size_kb": 134.5,
+      "original_dims": "1254x1254",
+      "optimized_dims": "768x768",
+      "size_reduction_pct": 94.3
+    },
+    {
+      "filename": "xionid-badge-cycling-silver.webp",
+      "original_size_kb": 2341.98,
+      "optimized_size_kb": 119.02,
+      "original_dims": "1254x1254",
+      "optimized_dims": "768x768",
+      "size_reduction_pct": 94.9
+    },
+    {
+      "filename": "xionid-badge-gear-bronze.webp",
+      "original_size_kb": 2615.55,
+      "optimized_size_kb": 142.78,
+      "original_dims": "1254x1254",
+      "optimized_dims": "768x768",
+      "size_reduction_pct": 94.5
+    },
+    {
+      "filename": "xionid-badge-gear-diamond.webp",
+      "original_size_kb": 2636.13,
+      "optimized_size_kb": 154.27,
+      "original_dims": "1254x1254",
+      "optimized_dims": "768x768",
+      "size_reduction_pct": 94.1
+    },
+    {
+      "filename": "xionid-badge-gear-elite.webp",
+      "original_size_kb": 2664.94,
+      "optimized_size_kb": 156.42,
+      "original_dims": "1254x1254",
+      "optimized_dims": "768x768",
+      "size_reduction_pct": 94.1
+    },
+    {
+      "filename": "xionid-badge-gear-gold.webp",
+      "original_size_kb": 2667.96,
+      "optimized_size_kb": 151.45,
+      "original_dims": "1254x1254",
+      "optimized_dims": "768x768",
+      "size_reduction_pct": 94.3
+    },
+    {
+      "filename": "xionid-badge-gear-silver.webp",
+      "original_size_kb": 2580.94,
+      "optimized_size_kb": 133.82,
+      "original_dims": "1254x1254",
+      "optimized_dims": "768x768",
+      "size_reduction_pct": 94.8
+    },
+    {
+      "filename": "xionid-badge-hybrid-bronze.webp",
+      "original_size_kb": 2308.27,
+      "optimized_size_kb": 119.8,
+      "original_dims": "1254x1254",
+      "optimized_dims": "768x768",
+      "size_reduction_pct": 94.8
+    },
+    {
+      "filename": "xionid-badge-hybrid-diamond.webp",
+      "original_size_kb": 2437.55,
+      "optimized_size_kb": 146.32,
+      "original_dims": "1254x1254",
+      "optimized_dims": "768x768",
+      "size_reduction_pct": 94.0
+    },
+    {
+      "filename": "xionid-badge-hybrid-elite.webp",
+      "original_size_kb": 2440.15,
+      "optimized_size_kb": 137.26,
+      "original_dims": "1254x1254",
+      "optimized_dims": "768x768",
+      "size_reduction_pct": 94.4
+    },
+    {
+      "filename": "xionid-badge-hybrid-gold.webp",
+      "original_size_kb": 2309.2,
+      "optimized_size_kb": 130.84,
+      "original_dims": "1254x1254",
+      "optimized_dims": "768x768",
+      "size_reduction_pct": 94.3
+    },
+    {
+      "filename": "xionid-badge-hybrid-silver.webp",
+      "original_size_kb": 2510.7,
+      "optimized_size_kb": 133.44,
+      "original_dims": "1254x1254",
+      "optimized_dims": "768x768",
+      "size_reduction_pct": 94.7
+    },
+    {
+      "filename": "xionid-badge-marathon-events-bronze.webp",
+      "original_size_kb": 2710.55,
+      "optimized_size_kb": 154.32,
+      "original_dims": "1254x1254",
+      "optimized_dims": "768x768",
+      "size_reduction_pct": 94.3
+    },
+    {
+      "filename": "xionid-badge-marathon-events-diamond.webp",
+      "original_size_kb": 2517.36,
+      "optimized_size_kb": 147.63,
+      "original_dims": "1254x1254",
+      "optimized_dims": "768x768",
+      "size_reduction_pct": 94.1
+    },
+    {
+      "filename": "xionid-badge-marathon-events-elite.webp",
+      "original_size_kb": 2363.57,
+      "optimized_size_kb": 127.45,
+      "original_dims": "1254x1254",
+      "optimized_dims": "768x768",
+      "size_reduction_pct": 94.6
+    },
+    {
+      "filename": "xionid-badge-marathon-events-gold.webp",
+      "original_size_kb": 2503.74,
+      "optimized_size_kb": 153.99,
+      "original_dims": "1254x1254",
+      "optimized_dims": "768x768",
+      "size_reduction_pct": 93.8
+    },
+    {
+      "filename": "xionid-badge-marathon-events-silver.webp",
+      "original_size_kb": 2444.08,
+      "optimized_size_kb": 118.11,
+      "original_dims": "1254x1254",
+      "optimized_dims": "768x768",
+      "size_reduction_pct": 95.2
+    },
+    {
+      "filename": "xionid-badge-recovery-bronze.webp",
+      "original_size_kb": 2476.56,
+      "optimized_size_kb": 137.24,
+      "original_dims": "1254x1254",
+      "optimized_dims": "768x768",
+      "size_reduction_pct": 94.5
+    },
+    {
+      "filename": "xionid-badge-recovery-diamond.webp",
+      "original_size_kb": 2562.42,
+      "optimized_size_kb": 154.27,
+      "original_dims": "1254x1254",
+      "optimized_dims": "768x768",
+      "size_reduction_pct": 94.0
+    },
+    {
+      "filename": "xionid-badge-recovery-elite.webp",
+      "original_size_kb": 2492.99,
+      "optimized_size_kb": 144.01,
+      "original_dims": "1254x1254",
+      "optimized_dims": "768x768",
+      "size_reduction_pct": 94.2
+    },
+    {
+      "filename": "xionid-badge-recovery-gold.webp",
+      "original_size_kb": 2617.08,
+      "optimized_size_kb": 160.2,
+      "original_dims": "1254x1254",
+      "optimized_dims": "768x768",
+      "size_reduction_pct": 93.9
+    },
+    {
+      "filename": "xionid-badge-recovery-silver.webp",
+      "original_size_kb": 2538.66,
+      "optimized_size_kb": 140.0,
+      "original_dims": "1254x1254",
+      "optimized_dims": "768x768",
+      "size_reduction_pct": 94.5
+    },
+    {
+      "filename": "xionid-badge-running-bronze.webp",
+      "original_size_kb": 1825.83,
+      "optimized_size_kb": 65.33,
+      "original_dims": "1254x1254",
+      "optimized_dims": "768x768",
+      "size_reduction_pct": 96.4
+    },
+    {
+      "filename": "xionid-badge-running-diamond.webp",
+      "original_size_kb": 2089.01,
+      "optimized_size_kb": 85.18,
+      "original_dims": "1254x1254",
+      "optimized_dims": "768x768",
+      "size_reduction_pct": 95.9
+    },
+    {
+      "filename": "xionid-badge-running-elite.webp",
+      "original_size_kb": 2402.31,
+      "optimized_size_kb": 133.46,
+      "original_dims": "1254x1254",
+      "optimized_dims": "768x768",
+      "size_reduction_pct": 94.4
+    },
+    {
+      "filename": "xionid-badge-running-gold.webp",
+      "original_size_kb": 2010.94,
+      "optimized_size_kb": 92.36,
+      "original_dims": "1254x1254",
+      "optimized_dims": "768x768",
+      "size_reduction_pct": 95.4
+    },
+    {
+      "filename": "xionid-badge-running-silver.webp",
+      "original_size_kb": 1970.04,
+      "optimized_size_kb": 68.37,
+      "original_dims": "1254x1254",
+      "optimized_dims": "768x768",
+      "size_reduction_pct": 96.5
+    },
+    {
+      "filename": "xionid-badge-strength-bronze.webp",
+      "original_size_kb": 1809.33,
+      "optimized_size_kb": 76.45,
+      "original_dims": "1254x1254",
+      "optimized_dims": "768x768",
+      "size_reduction_pct": 95.8
+    },
+    {
+      "filename": "xionid-badge-strength-diamond.webp",
+      "original_size_kb": 2058.14,
+      "optimized_size_kb": 102.26,
+      "original_dims": "1254x1254",
+      "optimized_dims": "768x768",
+      "size_reduction_pct": 95.0
+    },
+    {
+      "filename": "xionid-badge-strength-elite.webp",
+      "original_size_kb": 2137.16,
+      "optimized_size_kb": 109.45,
+      "original_dims": "1254x1254",
+      "optimized_dims": "768x768",
+      "size_reduction_pct": 94.9
+    },
+    {
+      "filename": "xionid-badge-strength-gold.webp",
+      "original_size_kb": 2227.56,
+      "optimized_size_kb": 120.19,
+      "original_dims": "1254x1254",
+      "optimized_dims": "768x768",
+      "size_reduction_pct": 94.6
+    },
+    {
+      "filename": "xionid-badge-strength-silver.webp",
+      "original_size_kb": 1921.76,
+      "optimized_size_kb": 78.92,
+      "original_dims": "1254x1254",
+      "optimized_dims": "768x768",
+      "size_reduction_pct": 95.9
+    },
+    {
+      "filename": "xionid-badge-supplements-bronze.webp",
+      "original_size_kb": 2420.63,
+      "optimized_size_kb": 124.06,
+      "original_dims": "1254x1254",
+      "optimized_dims": "768x768",
+      "size_reduction_pct": 94.9
+    },
+    {
+      "filename": "xionid-badge-supplements-diamond.webp",
+      "original_size_kb": 2584.94,
+      "optimized_size_kb": 155.23,
+      "original_dims": "1254x1254",
+      "optimized_dims": "768x768",
+      "size_reduction_pct": 94.0
+    },
+    {
+      "filename": "xionid-badge-supplements-elite.webp",
+      "original_size_kb": 2576.67,
+      "optimized_size_kb": 148.07,
+      "original_dims": "1254x1254",
+      "optimized_dims": "768x768",
+      "size_reduction_pct": 94.3
+    },
+    {
+      "filename": "xionid-badge-supplements-gold.webp",
+      "original_size_kb": 2553.66,
+      "optimized_size_kb": 137.25,
+      "original_dims": "1254x1254",
+      "optimized_dims": "768x768",
+      "size_reduction_pct": 94.6
+    },
+    {
+      "filename": "xionid-badge-supplements-silver.webp",
+      "original_size_kb": 2568.78,
+      "optimized_size_kb": 142.56,
+      "original_dims": "1254x1254",
+      "optimized_dims": "768x768",
+      "size_reduction_pct": 94.5
+    },
+    {
+      "filename": "xionid-badge-swimming-bronze.webp",
+      "original_size_kb": 1833.65,
+      "optimized_size_kb": 72.78,
+      "original_dims": "1254x1254",
+      "optimized_dims": "768x768",
+      "size_reduction_pct": 96.0
+    },
+    {
+      "filename": "xionid-badge-swimming-diamond.webp",
+      "original_size_kb": 2077.57,
+      "optimized_size_kb": 106.21,
+      "original_dims": "1254x1254",
+      "optimized_dims": "768x768",
+      "size_reduction_pct": 94.9
+    },
+    {
+      "filename": "xionid-badge-swimming-elite.webp",
+      "original_size_kb": 2034.44,
+      "optimized_size_kb": 100.92,
+      "original_dims": "1254x1254",
+      "optimized_dims": "768x768",
+      "size_reduction_pct": 95.0
+    },
+    {
+      "filename": "xionid-badge-swimming-gold.webp",
+      "original_size_kb": 2053.79,
+      "optimized_size_kb": 99.54,
+      "original_dims": "1254x1254",
+      "optimized_dims": "768x768",
+      "size_reduction_pct": 95.2
+    },
+    {
+      "filename": "xionid-badge-swimming-silver.webp",
+      "original_size_kb": 2218.0,
+      "optimized_size_kb": 104.31,
+      "original_dims": "1254x1254",
+      "optimized_dims": "768x768",
+      "size_reduction_pct": 95.3
+    },
+    {
+      "filename": "xionid-badge-wellness-bronze.webp",
+      "original_size_kb": 2357.67,
+      "optimized_size_kb": 122.47,
+      "original_dims": "1254x1254",
+      "optimized_dims": "768x768",
+      "size_reduction_pct": 94.8
+    },
+    {
+      "filename": "xionid-badge-wellness-diamond.webp",
+      "original_size_kb": 2670.0,
+      "optimized_size_kb": 172.13,
+      "original_dims": "1254x1254",
+      "optimized_dims": "768x768",
+      "size_reduction_pct": 93.6
+    },
+    {
+      "filename": "xionid-badge-wellness-elite.webp",
+      "original_size_kb": 2525.48,
+      "optimized_size_kb": 157.35,
+      "original_dims": "1254x1254",
+      "optimized_dims": "768x768",
+      "size_reduction_pct": 93.8
+    },
+    {
+      "filename": "xionid-badge-wellness-gold.webp",
+      "original_size_kb": 2570.43,
+      "optimized_size_kb": 158.66,
+      "original_dims": "1254x1254",
+      "optimized_dims": "768x768",
+      "size_reduction_pct": 93.8
+    },
+    {
+      "filename": "xionid-badge-wellness-silver.webp",
+      "original_size_kb": 2520.12,
+      "optimized_size_kb": 146.11,
+      "original_dims": "1254x1254",
+      "optimized_dims": "768x768",
+      "size_reduction_pct": 94.2
+    }
+  ],
+  "files_over_limit": []
+}
