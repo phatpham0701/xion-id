@@ -14,9 +14,27 @@ export class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, info: ErrorInfo) {
     console.error("[XIONID] Unhandled render error:", error, info.componentStack);
+    // Stale lazy-chunk after redeploy → reload once to grab fresh assets.
+    const msg = String(error?.message || "");
+    const isChunkError =
+      /Importing a module script failed|Failed to fetch dynamically imported module|Loading chunk \d+ failed|ChunkLoadError/i.test(msg);
+    if (isChunkError && typeof window !== "undefined") {
+      const KEY = "xionid:chunk-reload";
+      try {
+        if (!sessionStorage.getItem(KEY)) {
+          sessionStorage.setItem(KEY, String(Date.now()));
+          window.location.reload();
+        }
+      } catch {
+        window.location.reload();
+      }
+    }
   }
 
-  private reset = () => this.setState({ error: null });
+  private reset = () => {
+    try { sessionStorage.removeItem("xionid:chunk-reload"); } catch { /* noop */ }
+    this.setState({ error: null });
+  };
 
   render() {
     if (!this.state.error) return this.props.children;
