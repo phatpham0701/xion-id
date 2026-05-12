@@ -87,6 +87,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "analytics_events_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       blocks: {
@@ -126,6 +133,13 @@ export type Database = {
             columns: ["profile_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "blocks_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
             referencedColumns: ["id"]
           },
         ]
@@ -315,7 +329,90 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      profiles_public: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string | null
+          display_name: string | null
+          id: string | null
+          is_featured: boolean | null
+          is_published: boolean | null
+          settings: Json | null
+          theme: Json | null
+          updated_at: string | null
+          user_id: string | null
+          username: string | null
+          wallet_connected_at: string | null
+          xion_address: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          id?: string | null
+          is_featured?: boolean | null
+          is_published?: boolean | null
+          settings?: Json | null
+          theme?: Json | null
+          updated_at?: string | null
+          user_id?: string | null
+          username?: string | null
+          wallet_connected_at?: string | null
+          xion_address?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          id?: string | null
+          is_featured?: boolean | null
+          is_published?: boolean | null
+          settings?: Json | null
+          theme?: Json | null
+          updated_at?: string | null
+          user_id?: string | null
+          username?: string | null
+          wallet_connected_at?: string | null
+          xion_address?: string | null
+        }
+        Relationships: []
+      }
+      tips_public: {
+        Row: {
+          amount_uxion: number | null
+          block_height: number | null
+          block_id: string | null
+          created_at: string | null
+          id: string | null
+          message: string | null
+          profile_id: string | null
+          sender_short: string | null
+        }
+        Insert: {
+          amount_uxion?: number | null
+          block_height?: number | null
+          block_id?: string | null
+          created_at?: string | null
+          id?: string | null
+          message?: string | null
+          profile_id?: string | null
+          sender_short?: never
+        }
+        Update: {
+          amount_uxion?: number | null
+          block_height?: number | null
+          block_id?: string | null
+          created_at?: string | null
+          id?: string | null
+          message?: string | null
+          profile_id?: string | null
+          sender_short?: never
+        }
+        Relationships: []
+      }
     }
     Functions: {
       has_role: {
@@ -325,6 +422,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_username_available: { Args: { _username: string }; Returns: boolean }
       log_profile_event: {
         Args: {
           _after: Json
