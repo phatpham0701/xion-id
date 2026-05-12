@@ -164,7 +164,7 @@ const Dashboard = () => {
           progress: earnedBadge.progress,
           proofs: earnedBadge.proofs,
           proofItems,
-          status: "Earned" as const,
+          status: "Earned" as DashboardBadge["status"],
         };
       })
       .filter((badge): badge is DashboardBadge => Boolean(badge))
